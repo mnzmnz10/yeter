@@ -686,6 +686,7 @@ function App() {
                       <TableRow>
                         <TableHead>Ürün Adı</TableHead>
                         <TableHead>Firma</TableHead>
+                        <TableHead>Kategori</TableHead>
                         <TableHead>Liste Fiyatı</TableHead>
                         <TableHead>İndirimli Fiyat</TableHead>
                         <TableHead>Para Birimi</TableHead>
