@@ -270,19 +270,42 @@ class ColorBasedExcelService:
         for row_idx in range(max_search_rows):
             colored_cells = 0
             non_empty_cells = 0
+            meaningful_cells = 0
             
             for col_idx in range(min(10, sheet.max_column)):
                 cell = sheet.cell(row=row_idx + 1, column=col_idx + 1)
-                if cell.value:
+                if cell.value and str(cell.value).strip():
+                    cell_text = str(cell.value).strip().lower()
                     non_empty_cells += 1
+                    
+                    # Meaningful header words
+                    if any(word in cell_text for word in ['ürün', 'ad', 'açık', 'marka', 'firma', 'fiyat', 'price', 'name']):
+                        meaningful_cells += 1
+                    
                     color_category = ColorBasedExcelService.detect_color_category(cell.fill)
+                    logger.debug(f"Row {row_idx + 1}, Col {col_idx + 1}: '{cell_text}' -> {color_category}")
                     if color_category != 'NONE':
                         colored_cells += 1
             
-            # Header satırında en az 2 renkli hücre ve 3 dolu hücre olmalı
-            if colored_cells >= 2 and non_empty_cells >= 3:
+            logger.debug(f"Row {row_idx + 1}: colored={colored_cells}, meaningful={meaningful_cells}, non_empty={non_empty_cells}")
+            
+            # Header satırında en az 2 renkli hücre ve 2 anlamlı hücre olmalı
+            if colored_cells >= 2 and meaningful_cells >= 2:
                 return row_idx
         
+        # Fallback: Anlamlı kelimeler içeren satırı bul
+        for row_idx in range(max_search_rows):
+            meaningful_cells = 0
+            for col_idx in range(min(10, sheet.max_column)):
+                cell = sheet.cell(row=row_idx + 1, column=col_idx + 1)
+                if cell.value:
+                    cell_text = str(cell.value).strip().lower()
+                    if any(word in cell_text for word in ['ürün', 'ad', 'açık', 'marka', 'firma', 'fiyat']):
+                        meaningful_cells += 1
+            
+            if meaningful_cells >= 3:
+                return row_idx
+                
         return -1
     
     @staticmethod
