@@ -687,6 +687,115 @@ async def delete_product(product_id: str):
         logger.error(f"Error deleting product: {e}")
         raise HTTPException(status_code=500, detail="Ürün silinemedi")
 
+# Category endpoints
+@api_router.post("/categories", response_model=Category)
+async def create_category(category: CategoryCreate):
+    """Create a new category"""
+    try:
+        category_dict = {
+            "id": str(uuid.uuid4()),
+            "name": category.name,
+            "description": category.description,
+            "color": category.color or "#3B82F6",  # Default blue color
+            "created_at": datetime.now(timezone.utc)
+        }
+        
+        result = await db.categories.insert_one(category_dict)
+        return Category(**category_dict)
+        
+    except Exception as e:
+        logger.error(f"Error creating category: {e}")
+        raise HTTPException(status_code=500, detail="Kategori oluşturulamadı")
+
+@api_router.get("/categories", response_model=List[Category])
+async def get_categories():
+    """Get all categories"""
+    try:
+        categories = await db.categories.find().to_list(None)
+        return [Category(**category) for category in categories]
+    except Exception as e:
+        logger.error(f"Error getting categories: {e}")
+        raise HTTPException(status_code=500, detail="Kategoriler getirilemedi")
+
+@api_router.patch("/categories/{category_id}")
+async def update_category(category_id: str, update_data: CategoryCreate):
+    """Update a category"""
+    try:
+        update_dict = {}
+        if update_data.name:
+            update_dict["name"] = update_data.name
+        if update_data.description is not None:
+            update_dict["description"] = update_data.description
+        if update_data.color:
+            update_dict["color"] = update_data.color
+        
+        if update_dict:
+            result = await db.categories.update_one(
+                {"id": category_id},
+                {"$set": update_dict}
+            )
+            
+            if result.modified_count == 0:
+                raise HTTPException(status_code=404, detail="Kategori bulunamadı")
+        
+        # Get updated category
+        updated_category = await db.categories.find_one({"id": category_id})
+        return {
+            "success": True,
+            "message": "Kategori başarıyla güncellendi",
+            "category": Category(**updated_category) if updated_category else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating category: {e}")
+        raise HTTPException(status_code=500, detail="Kategori güncellenemedi")
+
+@api_router.delete("/categories/{category_id}")
+async def delete_category(category_id: str):
+    """Delete a category"""
+    try:
+        # First, remove category from all products
+        await db.products.update_many(
+            {"category_id": category_id},
+            {"$unset": {"category_id": ""}}
+        )
+        
+        # Then delete the category
+        result = await db.categories.delete_one({"id": category_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Kategori bulunamadı")
+        
+        return {"success": True, "message": "Kategori silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting category: {e}")
+        raise HTTPException(status_code=500, detail="Kategori silinemedi")
+
+@api_router.post("/products/{product_id}/assign-category")
+async def assign_product_to_category(product_id: str, category_id: str = None):
+    """Assign a product to a category"""
+    try:
+        update_dict = {"category_id": category_id} if category_id else {"$unset": {"category_id": ""}}
+        
+        result = await db.products.update_one(
+            {"id": product_id},
+            update_dict if category_id else {"$unset": {"category_id": ""}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Ürün bulunamadı")
+        
+        return {"success": True, "message": "Ürün kategoriye atandı"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error assigning product to category: {e}")
+        raise HTTPException(status_code=500, detail="Ürün kategoriye atanamadı")
+
 @api_router.post("/companies/{company_id}/upload-excel")
 async def upload_excel(company_id: str, file: UploadFile = File(...)):
     """Upload Excel file for a company"""
