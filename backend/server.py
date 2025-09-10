@@ -1232,46 +1232,121 @@ async def delete_quote(quote_id: str):
 
 class PDFQuoteGenerator:
     def __init__(self):
+        self.setup_fonts()
         self.styles = getSampleStyleSheet()
         self.setup_styles()
     
+    def setup_fonts(self):
+        """Montserrat fontlarını kaydet"""
+        try:
+            font_dir = Path(__file__).parent / 'fonts'
+            
+            # Montserrat Regular font
+            montserrat_regular_path = font_dir / 'Montserrat-Regular.ttf'
+            if montserrat_regular_path.exists():
+                pdfmetrics.registerFont(TTFont('Montserrat', str(montserrat_regular_path)))
+            
+            # Montserrat Bold font
+            montserrat_bold_path = font_dir / 'Montserrat-Bold.ttf'
+            if montserrat_bold_path.exists():
+                pdfmetrics.registerFont(TTFont('Montserrat-Bold', str(montserrat_bold_path)))
+                
+        except Exception as e:
+            logger.error(f"Font loading error: {e}")
+            # Fallback to default fonts
+            pass
+    
     def setup_styles(self):
-        """PDF için özel stiller tanımla"""
+        """PDF için özel stiller tanımla - Türkçe karakter desteği ile"""
+        
+        # Ana renk paleti - #25c7eb temalı
+        primary_color = colors.HexColor('#25c7eb')  # Ana turkuaz
+        secondary_color = colors.HexColor('#1ba3cc')  # Koyu turkuaz
+        accent_color = colors.HexColor('#85e8ff')    # Açık turkuaz
+        text_color = colors.HexColor('#2d3748')      # Koyu gri
+        
         # Başlık stili
         self.title_style = ParagraphStyle(
             'CustomTitle',
             parent=self.styles['Heading1'],
-            fontSize=18,
-            spaceAfter=30,
+            fontName='Montserrat-Bold',
+            fontSize=22,
+            spaceAfter=25,
+            spaceBefore=10,
             alignment=TA_CENTER,
-            textColor=colors.HexColor('#2563eb')
+            textColor=primary_color,
+            leading=26
+        )
+        
+        # Alt başlık stili
+        self.subtitle_style = ParagraphStyle(
+            'SubTitle',
+            parent=self.styles['Heading2'],
+            fontName='Montserrat',
+            fontSize=14,
+            spaceAfter=15,
+            spaceBefore=10,
+            alignment=TA_LEFT,
+            textColor=secondary_color,
+            leading=18
         )
         
         # Firma bilgi stili
         self.company_style = ParagraphStyle(
             'CompanyInfo',
             parent=self.styles['Normal'],
-            fontSize=10,
+            fontName='Montserrat',
+            fontSize=11,
             spaceAfter=6,
-            alignment=TA_LEFT
+            alignment=TA_LEFT,
+            textColor=text_color,
+            leading=14
         )
         
         # Normal metin stili
         self.normal_style = ParagraphStyle(
             'CustomNormal',
             parent=self.styles['Normal'],
+            fontName='Montserrat',
             fontSize=10,
-            spaceAfter=12
+            spaceAfter=8,
+            textColor=text_color,
+            leading=13
+        )
+        
+        # Veri stili (tablolar için)
+        self.data_style = ParagraphStyle(
+            'DataText',
+            parent=self.styles['Normal'],
+            fontName='Montserrat',
+            fontSize=9,
+            spaceAfter=4,
+            textColor=text_color,
+            leading=12
         )
         
         # Footer stili
         self.footer_style = ParagraphStyle(
             'Footer',
             parent=self.styles['Normal'],
+            fontName='Montserrat',
             fontSize=9,
-            alignment=TA_CENTER,
-            textColor=colors.grey,
-            spaceAfter=6
+            alignment=TA_LEFT,
+            textColor=colors.HexColor('#718096'),
+            spaceAfter=6,
+            leading=11
+        )
+        
+        # Fiyat vurgu stili
+        self.price_style = ParagraphStyle(
+            'PriceHighlight',
+            parent=self.styles['Normal'],
+            fontName='Montserrat-Bold',
+            fontSize=16,
+            alignment=TA_RIGHT,
+            textColor=primary_color,
+            spaceAfter=10,
+            leading=20
         )
 
     def create_quote_pdf(self, quote_data: Dict) -> BytesIO:
