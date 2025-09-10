@@ -1213,7 +1213,7 @@ function App() {
                                                 <SelectValue placeholder="Kategori" />
                                               </SelectTrigger>
                                               <SelectContent>
-                                                <SelectItem value="none">Kategorsiz</SelectItem>
+                                                <SelectItem value="none">Kategorisiz</SelectItem>
                                                 {categories.map((category) => (
                                                   <SelectItem key={category.id} value={category.id}>
                                                     {category.name}
