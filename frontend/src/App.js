@@ -742,7 +742,34 @@ function App() {
                       </div>
                     )}
                   </div>
-                  <Dialog open={showAddProductDialog} onOpenChange={setShowAddProductDialog}>
+                  <div className="flex gap-2">
+                    {selectedProducts.size > 0 && (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          onClick={clearSelection}
+                          size="sm"
+                        >
+                          Seçimi Temizle
+                        </Button>
+                        <Button 
+                          onClick={() => setShowCreateQuoteDialog(true)}
+                          className="bg-blue-600 hover:bg-blue-700"
+                          size="sm"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Teklif Oluştur
+                        </Button>
+                      </>
+                    )}
+                    <Button 
+                      variant="outline" 
+                      onClick={selectAllVisible}
+                      size="sm"
+                    >
+                      Tümünü Seç
+                    </Button>
+                    <Dialog open={showAddProductDialog} onOpenChange={setShowAddProductDialog}>
                     <DialogTrigger asChild>
                       <Button className="bg-emerald-600 hover:bg-emerald-700">
                         <Plus className="w-4 h-4 mr-2" />
