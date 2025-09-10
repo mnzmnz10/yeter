@@ -1237,6 +1237,60 @@ async def delete_quote(quote_id: str):
         logger.error(f"Error deleting quote: {e}")
         raise HTTPException(status_code=500, detail=f"Error deleting quote: {str(e)}")
 
+@api_router.put("/quotes/{quote_id}")
+async def update_quote(quote_id: str, quote_update: Dict[str, Any]):
+    """Update an existing quote (especially for adding labor cost)"""
+    try:
+        # Mevcut teklifi bul
+        existing_quote = await db.quotes.find_one({"id": quote_id, "status": "active"})
+        if not existing_quote:
+            raise HTTPException(status_code=404, detail="Quote not found")
+        
+        # Güncellenecek alanları hazırla
+        update_data = {}
+        
+        # İşçilik maliyeti güncellenirse toplam hesapla
+        if "labor_cost" in quote_update:
+            labor_cost = float(quote_update["labor_cost"])
+            
+            # Mevcut hesapları al
+            total_discounted_price = existing_quote.get("total_discounted_price", 0)
+            discount_percentage = existing_quote.get("discount_percentage", 0)
+            
+            # Net toplam hesapla
+            discount_amount = total_discounted_price * (discount_percentage / 100)
+            total_net_price = total_discounted_price - discount_amount + labor_cost
+            
+            update_data["labor_cost"] = labor_cost
+            update_data["total_net_price"] = total_net_price
+        
+        # Diğer alanları da güncelle
+        if "discount_percentage" in quote_update:
+            update_data["discount_percentage"] = float(quote_update["discount_percentage"])
+        
+        # Güncelleme zamanını ekle
+        update_data["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        
+        # Teklifi güncelle
+        result = await db.quotes.update_one(
+            {"id": quote_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Quote not found")
+        
+        # Güncellenmiş teklifi döndür
+        updated_quote = await db.quotes.find_one({"id": quote_id})
+        if updated_quote:
+            updated_quote.pop('_id', None)
+        
+        return updated_quote
+        
+    except Exception as e:
+        logger.error(f"Error updating quote: {e}")
+        raise HTTPException(status_code=500, detail=f"Error updating quote: {str(e)}")
+
 class PDFQuoteGenerator:
     def __init__(self):
         self.setup_fonts()
