@@ -343,6 +343,8 @@ function App() {
       name: '',
       company_id: '',
       category_id: '',
+      description: '',
+      image_url: '',
       list_price: '',
       discounted_price: '',
       currency: 'USD'
