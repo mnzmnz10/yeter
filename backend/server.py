@@ -1448,26 +1448,35 @@ class PDFQuoteGenerator:
         
         return info_table
     
-    def _create_products_table(self, products: List[Dict]):
-        """Ürün tablosu oluştur"""
+    def _create_modern_products_table(self, products: List[Dict]):
+        """Modern tasarımda ürün tablosu oluştur"""
+        primary_color = colors.HexColor('#25c7eb')
+        secondary_color = colors.HexColor('#1ba3cc')
+        accent_color = colors.HexColor('#f0f9ff')
+        
         # Tablo başlıkları
-        data = [
-            ['Ürün Adı', 'Marka', 'Miktar', 'Birim Fiyat', 'Toplam Fiyat']
+        headers = [
+            Paragraph("<b>Ürün Adı</b>", self.data_style),
+            Paragraph("<b>Marka</b>", self.data_style), 
+            Paragraph("<b>Miktar</b>", self.data_style),
+            Paragraph("<b>Birim Fiyat</b>", self.data_style),
+            Paragraph("<b>Toplam Fiyat</b>", self.data_style)
         ]
+        
+        data = [headers]
         
         # Ürün satırları
         for product in products:
-            # Adet bilgisini product'tan al veya 1 varsayılan yap
             quantity = product.get('quantity', 1)
             unit_price = product.get('discounted_price_try', product.get('list_price_try', 0))
             total_price = unit_price * quantity
             
             row = [
-                Paragraph(product['name'], self.normal_style),
-                Paragraph(product.get('company_name', ''), self.normal_style),
-                str(quantity),
-                f"₺ {self._format_price(unit_price)}",
-                f"₺ {self._format_price(total_price)}"
+                Paragraph(product.get('name', ''), self.data_style),
+                Paragraph(product.get('company_name', ''), self.data_style),
+                Paragraph(str(quantity), self.data_style),
+                Paragraph(f"₺ {self._format_price_modern(unit_price)}", self.data_style),
+                Paragraph(f"<b>₺ {self._format_price_modern(total_price)}</b>", self.data_style)
             ]
             data.append(row)
         
@@ -1475,55 +1484,82 @@ class PDFQuoteGenerator:
         table = Table(data, colWidths=[6*cm, 3*cm, 2*cm, 3*cm, 3*cm])
         table.setStyle(TableStyle([
             # Başlık stili
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563eb')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('BACKGROUND', (0, 0), (-1, 0), primary_color),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Montserrat-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('TOPPADDING', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
             
-            # Veri satırları
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            # Veri satırları - Alternatif renklendirme
+            ('BACKGROUND', (0, 1), (-1, -1), accent_color),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, accent_color]),
             ('ALIGN', (2, 1), (2, -1), 'CENTER'),  # Miktar ortala
             ('ALIGN', (3, 1), (-1, -1), 'RIGHT'),  # Fiyatları sağa hizala
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Montserrat'),
             ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('TOPPADDING', (0, 1), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
             
             # Çerçeve
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e0')),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            
+            # Son satır vurgusu (toplam fiyatlar için)
+            ('FONTNAME', (4, 1), (4, -1), 'Montserrat-Bold'),
+            ('TEXTCOLOR', (4, 1), (4, -1), secondary_color),
         ]))
         
         return table
     
-    def _create_totals_section(self, quote_data: Dict):
-        """Toplam hesaplama bölümü"""
+    def _create_modern_totals_section(self, quote_data: Dict):
+        """Modern toplam hesaplama bölümü"""
+        primary_color = colors.HexColor('#25c7eb')
+        secondary_color = colors.HexColor('#1ba3cc')
+        
         totals_content = []
         
         # Ara toplam
-        totals_content.append(Paragraph(f"<b>Ara Toplam: ₺ {self._format_price(quote_data['total_discounted_price'])}</b>", 
-                               self.normal_style))
+        subtotal_text = f"Ara Toplam: <b>₺ {self._format_price_modern(quote_data.get('total_discounted_price', 0))}</b>"
+        totals_content.append(Paragraph(subtotal_text, self.normal_style))
         
         # İndirim (eğer varsa)  
-        if quote_data.get('discount_percentage', 0) > 0:
-            discount_amount = quote_data['total_discounted_price'] - quote_data['total_net_price']
-            totals_content.append(Paragraph(f"İndirim (%{quote_data['discount_percentage']}): -₺ {self._format_price(discount_amount)}", 
-                                   self.normal_style))
+        discount_percentage = quote_data.get('discount_percentage', 0)
+        if discount_percentage > 0:
+            discount_amount = quote_data.get('total_discounted_price', 0) - quote_data.get('total_net_price', 0)
+            discount_text = f"İndirim (%{discount_percentage}): <font color='#dc2626'>-₺ {self._format_price_modern(discount_amount)}</font>"
+            totals_content.append(Paragraph(discount_text, self.normal_style))
+            totals_content.append(Spacer(1, 8))
         
-        # Net toplam
-        totals_content.append(Paragraph(f"<b>NET TOPLAM: ₺ {self._format_price(quote_data['total_net_price'])}</b>", 
-                               self.title_style))
+        # Net toplam - büyük ve vurgulanmış
+        net_total = quote_data.get('total_net_price', 0)
+        net_total_text = f"<font size='18' color='{primary_color}'><b>NET TOPLAM: ₺ {self._format_price_modern(net_total)}</b></font>"
+        totals_content.append(Paragraph(net_total_text, self.price_style))
         
         return totals_content
     
-    def _create_footer(self):
-        """Footer mesajı"""
-        footer_text = """
-        <b>ÖNEMLİ NOTLAR:</b><br/>
-        • Fiyatlar 1 hafta için geçerlidir. 1 hafta sonra yeni teklif alınız.<br/>
-        • Fiyatlara KDV dahildir.<br/>
-        • Ürün özellikleri değişiklik gösterebilir.<br/>
-        """
-        return Paragraph(footer_text, self.footer_style)
+    def _create_modern_footer(self):
+        """Modern footer mesajı"""
+        footer_content = []
+        
+        # Önemli notlar başlığı
+        footer_content.append(Paragraph("<b><font color='#1ba3cc'>ÖNEMLİ NOTLAR:</font></b>", self.subtitle_style))
+        footer_content.append(Spacer(1, 8))
+        
+        # Notlar listesi
+        notes = [
+            "• Yukarıdaki fiyatlandırmanın, 1 hafta geçerli olduğunu lütfen göz önünde bulundurunuz.",
+            "• Fiyatlara KDV dahildir.",
+            "• Ürün özellikleri ve fiyatları değişiklik gösterebilir.",
+            "• Montaj ve nakliye masrafları ayrıca hesaplanacaktır.",
+            "• Teknik destek ve garanti şartları ayrıca belirtilecektir."
+        ]
+        
+        notes_text = "<br/>".join(notes)
+        footer_content.append(Paragraph(notes_text, self.footer_style))
+        
+        return footer_content
     
     def _format_price(self, price):
         """Fiyat formatla"""
