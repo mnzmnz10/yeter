@@ -1350,45 +1350,52 @@ class PDFQuoteGenerator:
         )
 
     def create_quote_pdf(self, quote_data: Dict) -> BytesIO:
-        """Teklif PDF'i oluştur"""
+        """Gelişmiş teklif PDF'i oluştur - Türkçe karakter desteği ile"""
         buffer = BytesIO()
+        
+        # Yüksek kaliteli PDF ayarları
         doc = SimpleDocTemplate(
             buffer,
             pagesize=A4,
-            rightMargin=2*cm,
-            leftMargin=2*cm,
+            rightMargin=2.5*cm,
+            leftMargin=2.5*cm,
             topMargin=2*cm,
-            bottomMargin=2*cm
+            bottomMargin=2*cm,
+            title=f"Teklif - {quote_data.get('name', 'Adsız')}",
+            author="Karavan Elektrik Ekipmanları"
         )
         
         story = []
         
-        # Firma bilgileri ve logo (simüle edilmiş)
-        story.append(self._create_company_header())
-        story.append(Spacer(1, 20))
+        # Üst header bölümü
+        story.append(self._create_modern_header())
+        story.append(Spacer(1, 25))
         
         # Teklif başlığı
-        story.append(Paragraph(f"<b>{quote_data['name']}</b>", self.title_style))
+        quote_name = quote_data.get('name', 'Fiyat Teklifi')
+        story.append(Paragraph(f"<b>{quote_name}</b>", self.title_style))
+        story.append(Spacer(1, 15))
+        
+        # Teklif bilgileri satırı (Tarih, Geçerlilik vs.)
+        story.append(self._create_quote_info_section(quote_data))
+        story.append(Spacer(1, 25))
+        
+        # Ürün tablosu başlığı
+        story.append(Paragraph("<b>Teklif Detayları</b>", self.subtitle_style))
         story.append(Spacer(1, 10))
         
-        # Teklif tarihi
-        created_date = datetime.fromisoformat(quote_data['created_at'].replace('Z', '+00:00'))
-        story.append(Paragraph(f"Tarih: {created_date.strftime('%d.%m.%Y')}", self.normal_style))
-        story.append(Spacer(1, 20))
-        
         # Ürün tablosu
-        story.append(self._create_products_table(quote_data['products']))
-        story.append(Spacer(1, 20))
+        story.append(self._create_modern_products_table(quote_data['products']))
+        story.append(Spacer(1, 25))
         
-        # Toplam hesaplama
-        totals_section = self._create_totals_section(quote_data)
-        for item in totals_section:
-            story.append(item)
+        # Toplam hesaplama bölümü
+        story.append(self._create_modern_totals_section(quote_data))
         story.append(Spacer(1, 30))
         
-        # Footer mesajı
-        story.append(self._create_footer())
+        # Footer notları
+        story.append(self._create_modern_footer())
         
+        # PDF oluştur
         doc.build(story)
         buffer.seek(0)
         return buffer
