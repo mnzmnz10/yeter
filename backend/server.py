@@ -320,7 +320,8 @@ class ColorBasedExcelService:
             'product_name': -1,
             'description': -1, 
             'company': -1,
-            'price': -1
+            'list_price': -1,
+            'discounted_price': -1
         }
         
         for col_idx in range(min(15, sheet.max_column)):
@@ -338,8 +339,10 @@ class ColorBasedExcelService:
                 column_mapping['description'] = col_idx
             elif color_category == 'YELLOW':  # Sarı = Firma
                 column_mapping['company'] = col_idx
-            elif color_category == 'GREEN':  # Yeşil = Fiyat
-                column_mapping['price'] = col_idx
+            elif color_category == 'GREEN':  # Yeşil = Liste Fiyatı
+                column_mapping['list_price'] = col_idx
+            elif color_category == 'ORANGE':  # Turuncu = İndirimli Fiyat
+                column_mapping['discounted_price'] = col_idx
             
             # Alternatif: Text tabanlı fallback
             elif 'ürün' in cell_text and 'ad' in cell_text and column_mapping['product_name'] == -1:
