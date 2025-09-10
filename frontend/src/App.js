@@ -890,227 +890,243 @@ function App() {
                     )}
                   </div>
                 </div>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Ürün</TableHead>
-                        <TableHead>Firma</TableHead>
-                        <TableHead>Kategori</TableHead>
-                        <TableHead>Liste Fiyatı</TableHead>
-                        <TableHead>İndirimli Fiyat</TableHead>
-                        <TableHead>Para Birimi</TableHead>
-                        <TableHead>TL Fiyat</TableHead>
-                        <TableHead>TL İndirimli</TableHead>
-                        <TableHead>İşlemler</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {products.map((product) => {
-                        const company = companies.find(c => c.id === product.company_id);
-                        const isEditing = editingProduct === product.id;
-                        
-                        return (
-                          <TableRow key={product.id}>
-                            <TableCell className="font-medium">
-                              {isEditing ? (
-                                <div className="space-y-2">
-                                  <Input
-                                    value={editForm.name}
-                                    onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                                    className="min-w-[200px]"
-                                    placeholder="Ürün adı"
-                                  />
-                                  <Input
-                                    value={editForm.description}
-                                    onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                                    className="min-w-[200px]"
-                                    placeholder="Açıklama (opsiyonel)"
-                                  />
-                                  <Input
-                                    value={editForm.image_url}
-                                    onChange={(e) => setEditForm({...editForm, image_url: e.target.value})}
-                                    className="min-w-[200px]"
-                                    placeholder="Görsel URL (opsiyonel)"
-                                    type="url"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="space-y-1">
-                                  <div className="flex items-start gap-3">
-                                    {product.image_url && (
-                                      <img 
-                                        src={product.image_url} 
-                                        alt={product.name}
-                                        className="w-12 h-12 object-cover rounded border"
-                                        onError={(e) => {e.target.style.display = 'none'}}
-                                      />
-                                    )}
-                                    <div>
-                                      <div className="font-medium">{product.name}</div>
-                                      {product.description && (
-                                        <div className="text-sm text-slate-500 mt-1">{product.description}</div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{company?.name || 'Unknown'}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              {isEditing ? (
-                                <Select 
-                                  value={editForm.category_id || "none"} 
-                                  onValueChange={(value) => setEditForm({...editForm, category_id: value})}
-                                >
-                                  <SelectTrigger className="w-32">
-                                    <SelectValue placeholder="Kategori" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="none">Kategorsiz</SelectItem>
-                                    {categories.map((category) => (
-                                      <SelectItem key={category.id} value={category.id}>
-                                        {category.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              ) : (
-                                product.category_id ? (
-                                  (() => {
-                                    const category = categories.find(c => c.id === product.category_id);
-                                    return category ? (
-                                      <Badge 
-                                        variant="outline" 
-                                        className="cursor-pointer hover:bg-primary/10"
-                                        style={{borderColor: category.color, color: category.color}}
-                                        onClick={() => handleCategoryFilter(category.id)}
-                                      >
-                                        <div className="flex items-center gap-1">
-                                          <div 
-                                            className="w-2 h-2 rounded-full" 
-                                            style={{backgroundColor: category.color}}
-                                          ></div>
-                                          {category.name}
+                <div className="space-y-8">
+                  {(() => {
+                    // Group products by category
+                    const groupedProducts = {};
+                    
+                    products.forEach(product => {
+                      const categoryId = product.category_id || 'uncategorized';
+                      if (!groupedProducts[categoryId]) {
+                        groupedProducts[categoryId] = [];
+                      }
+                      groupedProducts[categoryId].push(product);
+                    });
+
+                    // Sort categories: show categorized products first, then uncategorized
+                    const sortedGroups = Object.entries(groupedProducts).sort(([a], [b]) => {
+                      if (a === 'uncategorized') return 1;
+                      if (b === 'uncategorized') return -1;
+                      return 0;
+                    });
+
+                    return sortedGroups.map(([categoryId, categoryProducts]) => {
+                      const category = categories.find(c => c.id === categoryId);
+                      const categoryName = category ? category.name : 'Kategorsiz Ürünler';
+                      const categoryColor = category ? category.color : '#64748b';
+
+                      return (
+                        <div key={categoryId} className="space-y-4">
+                          {/* Category Header */}
+                          <div className="flex items-center gap-3 pb-2 border-b-2" style={{borderColor: categoryColor}}>
+                            <div 
+                              className="w-4 h-4 rounded-full" 
+                              style={{backgroundColor: categoryColor}}
+                            ></div>
+                            <h3 className="text-lg font-semibold text-slate-800">
+                              {categoryName}
+                            </h3>
+                            <Badge variant="outline" className="ml-auto">
+                              {categoryProducts.length} ürün
+                            </Badge>
+                          </div>
+
+                          {/* Products Table for this category */}
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Ürün</TableHead>
+                                  <TableHead>Firma</TableHead>
+                                  <TableHead>Liste Fiyatı</TableHead>
+                                  <TableHead>İndirimli Fiyat</TableHead>
+                                  <TableHead>Para Birimi</TableHead>
+                                  <TableHead>TL Fiyat</TableHead>
+                                  <TableHead>TL İndirimli</TableHead>
+                                  <TableHead>İşlemler</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {categoryProducts.map((product) => {
+                                  const company = companies.find(c => c.id === product.company_id);
+                                  const isEditing = editingProduct === product.id;
+                                  
+                                  return (
+                                    <TableRow key={product.id}>
+                                      <TableCell className="font-medium">
+                                        {isEditing ? (
+                                          <div className="space-y-2">
+                                            <Input
+                                              value={editForm.name}
+                                              onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                                              className="min-w-[200px]"
+                                              placeholder="Ürün adı"
+                                            />
+                                            <Input
+                                              value={editForm.description}
+                                              onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                                              className="min-w-[200px]"
+                                              placeholder="Açıklama (opsiyonel)"
+                                            />
+                                            <Input
+                                              value={editForm.image_url}
+                                              onChange={(e) => setEditForm({...editForm, image_url: e.target.value})}
+                                              className="min-w-[200px]"
+                                              placeholder="Görsel URL (opsiyonel)"
+                                              type="url"
+                                            />
+                                            <Select 
+                                              value={editForm.category_id || "none"} 
+                                              onValueChange={(value) => setEditForm({...editForm, category_id: value === "none" ? "" : value})}
+                                            >
+                                              <SelectTrigger className="min-w-[200px]">
+                                                <SelectValue placeholder="Kategori" />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="none">Kategorsiz</SelectItem>
+                                                {categories.map((category) => (
+                                                  <SelectItem key={category.id} value={category.id}>
+                                                    {category.name}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                          </div>
+                                        ) : (
+                                          <div className="space-y-1">
+                                            <div className="flex items-start gap-3">
+                                              {product.image_url && (
+                                                <img 
+                                                  src={product.image_url} 
+                                                  alt={product.name}
+                                                  className="w-12 h-12 object-cover rounded border"
+                                                  onError={(e) => {e.target.style.display = 'none'}}
+                                                />
+                                              )}
+                                              <div>
+                                                <div className="font-medium">{product.name}</div>
+                                                {product.description && (
+                                                  <div className="text-sm text-slate-500 mt-1">{product.description}</div>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline">{company?.name || 'Unknown'}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        {isEditing ? (
+                                          <Input
+                                            type="number"
+                                            step="0.01"
+                                            value={editForm.list_price}
+                                            onChange={(e) => setEditForm({...editForm, list_price: e.target.value})}
+                                            className="w-24"
+                                          />
+                                        ) : (
+                                          `${getCurrencySymbol(product.currency)} ${formatPrice(product.list_price)}`
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        {isEditing ? (
+                                          <Input
+                                            type="number"
+                                            step="0.01"
+                                            value={editForm.discounted_price}
+                                            onChange={(e) => setEditForm({...editForm, discounted_price: e.target.value})}
+                                            className="w-24"
+                                            placeholder="İndirimli fiyat"
+                                          />
+                                        ) : (
+                                          product.discounted_price ? (
+                                            `${getCurrencySymbol(product.currency)} ${formatPrice(product.discounted_price)}`
+                                          ) : '-'
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        {isEditing ? (
+                                          <Select 
+                                            value={editForm.currency} 
+                                            onValueChange={(value) => setEditForm({...editForm, currency: value})}
+                                          >
+                                            <SelectTrigger className="w-20">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="USD">USD</SelectItem>
+                                              <SelectItem value="EUR">EUR</SelectItem>
+                                              <SelectItem value="TRY">TRY</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        ) : (
+                                          <Badge 
+                                            className="cursor-pointer hover:bg-primary/90" 
+                                            onClick={() => startEditProduct(product)}
+                                          >
+                                            {product.currency}
+                                          </Badge>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        ₺ {product.list_price_try ? formatPrice(product.list_price_try) : '---'}
+                                      </TableCell>
+                                      <TableCell>
+                                        {product.discounted_price_try ? (
+                                          `₺ ${formatPrice(product.discounted_price_try)}`
+                                        ) : '-'}
+                                      </TableCell>
+                                      <TableCell>
+                                        <div className="flex gap-2">
+                                          {isEditing ? (
+                                            <>
+                                              <Button 
+                                                size="sm" 
+                                                onClick={saveEditProduct}
+                                                disabled={loading}
+                                                className="bg-green-600 hover:bg-green-700"
+                                              >
+                                                <Save className="w-4 h-4" />
+                                              </Button>
+                                              <Button 
+                                                size="sm" 
+                                                variant="outline" 
+                                                onClick={cancelEditProduct}
+                                              >
+                                                <X className="w-4 h-4" />
+                                              </Button>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Button 
+                                                size="sm" 
+                                                variant="outline" 
+                                                onClick={() => startEditProduct(product)}
+                                              >
+                                                <Edit className="w-4 h-4" />
+                                              </Button>
+                                              <Button 
+                                                size="sm" 
+                                                variant="destructive" 
+                                                onClick={() => deleteProduct(product.id)}
+                                              >
+                                                <Trash2 className="w-4 h-4" />
+                                              </Button>
+                                            </>
+                                          )}
                                         </div>
-                                      </Badge>
-                                    ) : (
-                                      <Badge variant="outline" className="text-slate-400">Silinmiş</Badge>
-                                    );
-                                  })()
-                                ) : (
-                                  <Badge variant="outline" className="text-slate-400">Kategorsiz</Badge>
-                                )
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {isEditing ? (
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={editForm.list_price}
-                                  onChange={(e) => setEditForm({...editForm, list_price: e.target.value})}
-                                  className="w-24"
-                                />
-                              ) : (
-                                `${getCurrencySymbol(product.currency)} ${formatPrice(product.list_price)}`
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {isEditing ? (
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={editForm.discounted_price}
-                                  onChange={(e) => setEditForm({...editForm, discounted_price: e.target.value})}
-                                  className="w-24"
-                                  placeholder="İndirimli fiyat"
-                                />
-                              ) : (
-                                product.discounted_price ? (
-                                  `${getCurrencySymbol(product.currency)} ${formatPrice(product.discounted_price)}`
-                                ) : '-'
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {isEditing ? (
-                                <Select 
-                                  value={editForm.currency} 
-                                  onValueChange={(value) => setEditForm({...editForm, currency: value})}
-                                >
-                                  <SelectTrigger className="w-20">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="USD">USD</SelectItem>
-                                    <SelectItem value="EUR">EUR</SelectItem>
-                                    <SelectItem value="TRY">TRY</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              ) : (
-                                <Badge 
-                                  className="cursor-pointer hover:bg-primary/90" 
-                                  onClick={() => startEditProduct(product)}
-                                >
-                                  {product.currency}
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              ₺ {product.list_price_try ? formatPrice(product.list_price_try) : '---'}
-                            </TableCell>
-                            <TableCell>
-                              {product.discounted_price_try ? (
-                                `₺ ${formatPrice(product.discounted_price_try)}`
-                              ) : '-'}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                {isEditing ? (
-                                  <>
-                                    <Button 
-                                      size="sm" 
-                                      onClick={saveEditProduct}
-                                      disabled={loading}
-                                      className="bg-green-600 hover:bg-green-700"
-                                    >
-                                      <Save className="w-4 h-4" />
-                                    </Button>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline" 
-                                      onClick={cancelEditProduct}
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </Button>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline" 
-                                      onClick={() => startEditProduct(product)}
-                                    >
-                                      <Edit className="w-4 h-4" />
-                                    </Button>
-                                    <Button 
-                                      size="sm" 
-                                      variant="destructive" 
-                                      onClick={() => deleteProduct(product.id)}
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               </CardContent>
             </Card>
