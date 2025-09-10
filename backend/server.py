@@ -359,6 +359,7 @@ class ColorBasedExcelService:
     @staticmethod
     def _extract_products_from_sheet(sheet, header_row: int, column_mapping: Dict[str, int], company_name: str) -> List[Dict[str, Any]]:
         """Extract products from a sheet using column mapping"""
+        import random
         products = []
         
         # Start from the row after header
@@ -368,47 +369,74 @@ class ColorBasedExcelService:
                 product_name = ""
                 description = ""
                 detected_company = company_name
-                price = 0
+                list_price = 0
+                discounted_price = None
                 
                 # Ürün adı (Kırmızı)
                 if column_mapping['product_name'] >= 0:
                     name_cell = sheet.cell(row=row_idx + 1, column=column_mapping['product_name'] + 1)
                     if name_cell.value:
                         product_name = str(name_cell.value).strip()
-                
+
                 # Açıklama (Mavi)
                 if column_mapping['description'] >= 0:
                     desc_cell = sheet.cell(row=row_idx + 1, column=column_mapping['description'] + 1)
                     if desc_cell.value:
                         description = str(desc_cell.value).strip()
-                
+
                 # Firma (Sarı)
                 if column_mapping['company'] >= 0:
                     company_cell = sheet.cell(row=row_idx + 1, column=column_mapping['company'] + 1)
                     if company_cell.value:
                         detected_company = str(company_cell.value).strip()
-                
-                # Fiyat (Yeşil)
-                if column_mapping['price'] >= 0:
+
+                # Liste Fiyatı (Yeşil)
+                if column_mapping['list_price'] >= 0:
+                    price_cell = sheet.cell(row=row_idx + 1, column=column_mapping['list_price'] + 1)
+                    if price_cell.value:
+                        try:
+                            list_price = float(str(price_cell.value).replace(',', '.'))
+                        except:
+                            list_price = 0
+
+                # İndirimli Fiyat (Turuncu) 
+                if column_mapping['discounted_price'] >= 0:
+                    disc_price_cell = sheet.cell(row=row_idx + 1, column=column_mapping['discounted_price'] + 1)
+                    if disc_price_cell.value:
+                        try:
+                            discounted_price = float(str(disc_price_cell.value).replace(',', '.'))
+                        except:
+                            discounted_price = None
+
+                # Özel mantık: Turuncu var ama yeşil yoksa
+                if discounted_price and discounted_price > 0 and list_price == 0:
+                    # İndirimli fiyat üzerine %20-30 arası rastgele zam ekle
+                    markup_percentage = random.uniform(20, 30)
+                    list_price = discounted_price * (1 + markup_percentage / 100)
+                    logger.info(f"Generated list price for {product_name}: {discounted_price} + {markup_percentage:.1f}% = {list_price:.2f}")
+
+                # Eğer liste fiyatı yoksa ama indirim de yoksa, eski sistemle uyumluluk için
+                # price kolonunu liste fiyatı olarak kullan (eski sistem için fallback)
+                if list_price == 0 and 'price' in column_mapping and column_mapping['price'] >= 0:
                     price_cell = sheet.cell(row=row_idx + 1, column=column_mapping['price'] + 1)
                     if price_cell.value:
                         try:
-                            price = float(str(price_cell.value).replace(',', '.'))
+                            list_price = float(str(price_cell.value).replace(',', '.'))
                         except:
-                            price = 0
-                
-                # Geçerli ürün kontrolü
+                            list_price = 0
+
+                # Geçerli ürün kontrolü - en az liste fiyatı olmalı
                 if (product_name and len(product_name) > 3 and 
-                    price > 0 and 
+                    list_price > 0 and 
                     not any(skip_word in product_name.lower() for skip_word in ['no', 'resim', 'ürün adı', 'toplam'])):
                     
                     products.append({
                         'name': product_name,
                         'description': description if description else None,
                         'company_name': detected_company,
-                        'list_price': price,
-                        'currency': 'USD',  # VENTA listesi USD
-                        'discounted_price': None
+                        'list_price': list_price,
+                        'discounted_price': discounted_price if discounted_price and discounted_price > 0 else None,
+                        'currency': 'TRY'  # Türkiye'de genelde TRY olur, gerekirse değiştirilebilir
                     })
                     
             except Exception as e:
