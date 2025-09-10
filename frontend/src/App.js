@@ -1325,11 +1325,13 @@ function App() {
                                       <TableCell>
                                         ₺ {product.list_price_try ? formatPrice(product.list_price_try) : '---'}
                                       </TableCell>
-                                      <TableCell>
-                                        {product.discounted_price_try ? (
-                                          `₺ ${formatPrice(product.discounted_price_try)}`
-                                        ) : '-'}
-                                      </TableCell>
+                                      {showDiscountedPrices && (
+                                        <TableCell>
+                                          {product.discounted_price_try ? (
+                                            `₺ ${formatPrice(product.discounted_price_try)}`
+                                          ) : '-'}
+                                        </TableCell>
+                                      )}
                                       <TableCell>
                                         <div className="flex gap-2">
                                           {isEditing ? (
