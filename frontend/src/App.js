@@ -1158,10 +1158,10 @@ function App() {
                                   <TableHead>Ürün</TableHead>
                                   <TableHead>Firma</TableHead>
                                   <TableHead>Liste Fiyatı</TableHead>
-                                  <TableHead>İndirimli Fiyat</TableHead>
+                                  {showDiscountedPrices && <TableHead>İndirimli Fiyat</TableHead>}
                                   <TableHead>Para Birimi</TableHead>
                                   <TableHead>TL Fiyat</TableHead>
-                                  <TableHead>TL İndirimli</TableHead>
+                                  {showDiscountedPrices && <TableHead>TL İndirimli</TableHead>}
                                   <TableHead>İşlemler</TableHead>
                                 </TableRow>
                               </TableHeader>
