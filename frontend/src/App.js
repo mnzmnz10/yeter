@@ -1144,12 +1144,33 @@ function App() {
                                       className={selectedProducts.has(product.id) ? 'bg-blue-50 border-blue-200' : ''}
                                     >
                                       <TableCell>
-                                        <input
-                                          type="checkbox"
-                                          className="rounded border-gray-300"
-                                          checked={selectedProducts.has(product.id)}
-                                          onChange={() => toggleProductSelection(product.id)}
-                                        />
+                                        <div className="flex items-center gap-2">
+                                          <input
+                                            type="checkbox"
+                                            className="rounded border-gray-300"
+                                            checked={selectedProducts.has(product.id)}
+                                            onChange={(e) => {
+                                              if (e.target.checked) {
+                                                toggleProductSelection(product.id, 1);
+                                              } else {
+                                                toggleProductSelection(product.id, 0);
+                                              }
+                                            }}
+                                          />
+                                          {selectedProducts.has(product.id) && (
+                                            <input
+                                              type="number"
+                                              min="1"
+                                              value={selectedProducts.get(product.id) || 1}
+                                              onChange={(e) => {
+                                                const quantity = parseInt(e.target.value) || 1;
+                                                toggleProductSelection(product.id, quantity);
+                                              }}
+                                              className="w-16 px-2 py-1 text-sm border rounded"
+                                              placeholder="1"
+                                            />
+                                          )}
+                                        </div>
                                       </TableCell>
                                       <TableCell className="font-medium">
                                         {isEditing ? (
