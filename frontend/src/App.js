@@ -76,7 +76,8 @@ function App() {
         loadCompanies(),
         loadProducts(),
         loadCategories(),
-        loadExchangeRates()
+        loadExchangeRates(),
+        fetchQuotes()
       ]);
     } catch (error) {
       console.error('Error loading initial data:', error);
