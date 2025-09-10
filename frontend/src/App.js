@@ -1865,6 +1865,7 @@ function App() {
               onClick={() => {
                 setShowCreateQuoteDialog(false);
                 setQuoteName('');
+                setQuoteLaborCost(0);
               }}
             >
               İptal
