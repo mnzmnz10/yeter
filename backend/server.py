@@ -205,6 +205,10 @@ class ColorBasedExcelService:
                 elif 'FFFFFF00' in rgb or 'FFFF00' in rgb or 'FFC000' in rgb:
                     logger.info(f"RGB {rgb} -> YELLOW")
                     return 'YELLOW'
+                # Yeşil tonları (Liste Fiyatı) - FF00B050 formatını kontrol et
+                elif 'FF00B050' in rgb or '00B050' in rgb or '00FF00' in rgb or '008000' in rgb:
+                    logger.info(f"RGB {rgb} -> GREEN")
+                    return 'GREEN'
                     
             except Exception as e:
                 logger.warning(f"RGB parsing error: {e}")
