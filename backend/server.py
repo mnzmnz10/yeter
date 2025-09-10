@@ -431,22 +431,25 @@ class ColorBasedExcelService:
                 list_price = 0
                 discounted_price = None
                 
-                # Ürün adı (Kırmızı)
+                # Ürün adı (Kırmızı) - SADECE kırmızı hücre kabul edilir
                 if column_mapping['product_name'] >= 0:
                     name_cell = sheet.cell(row=row_idx + 1, column=column_mapping['product_name'] + 1)
-                    if name_cell.value:
+                    if (name_cell.value and 
+                        ColorBasedExcelService.detect_color_category(name_cell.fill) == 'RED'):
                         product_name = str(name_cell.value).strip()
 
-                # Açıklama (Mavi)
+                # Açıklama (Mavi) - SADECE mavi hücre kabul edilir
                 if column_mapping['description'] >= 0:
                     desc_cell = sheet.cell(row=row_idx + 1, column=column_mapping['description'] + 1)
-                    if desc_cell.value:
+                    if (desc_cell.value and 
+                        ColorBasedExcelService.detect_color_category(desc_cell.fill) == 'BLUE'):
                         description = str(desc_cell.value).strip()
 
-                # Firma (Sarı)
+                # Firma (Sarı) - SADECE sarı hücre kabul edilir
                 if column_mapping['company'] >= 0:
                     company_cell = sheet.cell(row=row_idx + 1, column=column_mapping['company'] + 1)
-                    if company_cell.value:
+                    if (company_cell.value and 
+                        ColorBasedExcelService.detect_color_category(company_cell.fill) == 'YELLOW'):
                         company_value = str(company_cell.value).strip()
                         # Excel formülü değilse VE sayısal değer değilse kullan
                         if not company_value.startswith('='):
@@ -459,19 +462,21 @@ class ColorBasedExcelService:
                                 # Sayısal değer değilse kullan
                                 detected_company = company_value
 
-                # Liste Fiyatı (Yeşil)
+                # Liste Fiyatı (Yeşil) - SADECE yeşil hücre kabul edilir
                 if column_mapping['list_price'] >= 0:
                     price_cell = sheet.cell(row=row_idx + 1, column=column_mapping['list_price'] + 1)
-                    if price_cell.value:
+                    if (price_cell.value and 
+                        ColorBasedExcelService.detect_color_category(price_cell.fill) == 'GREEN'):
                         try:
                             list_price = float(str(price_cell.value).replace(',', '.'))
                         except:
                             list_price = 0
 
-                # İndirimli Fiyat (Turuncu) 
+                # İndirimli Fiyat (Turuncu) - SADECE turuncu hücre kabul edilir
                 if column_mapping['discounted_price'] >= 0:
                     disc_price_cell = sheet.cell(row=row_idx + 1, column=column_mapping['discounted_price'] + 1)
-                    if disc_price_cell.value:
+                    if (disc_price_cell.value and 
+                        ColorBasedExcelService.detect_color_category(disc_price_cell.fill) == 'ORANGE'):
                         try:
                             discounted_price = float(str(disc_price_cell.value).replace(',', '.'))
                         except:
