@@ -1245,11 +1245,17 @@ class PDFQuoteGenerator:
             montserrat_regular_path = font_dir / 'Montserrat-Regular.ttf'
             if montserrat_regular_path.exists():
                 pdfmetrics.registerFont(TTFont('Montserrat', str(montserrat_regular_path)))
+                logger.info("Montserrat Regular font loaded successfully")
+            else:
+                logger.warning("Montserrat Regular font not found, using Helvetica")
             
             # Montserrat Bold font
             montserrat_bold_path = font_dir / 'Montserrat-Bold.ttf'
             if montserrat_bold_path.exists():
                 pdfmetrics.registerFont(TTFont('Montserrat-Bold', str(montserrat_bold_path)))
+                logger.info("Montserrat Bold font loaded successfully")
+            else:
+                logger.warning("Montserrat Bold font not found, using Helvetica-Bold")
                 
         except Exception as e:
             logger.error(f"Font loading error: {e}")
