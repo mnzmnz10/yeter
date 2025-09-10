@@ -718,6 +718,58 @@ function App() {
                             </TableCell>
                             <TableCell>
                               {isEditing ? (
+                                <Select 
+                                  value={editForm.category_id} 
+                                  onValueChange={(value) => setEditForm({...editForm, category_id: value})}
+                                >
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue placeholder="Kategori" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="">Kategorsiz</SelectItem>
+                                    {categories.map((category) => (
+                                      <SelectItem key={category.id} value={category.id}>
+                                        <div className="flex items-center gap-2">
+                                          <div 
+                                            className="w-2 h-2 rounded-full" 
+                                            style={{backgroundColor: category.color}}
+                                          ></div>
+                                          {category.name}
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                product.category_id ? (
+                                  (() => {
+                                    const category = categories.find(c => c.id === product.category_id);
+                                    return category ? (
+                                      <Badge 
+                                        variant="outline" 
+                                        className="cursor-pointer hover:bg-primary/10"
+                                        style={{borderColor: category.color, color: category.color}}
+                                        onClick={() => handleCategoryFilter(category.id)}
+                                      >
+                                        <div className="flex items-center gap-1">
+                                          <div 
+                                            className="w-2 h-2 rounded-full" 
+                                            style={{backgroundColor: category.color}}
+                                          ></div>
+                                          {category.name}
+                                        </div>
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="outline" className="text-slate-400">Silinmiş</Badge>
+                                    );
+                                  })()
+                                ) : (
+                                  <Badge variant="outline" className="text-slate-400">Kategorsiz</Badge>
+                                )
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {isEditing ? (
                                 <Input
                                   type="number"
                                   step="0.01"
