@@ -733,7 +733,15 @@ function App() {
               <CardContent>
                 {/* Action Bar */}
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">Ürün Yönetimi</h3>
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-lg font-semibold">Ürün Yönetimi</h3>
+                    {selectedProducts.size > 0 && (
+                      <div className="flex items-center gap-2 text-sm text-emerald-600">
+                        <Check className="w-4 h-4" />
+                        {selectedProducts.size} ürün seçili
+                      </div>
+                    )}
+                  </div>
                   <Dialog open={showAddProductDialog} onOpenChange={setShowAddProductDialog}>
                     <DialogTrigger asChild>
                       <Button className="bg-emerald-600 hover:bg-emerald-700">
