@@ -637,6 +637,49 @@ function App() {
                 <CardDescription>Tüm yüklenmiş ürünler ve fiyatları</CardDescription>
               </CardHeader>
               <CardContent>
+                {/* Search and Filter Controls */}
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Ürün ara..."
+                      value={searchQuery}
+                      onChange={(e) => handleSearch(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Select value={selectedCategory} onValueChange={handleCategoryFilter}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Kategori seç" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Tüm Kategoriler</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{backgroundColor: category.color}}
+                              ></div>
+                              {category.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {(searchQuery || selectedCategory) && (
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          handleSearch('');
+                          handleCategoryFilter('');
+                        }}
+                      >
+                        Temizle
+                      </Button>
+                    )}
+                  </div>
+                </div>
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
