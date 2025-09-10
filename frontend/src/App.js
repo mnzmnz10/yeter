@@ -1872,6 +1872,42 @@ function App() {
               />
             </div>
             
+            {/* İşçilik Maliyeti Girişi Dialog İçinde */}
+            <div>
+              <Label htmlFor="dialog-labor-cost">İşçilik Maliyeti</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-600">₺</span>
+                <Input
+                  id="dialog-labor-cost"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={quoteLaborCost}
+                  onChange={(e) => setQuoteLaborCost(parseFloat(e.target.value) || 0)}
+                  className="flex-1"
+                />
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setQuoteLaborCost(1000)}
+                  >
+                    ₺1000
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setQuoteLaborCost(1500)}
+                  >
+                    ₺1500
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
             {/* Quote Preview */}
             <div className="bg-slate-50 rounded-lg p-4 max-h-60 overflow-y-auto">
               <h4 className="font-semibold mb-3">Teklif Özeti</h4>
