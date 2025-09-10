@@ -337,6 +337,212 @@ class KaravanAPITester:
         
         return success
 
+    def test_nan_fix_comprehensive(self):
+        """Comprehensive test for NaN issue fix in quote calculations"""
+        print("\n🔍 Testing NaN Fix - Product Creation & Currency Conversion...")
+        
+        # First create a test company for our NaN tests
+        test_company_name = f"NaN Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create NaN Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": test_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("NaN Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            test_company_id = company_data.get('id')
+            if not test_company_id:
+                self.log_test("NaN Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(test_company_id)
+        except Exception as e:
+            self.log_test("NaN Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Test 1: Create products with different currencies
+        test_products = [
+            {
+                "name": "Solar Panel USD Test",
+                "company_id": test_company_id,
+                "list_price": 299.99,
+                "discounted_price": 249.99,
+                "currency": "USD",
+                "description": "Test product in USD"
+            },
+            {
+                "name": "Inverter EUR Test", 
+                "company_id": test_company_id,
+                "list_price": 450.50,
+                "discounted_price": 399.00,
+                "currency": "EUR",
+                "description": "Test product in EUR"
+            },
+            {
+                "name": "Battery TRY Test",
+                "company_id": test_company_id,
+                "list_price": 8500.00,
+                "discounted_price": 7500.00,
+                "currency": "TRY",
+                "description": "Test product in TRY"
+            }
+        ]
+        
+        created_product_ids = []
+        
+        for product_data in test_products:
+            success, response = self.run_test(
+                f"Create Product: {product_data['name']} ({product_data['currency']})",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        
+                        # Verify list_price_try is calculated and not NaN
+                        list_price_try = product_response.get('list_price_try')
+                        discounted_price_try = product_response.get('discounted_price_try')
+                        
+                        if list_price_try is not None and not (isinstance(list_price_try, float) and str(list_price_try).lower() == 'nan'):
+                            self.log_test(f"List Price TRY Conversion - {product_data['currency']}", True, f"Converted to {list_price_try} TRY")
+                        else:
+                            self.log_test(f"List Price TRY Conversion - {product_data['currency']}", False, f"NaN or null value: {list_price_try}")
+                        
+                        if discounted_price_try is not None and not (isinstance(discounted_price_try, float) and str(discounted_price_try).lower() == 'nan'):
+                            self.log_test(f"Discounted Price TRY Conversion - {product_data['currency']}", True, f"Converted to {discounted_price_try} TRY")
+                        else:
+                            self.log_test(f"Discounted Price TRY Conversion - {product_data['currency']}", False, f"NaN or null value: {discounted_price_try}")
+                            
+                    else:
+                        self.log_test(f"Product Creation Response - {product_data['currency']}", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Product Creation Response - {product_data['currency']}", False, f"Error parsing: {e}")
+        
+        # Test 2: Fetch all products and verify no NaN values
+        print("\n🔍 Testing Product Listing for NaN Values...")
+        success, response = self.run_test(
+            "Get All Products - NaN Check",
+            "GET",
+            "products",
+            200
+        )
+        
+        if success and response:
+            try:
+                products = response.json()
+                nan_found = False
+                null_found = False
+                valid_products = 0
+                
+                for product in products:
+                    list_price_try = product.get('list_price_try')
+                    discounted_price_try = product.get('discounted_price_try')
+                    
+                    # Check for NaN values
+                    if isinstance(list_price_try, float) and str(list_price_try).lower() == 'nan':
+                        nan_found = True
+                        self.log_test("NaN Detection in list_price_try", False, f"Product {product.get('name', 'Unknown')} has NaN list_price_try")
+                    elif list_price_try is None:
+                        null_found = True
+                        self.log_test("Null Detection in list_price_try", False, f"Product {product.get('name', 'Unknown')} has null list_price_try")
+                    elif isinstance(list_price_try, (int, float)) and list_price_try > 0:
+                        valid_products += 1
+                    
+                    if isinstance(discounted_price_try, float) and str(discounted_price_try).lower() == 'nan':
+                        nan_found = True
+                        self.log_test("NaN Detection in discounted_price_try", False, f"Product {product.get('name', 'Unknown')} has NaN discounted_price_try")
+                
+                if not nan_found:
+                    self.log_test("No NaN Values Found", True, f"All {len(products)} products have valid price conversions")
+                
+                if not null_found:
+                    self.log_test("No Null list_price_try Values", True, f"All products have list_price_try values")
+                
+                self.log_test("Valid Products Count", True, f"{valid_products} products with valid TRY prices")
+                
+            except Exception as e:
+                self.log_test("Product NaN Check", False, f"Error checking products: {e}")
+        
+        # Test 3: Multiple Product Selection Scenario (simulating quote calculation)
+        print("\n🔍 Testing Multiple Product Selection Scenario...")
+        if len(created_product_ids) >= 2:
+            # Get specific products that would be used in quote calculations
+            for product_id in created_product_ids[:2]:  # Test with first 2 products
+                success, response = self.run_test(
+                    f"Get Product for Quote - {product_id[:8]}...",
+                    "GET",
+                    f"products?search={product_id}",  # This might not work, but let's try getting all and filter
+                    200
+                )
+                
+                if success and response:
+                    try:
+                        products = response.json()
+                        target_product = next((p for p in products if p.get('id') == product_id), None)
+                        
+                        if target_product:
+                            list_price_try = target_product.get('list_price_try')
+                            if list_price_try is not None and not (isinstance(list_price_try, float) and str(list_price_try).lower() == 'nan'):
+                                self.log_test(f"Quote Product Valid - {product_id[:8]}...", True, f"TRY price: {list_price_try}")
+                            else:
+                                self.log_test(f"Quote Product Valid - {product_id[:8]}...", False, f"Invalid TRY price: {list_price_try}")
+                        else:
+                            self.log_test(f"Quote Product Found - {product_id[:8]}...", False, "Product not found in list")
+                    except Exception as e:
+                        self.log_test(f"Quote Product Check - {product_id[:8]}...", False, f"Error: {e}")
+        
+        # Test 4: Edge cases - Invalid exchange rates handling
+        print("\n🔍 Testing Edge Cases...")
+        
+        # Test with a currency that might not have exchange rates
+        edge_case_product = {
+            "name": "Edge Case Product",
+            "company_id": test_company_id,
+            "list_price": 100.00,
+            "currency": "GBP",  # Less common currency
+            "description": "Edge case test product"
+        }
+        
+        success, response = self.run_test(
+            "Create Product with GBP Currency",
+            "POST",
+            "products",
+            200,
+            data=edge_case_product
+        )
+        
+        if success and response:
+            try:
+                product_response = response.json()
+                list_price_try = product_response.get('list_price_try')
+                
+                if list_price_try is not None and not (isinstance(list_price_try, float) and str(list_price_try).lower() == 'nan'):
+                    self.log_test("GBP Currency Conversion", True, f"GBP converted to {list_price_try} TRY")
+                else:
+                    self.log_test("GBP Currency Conversion", False, f"Failed conversion: {list_price_try}")
+                    
+                if product_response.get('id'):
+                    self.created_products.append(product_response.get('id'))
+                    
+            except Exception as e:
+                self.log_test("GBP Product Creation", False, f"Error: {e}")
+        
+        return True
+
     def test_comparison_endpoint(self):
         """Test products comparison endpoint"""
         print("\n🔍 Testing Products Comparison...")
