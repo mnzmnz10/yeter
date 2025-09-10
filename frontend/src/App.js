@@ -443,7 +443,8 @@ function App() {
     }, 0);
     
     const discountAmount = totalListPrice * (parseFloat(quoteDiscount) || 0) / 100;
-    const totalNetPrice = totalListPrice - discountAmount;
+    const laborCost = parseFloat(quoteLaborCost) || 0;
+    const totalNetPrice = totalListPrice - discountAmount + laborCost;
     
     // Toplam ürün adedi hesapla
     const totalQuantity = selectedProductsData.reduce((sum, p) => sum + (p.quantity || 1), 0);
@@ -451,6 +452,7 @@ function App() {
     return {
       totalListPrice: isNaN(totalListPrice) ? 0 : totalListPrice,
       discountAmount: isNaN(discountAmount) ? 0 : discountAmount,
+      laborCost: isNaN(laborCost) ? 0 : laborCost,
       totalNetPrice: isNaN(totalNetPrice) ? 0 : totalNetPrice,
       productCount: selectedProductsData.length,
       totalQuantity: totalQuantity
