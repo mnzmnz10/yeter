@@ -28,8 +28,7 @@ function App() {
   const [uploadFile, setUploadFile] = useState(null);
   const [stats, setStats] = useState({
     totalCompanies: 0,
-    totalProducts: 0,
-    totalMatches: 0
+    totalProducts: 0
   });
   const [editingProduct, setEditingProduct] = useState(null);
   const [editForm, setEditForm] = useState({
