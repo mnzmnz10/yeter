@@ -630,6 +630,10 @@ async def update_product(product_id: str, update_data: ProductUpdate):
         update_dict = {}
         if update_data.name is not None:
             update_dict["name"] = update_data.name
+        if update_data.description is not None:
+            update_dict["description"] = update_data.description
+        if update_data.image_url is not None:
+            update_dict["image_url"] = update_data.image_url
         if update_data.list_price is not None:
             update_dict["list_price"] = float(update_data.list_price)
         if update_data.discounted_price is not None:
