@@ -1008,6 +1008,24 @@ function App() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
+                                  <TableHead className="w-12">
+                                    <input
+                                      type="checkbox"
+                                      className="rounded border-gray-300"
+                                      checked={categoryProducts.every(p => selectedProducts.has(p.id))}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          const newSelected = new Set(selectedProducts);
+                                          categoryProducts.forEach(p => newSelected.add(p.id));
+                                          setSelectedProducts(newSelected);
+                                        } else {
+                                          const newSelected = new Set(selectedProducts);
+                                          categoryProducts.forEach(p => newSelected.delete(p.id));
+                                          setSelectedProducts(newSelected);
+                                        }
+                                      }}
+                                    />
+                                  </TableHead>
                                   <TableHead>Ürün</TableHead>
                                   <TableHead>Firma</TableHead>
                                   <TableHead>Liste Fiyatı</TableHead>
