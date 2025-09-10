@@ -894,7 +894,7 @@ function App() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Ürün Adı</TableHead>
+                        <TableHead>Ürün</TableHead>
                         <TableHead>Firma</TableHead>
                         <TableHead>Kategori</TableHead>
                         <TableHead>Liste Fiyatı</TableHead>
