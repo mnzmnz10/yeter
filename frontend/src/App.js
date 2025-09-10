@@ -1797,7 +1797,8 @@ function App() {
                                     quote.products.forEach(p => productIds.set(p.id, 1));
                                     setSelectedProducts(productIds);
                                     setQuoteDiscount(quote.discount_percentage);
-                                    toast.success(`"${quote.name}" teklifi yüklendi`);
+                                    setQuoteLaborCost(quote.labor_cost || 0); // İşçilik maliyetini de yükle
+                                    toast.success(`"${quote.name}" teklifi yüklendi ${quote.labor_cost > 0 ? `(₺${formatPrice(quote.labor_cost)} işçilik dahil)` : ''}`);
                                   }}
                                 >
                                   Yükle
