@@ -1113,8 +1113,8 @@ async def create_quote(quote: QuoteCreate):
     """Create a new quote"""
     try:
         # Validate products exist
-        product_ids = [ObjectId(p["id"]) for p in quote.products]
-        products_cursor = db.products.find({"_id": {"$in": product_ids}})
+        product_ids = [p["id"] for p in quote.products]
+        products_cursor = db.products.find({"id": {"$in": product_ids}})
         products = await products_cursor.to_list(length=None)
         
         if len(products) != len(quote.products):
