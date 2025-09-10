@@ -443,8 +443,16 @@ function App() {
   const calculateQuoteTotals = () => {
     const selectedProductsData = getSelectedProductsData();
     
+    // Hangi fiyatı kullanacağımızı belirle (indirimli fiyat gösterim durumuna göre)
     const totalListPrice = selectedProductsData.reduce((sum, p) => {
-      const price = parseFloat(p.list_price_try) || 0;
+      let price = 0;
+      if (showQuoteDiscountedPrices && p.discounted_price_try) {
+        // İndirimli fiyat gösteriliyorsa ve indirimli fiyat varsa onu kullan
+        price = parseFloat(p.discounted_price_try) || 0;
+      } else {
+        // Yoksa liste fiyatını kullan
+        price = parseFloat(p.list_price_try) || 0;
+      }
       const quantity = p.quantity || 1;
       return sum + (price * quantity);
     }, 0);
