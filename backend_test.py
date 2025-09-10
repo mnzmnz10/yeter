@@ -120,10 +120,36 @@ class KaravanAPITester:
         """Test company CRUD operations"""
         print("\n🔍 Testing Company Management...")
         
-        # Test creating a company
+        # Test creating specific companies for Excel testing
+        companies_to_create = ["HAVENSİS SOLAR", "ELEKTROZİRVE"]
+        created_company_ids = {}
+        
+        for company_name in companies_to_create:
+            success, response = self.run_test(
+                f"Create Company: {company_name}",
+                "POST",
+                "companies",
+                200,
+                data={"name": company_name}
+            )
+            
+            if success and response:
+                try:
+                    company_data = response.json()
+                    company_id = company_data.get('id')
+                    if company_id:
+                        self.created_companies.append(company_id)
+                        created_company_ids[company_name] = company_id
+                        self.log_test(f"Company ID Generated for {company_name}", True, f"ID: {company_id}")
+                    else:
+                        self.log_test(f"Company ID Generated for {company_name}", False, "No ID in response")
+                except Exception as e:
+                    self.log_test(f"Company Creation Response for {company_name}", False, f"Error parsing: {e}")
+        
+        # Test creating a regular test company
         test_company_name = f"Test Firma {datetime.now().strftime('%H%M%S')}"
         success, response = self.run_test(
-            "Create Company",
+            "Create Test Company",
             "POST",
             "companies",
             200,
