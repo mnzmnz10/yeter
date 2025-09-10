@@ -52,6 +52,7 @@ function App() {
   const [showCreateQuoteDialog, setShowCreateQuoteDialog] = useState(false);
   const [quoteDiscount, setQuoteDiscount] = useState(0);
   const [quoteLaborCost, setQuoteLaborCost] = useState(0); // İşçilik maliyeti state'i
+  const [loadedQuote, setLoadedQuote] = useState(null); // Yüklenen teklif bilgisi
   const [quotes, setQuotes] = useState([]);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [quoteSearchTerm, setQuoteSearchTerm] = useState('');
