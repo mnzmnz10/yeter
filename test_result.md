@@ -138,7 +138,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Fix NaN issue in quote totals calculation"
+    - "Improved PDF generation with Turkish character support and Montserrat font"
+    - "Frontend support for PDF download with new design"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
