@@ -487,6 +487,7 @@ function App() {
           </TabsContent>
         </Tabs>
       </div>
+      <Toaster position="top-right" />
     </div>
   );
 }
