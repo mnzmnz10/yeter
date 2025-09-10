@@ -511,8 +511,19 @@ function App() {
         </div>
 
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="products">Ürünler</TabsTrigger>
+            <TabsTrigger value="quotes">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Teklifler
+                {selectedProducts.size > 0 && (
+                  <Badge variant="secondary" className="ml-1">
+                    {selectedProducts.size}
+                  </Badge>
+                )}
+              </div>
+            </TabsTrigger>
             <TabsTrigger value="companies">Firmalar</TabsTrigger>
             <TabsTrigger value="categories">Kategoriler</TabsTrigger>
             <TabsTrigger value="upload">Excel Yükle</TabsTrigger>
