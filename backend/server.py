@@ -590,6 +590,87 @@ async def delete_company(company_id: str):
         logger.error(f"Error deleting company: {e}")
         raise HTTPException(status_code=500, detail="Firma silinemedi")
 
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    list_price: Optional[Decimal] = None
+    discounted_price: Optional[Decimal] = None
+    currency: Optional[str] = None
+
+@api_router.patch("/products/{product_id}")
+async def update_product(product_id: str, update_data: ProductUpdate):
+    """Update a product"""
+    try:
+        # Get existing product
+        existing_product = await db.products.find_one({"id": product_id})
+        if not existing_product:
+            raise HTTPException(status_code=404, detail="Ürün bulunamadı")
+        
+        # Prepare update data
+        update_dict = {}
+        if update_data.name is not None:
+            update_dict["name"] = update_data.name
+        if update_data.list_price is not None:
+            update_dict["list_price"] = float(update_data.list_price)
+        if update_data.discounted_price is not None:
+            update_dict["discounted_price"] = float(update_data.discounted_price)
+        if update_data.currency is not None:
+            update_dict["currency"] = update_data.currency.upper()
+        
+        # If currency or prices changed, recalculate TRY prices
+        if update_data.currency is not None or update_data.list_price is not None or update_data.discounted_price is not None:
+            currency = update_data.currency.upper() if update_data.currency else existing_product["currency"]
+            list_price = float(update_data.list_price) if update_data.list_price is not None else existing_product["list_price"]
+            discounted_price = float(update_data.discounted_price) if update_data.discounted_price is not None else existing_product.get("discounted_price")
+            
+            # Convert to TRY
+            list_price_try = await currency_service.convert_to_try(Decimal(str(list_price)), currency)
+            update_dict["list_price_try"] = float(list_price_try)
+            
+            if discounted_price is not None:
+                discounted_price_try = await currency_service.convert_to_try(Decimal(str(discounted_price)), currency)
+                update_dict["discounted_price_try"] = float(discounted_price_try)
+            else:
+                update_dict["discounted_price_try"] = None
+        
+        # Update product
+        if update_dict:
+            result = await db.products.update_one(
+                {"id": product_id},
+                {"$set": update_dict}
+            )
+            
+            if result.modified_count == 0:
+                raise HTTPException(status_code=404, detail="Ürün güncellenemedi")
+        
+        # Get updated product
+        updated_product = await db.products.find_one({"id": product_id})
+        return {
+            "success": True,
+            "message": "Ürün başarıyla güncellendi",
+            "product": Product(**updated_product)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating product: {e}")
+        raise HTTPException(status_code=500, detail="Ürün güncellenemedi")
+
+@api_router.delete("/products/{product_id}")
+async def delete_product(product_id: str):
+    """Delete a product"""
+    try:
+        result = await db.products.delete_one({"id": product_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Ürün bulunamadı")
+        
+        return {"success": True, "message": "Ürün silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting product: {e}")
+        raise HTTPException(status_code=500, detail="Ürün silinemedi")
+
 @api_router.post("/companies/{company_id}/upload-excel")
 async def upload_excel(company_id: str, file: UploadFile = File(...)):
     """Upload Excel file for a company"""
