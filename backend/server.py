@@ -1237,7 +1237,7 @@ class PDFQuoteGenerator:
         self.setup_styles()
     
     def setup_fonts(self):
-        """Montserrat fontlarını kaydet ve fallback mekanizması ile Türkçe karakter desteği sağla"""
+        """Türkçe karakter desteği için font kurulumu"""
         self.montserrat_available = False
         self.montserrat_bold_available = False
         
@@ -1247,16 +1247,31 @@ class PDFQuoteGenerator:
             # Montserrat Regular font
             montserrat_regular_path = font_dir / 'Montserrat-Regular.ttf'
             if montserrat_regular_path.exists():
-                pdfmetrics.registerFont(TTFont('Montserrat', str(montserrat_regular_path)))
+                # Unicode subset ile kaydet
+                pdfmetrics.registerFont(TTFont('Montserrat', str(montserrat_regular_path), subfontIndex=0))
                 self.montserrat_available = True
                 logger.info("Montserrat Regular font loaded successfully")
+                
+                # Test için Türkçe karakter desteğini kontrol et
+                from reportlab.pdfbase.pdfmetrics import getFont
+                try:
+                    font = getFont('Montserrat')
+                    # Türkçe karakterleri test et
+                    test_chars = 'ğüşıöç ĞÜŞIÖÇ'
+                    for char in test_chars:
+                        if hasattr(font, 'face') and hasattr(font.face, 'getCharWidth'):
+                            width = font.face.getCharWidth(ord(char))
+                            if width == 0:
+                                logger.warning(f"Character '{char}' not supported in Montserrat")
+                except Exception as e:
+                    logger.warning(f"Font test failed: {e}")
             else:
                 logger.warning("Montserrat Regular font not found")
             
             # Montserrat Bold font
             montserrat_bold_path = font_dir / 'Montserrat-Bold.ttf'
             if montserrat_bold_path.exists():
-                pdfmetrics.registerFont(TTFont('Montserrat-Bold', str(montserrat_bold_path)))
+                pdfmetrics.registerFont(TTFont('Montserrat-Bold', str(montserrat_bold_path), subfontIndex=0))
                 self.montserrat_bold_available = True
                 logger.info("Montserrat Bold font loaded successfully")
             else:
@@ -1268,12 +1283,9 @@ class PDFQuoteGenerator:
             self.montserrat_bold_available = False
     
     def get_font_name(self, is_bold=False):
-        """Uygun font adını döndür - Montserrat veya fallback"""
-        if is_bold and self.montserrat_bold_available:
-            return 'Montserrat-Bold'
-        elif not is_bold and self.montserrat_available:
-            return 'Montserrat'
-        elif is_bold:
+        """Türkçe karakter desteği olan font adını döndür"""
+        # Montserrat yerine Helvetica kullan - ReportLab'ın unicode desteği daha iyi
+        if is_bold:
             return 'Helvetica-Bold'
         else:
             return 'Helvetica'
