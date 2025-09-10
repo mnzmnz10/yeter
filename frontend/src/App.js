@@ -316,7 +316,7 @@ function App() {
   };
 
   const handleCategoryFilter = (categoryId) => {
-    setSelectedCategory(categoryId);
+    setSelectedCategory(categoryId === 'all' ? '' : categoryId);
   };
 
   // Search and category filter effects
