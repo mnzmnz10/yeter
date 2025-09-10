@@ -883,12 +883,20 @@ async def update_product(product_id: str, update_data: ProductUpdate):
             discounted_price = float(update_data.discounted_price) if update_data.discounted_price is not None else existing_product.get("discounted_price")
             
             # Convert to TRY
-            list_price_try = await currency_service.convert_to_try(Decimal(str(list_price)), currency)
-            update_dict["list_price_try"] = float(list_price_try)
+            try:
+                list_price_try = await currency_service.convert_to_try(Decimal(str(list_price)), currency)
+                update_dict["list_price_try"] = float(list_price_try)
+            except Exception as e:
+                logger.warning(f"Failed to convert list price to TRY: {e}")
+                update_dict["list_price_try"] = float(list_price)
             
             if discounted_price is not None:
-                discounted_price_try = await currency_service.convert_to_try(Decimal(str(discounted_price)), currency)
-                update_dict["discounted_price_try"] = float(discounted_price_try)
+                try:
+                    discounted_price_try = await currency_service.convert_to_try(Decimal(str(discounted_price)), currency)
+                    update_dict["discounted_price_try"] = float(discounted_price_try)
+                except Exception as e:
+                    logger.warning(f"Failed to convert discounted price to TRY: {e}")
+                    update_dict["discounted_price_try"] = float(discounted_price)
             else:
                 update_dict["discounted_price_try"] = None
         
