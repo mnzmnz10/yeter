@@ -55,6 +55,7 @@ class Product(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     company_id: str
+    category_id: Optional[str] = None
     list_price: Decimal
     discounted_price: Optional[Decimal] = None
     currency: str
