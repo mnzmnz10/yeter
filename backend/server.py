@@ -375,7 +375,8 @@ class ColorBasedExcelService:
             'description': -1, 
             'company': -1,
             'list_price': -1,
-            'discounted_price': -1
+            'discounted_price': -1,
+            'currency': 'TRY'  # Varsayılan döviz
         }
         
         for col_idx in range(min(15, sheet.max_column)):
@@ -394,6 +395,10 @@ class ColorBasedExcelService:
                 column_mapping['company'] = col_idx
             elif color_category == 'GREEN':  # Yeşil = Liste Fiyatı
                 column_mapping['list_price'] = col_idx
+                # Yeşil sütun bulunduğunda döviz algıla
+                detected_currency = ColorBasedExcelService.detect_currency_from_header(cell.value)
+                column_mapping['currency'] = detected_currency
+                logger.info(f"Detected currency from header '{cell.value}': {detected_currency}")
             elif color_category == 'ORANGE':  # Turuncu = İndirimli Fiyat
                 column_mapping['discounted_price'] = col_idx
             # Diğer renkler veya renksiz veriler ignore edilir
