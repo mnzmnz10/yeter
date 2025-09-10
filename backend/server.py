@@ -456,7 +456,10 @@ class ColorBasedExcelService:
                 if column_mapping['company'] >= 0:
                     company_cell = sheet.cell(row=row_idx + 1, column=column_mapping['company'] + 1)
                     if company_cell.value:
-                        detected_company = str(company_cell.value).strip()
+                        company_value = str(company_cell.value).strip()
+                        # Excel formülü değilse kullan
+                        if not company_value.startswith('='):
+                            detected_company = company_value
 
                 # Liste Fiyatı (Yeşil)
                 if column_mapping['list_price'] >= 0:
