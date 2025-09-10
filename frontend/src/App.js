@@ -451,8 +451,8 @@ function App() {
       const productIds = Array.from(selectedProductsForCategory);
       
       // Her ürün için kategori güncelleme isteği gönder
-      const updatePromises = productIds.map(productId => 
-        fetch(`${API}/products/${productId}`, {
+      const updatePromises = productIds.map(async (productId) => {
+        const response = await fetch(`${API}/products/${productId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -460,10 +460,18 @@ function App() {
           body: JSON.stringify({
             category_id: selectedCategoryForProducts.id
           })
-        })
-      );
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Ürün ${productId} güncellenemedi: ${errorText}`);
+        }
+        
+        return await response.json();
+      });
 
-      await Promise.all(updatePromises);
+      const results = await Promise.all(updatePromises);
+      console.log('Güncelleme sonuçları:', results);
       
       // Ürünleri yeniden yükle
       await loadProducts();
