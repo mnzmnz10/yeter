@@ -1909,6 +1909,7 @@ function App() {
                   setShowCreateQuoteDialog(false);
                   setQuoteName('');
                   setQuoteDiscount(0);
+                  setQuoteLaborCost(0);
                   
                   toast.success(`"${savedQuote.name}" teklifi başarıyla kaydedildi`);
                   
