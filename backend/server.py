@@ -1044,6 +1044,29 @@ async def upload_excel(company_id: str, file: UploadFile = File(...)):
         created_products = []
         for product_data in products_data:
             try:
+                # Handle company management for color-based parsing
+                target_company_id = company_id
+                
+                # If product has a different company name (from color-based parsing)
+                if (product_data.get('company_name') and 
+                    product_data['company_name'] != company['name'] and
+                    product_data['company_name'] != "Unknown"):
+                    
+                    # Check if this company already exists
+                    existing_company = await db.companies.find_one({"name": product_data['company_name']})
+                    if existing_company:
+                        target_company_id = existing_company['id']
+                    else:
+                        # Create new company
+                        new_company_dict = {
+                            "id": str(uuid.uuid4()),
+                            "name": product_data['company_name'],
+                            "created_at": datetime.now(timezone.utc)
+                        }
+                        await db.companies.insert_one(new_company_dict)
+                        target_company_id = new_company_dict['id']
+                        logger.info(f"Created new company: {product_data['company_name']}")
+                
                 # Convert prices to TRY
                 list_price_try = await currency_service.convert_to_try(
                     Decimal(str(product_data['list_price'])), 
@@ -1060,7 +1083,9 @@ async def upload_excel(company_id: str, file: UploadFile = File(...)):
                 product_dict = {
                     "id": str(uuid.uuid4()),
                     "name": product_data['name'],
-                    "company_id": company_id,
+                    "company_id": target_company_id,
+                    "description": product_data.get('description'),
+                    "image_url": None,  # Will be added later if needed
                     "list_price": product_data['list_price'],
                     "discounted_price": product_data.get('discounted_price'),
                     "currency": product_data['currency'],
