@@ -105,20 +105,17 @@
 user_problem_statement: "PDF olarak indirdiğimiz teklif kısmı çok kalitesiz ve türkçe karakterlerde sorun var. Örnek tasarım atıyorum buna göre uyarlar mısın. Monsterrat yazı tipi olsun."
 
 backend:
-  - task: "Fix NaN issue in price calculations"
+  - task: "Improved PDF generation with Turkish character support and Montserrat font"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-      - working: true
+      - working: false
         agent: "main"
-        comment: "Added error handling for currency conversion failures to prevent NaN values. Added try-catch blocks in product creation and update functions."
-      - working: true
-        agent: "testing"
-        comment: "COMPREHENSIVE TESTING COMPLETED: ✅ All currency conversions working correctly. Tested USD, EUR, TRY, GBP currencies. ✅ No NaN values found in 171 products. ✅ All list_price_try fields properly calculated. ✅ Exchange rates API working (USD: 41.32, EUR: 48.31). ✅ Product creation with different currencies successful. ✅ Edge cases handled properly. The NaN issue in quote calculations has been successfully resolved."
+        comment: "Upgraded PDF generation system with: 1) Montserrat font integration via TTF files, 2) Enhanced Turkish character support with UTF-8 encoding, 3) New color scheme (#25c7eb theme), 4) Modern table design with alternating row colors, 5) Updated company information (Çorlu/Tekirdağ address), 6) Turkish price formatting (dot for thousands, comma for decimals), 7) Improved layout with better spacing and typography. Requires testing with sample quotes."
 
 frontend:
   - task: "Fix NaN issue in quote totals calculation"
