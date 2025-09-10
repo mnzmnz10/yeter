@@ -117,16 +117,7 @@ function App() {
     }
   };
 
-  const loadComparisonData = async () => {
-    try {
-      const response = await axios.get(`${API}/products/comparison`);
-      setComparisonData(response.data.comparison_data || []);
-      setStats(prev => ({ ...prev, totalMatches: response.data.comparison_data?.length || 0 }));
-    } catch (error) {
-      console.error('Error loading comparison data:', error);
-      toast.error('Karşılaştırma verileri yüklenemedi');
-    }
-  };
+
 
   const loadExchangeRates = async () => {
     try {
