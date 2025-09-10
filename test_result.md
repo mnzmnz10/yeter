@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Teklif bölümünde 1'den fazla ürün eklediğinde nan sorunu var"
+user_problem_statement: "PDF olarak indirdiğimiz teklif kısmı çok kalitesiz ve türkçe karakterlerde sorun var. Örnek tasarım atıyorum buna göre uyarlar mısın. Monsterrat yazı tipi olsun."
 
 backend:
   - task: "Fix NaN issue in price calculations"
