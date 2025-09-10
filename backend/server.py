@@ -1622,20 +1622,18 @@ class PDFQuoteGenerator:
         return totals_content
     
     def _create_modern_footer(self):
-        """Modern footer mesajı"""
+        """Güncellenmiş footer mesajı"""
         footer_content = []
         
         # Önemli notlar başlığı
         footer_content.append(Paragraph("<b><font color='#1ba3cc'>ÖNEMLİ NOTLAR:</font></b>", self.subtitle_style))
         footer_content.append(Spacer(1, 8))
         
-        # Notlar listesi
+        # Güncellenmiş notlar listesi
         notes = [
             "• Yukarıdaki fiyatlandırmanın, 1 hafta geçerli olduğunu lütfen göz önünde bulundurunuz.",
-            "• Fiyatlara KDV dahildir.",
             "• Ürün özellikleri ve fiyatları değişiklik gösterebilir.",
-            "• Montaj ve nakliye masrafları ayrıca hesaplanacaktır.",
-            "• Teknik destek ve garanti şartları ayrıca belirtilecektir."
+            "• Servisimiz dışında yapılan işlemlerde montaj ve nakliye masrafları ayrıca hesaplanacaktır."
         ]
         
         notes_text = "<br/>".join(notes)
