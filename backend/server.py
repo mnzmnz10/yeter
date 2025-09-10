@@ -220,7 +220,7 @@ class ExcelService:
                     }
                     
                     # Skip empty rows
-                    if not product['name'] or product['list_price'] <= 0:
+                    if not product['name'] or len(str(product['name']).strip()) == 0 or product['list_price'] <= 0:
                         continue
                         
                     products.append(product)
