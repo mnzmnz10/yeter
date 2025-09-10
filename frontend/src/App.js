@@ -1290,9 +1290,7 @@ function App() {
                               </div>
                               <div className="text-right">
                                 <div className="font-semibold">₺ {formatPrice(product.list_price_try)}</div>
-                                {product.discounted_price_try && (
-                                  <div className="text-sm text-green-600">₺ {formatPrice(product.discounted_price_try)}</div>
-                                )}
+                                <div className="text-sm text-slate-500">Liste Fiyatı</div>
                               </div>
                             </div>
                           );
