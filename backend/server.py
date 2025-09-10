@@ -1023,8 +1023,16 @@ async def upload_excel(company_id: str, file: UploadFile = File(...)):
         # Read file content
         file_content = await file.read()
         
-        # Parse Excel file
-        products_data = excel_service.parse_excel_file(file_content)
+        # Try color-based parsing first, then fall back to traditional parsing
+        try:
+            # Color-based parsing
+            products_data = ColorBasedExcelService.parse_colored_excel(file_content, company['name'])
+            logger.info(f"Color-based parsing successful: {len(products_data)} products")
+        except Exception as color_parse_error:
+            logger.warning(f"Color-based parsing failed: {color_parse_error}")
+            # Fall back to traditional parsing
+            products_data = excel_service.parse_excel_file(file_content)
+            logger.info(f"Traditional parsing used: {len(products_data)} products")
         
         if not products_data:
             raise HTTPException(status_code=400, detail="Excel dosyasında geçerli ürün verisi bulunamadı")
