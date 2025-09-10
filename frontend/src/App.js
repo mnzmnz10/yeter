@@ -1529,10 +1529,21 @@ function App() {
             <Button 
               onClick={() => {
                 // Create PDF or print functionality can be added here
+                const quoteTotals = calculateQuoteTotals();
                 const quoteData = {
                   name: quoteName || `Teklif ${new Date().toLocaleDateString('tr-TR')}`,
-                  products: getSelectedProductsData(),
-                  totalAmount: getSelectedProductsData().reduce((sum, p) => sum + (p.discounted_price_try || p.list_price_try || 0), 0),
+                  discount: quoteDiscount,
+                  products: getSelectedProductsData().map(p => ({
+                    ...p,
+                    quote_price: (p.list_price_try || 0) * (1 - quoteDiscount / 100)
+                  })),
+                  summary: {
+                    productCount: quoteTotals.productCount,
+                    totalListPrice: quoteTotals.totalListPrice,
+                    discountAmount: quoteTotals.discountAmount,
+                    totalNetPrice: quoteTotals.totalNetPrice,
+                    discountPercentage: quoteDiscount
+                  },
                   createdAt: new Date().toISOString()
                 };
                 
