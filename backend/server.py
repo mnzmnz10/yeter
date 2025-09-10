@@ -1159,7 +1159,11 @@ async def create_quote(quote: QuoteCreate):
         
         # Apply quote discount
         quote_discount_amount = total_discounted_price * (quote.discount_percentage / 100)
-        total_net_price = total_discounted_price - quote_discount_amount
+        
+        # Add labor cost to the calculation
+        labor_cost = float(quote.labor_cost)
+        total_with_labor = total_discounted_price - quote_discount_amount + labor_cost
+        total_net_price = total_with_labor
         
         # Create quote document
         quote_doc = {
@@ -1168,6 +1172,7 @@ async def create_quote(quote: QuoteCreate):
             "customer_name": quote.customer_name,
             "customer_email": quote.customer_email,
             "discount_percentage": quote.discount_percentage,
+            "labor_cost": labor_cost,  # İşçilik maliyeti eklendi
             "total_list_price": total_list_price,
             "total_discounted_price": total_discounted_price,
             "total_net_price": total_net_price,
