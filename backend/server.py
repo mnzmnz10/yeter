@@ -1503,7 +1503,7 @@ class PDFQuoteGenerator:
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, accent_color]),
             ('ALIGN', (2, 1), (2, -1), 'CENTER'),  # Miktar ortala
             ('ALIGN', (3, 1), (-1, -1), 'RIGHT'),  # Fiyatları sağa hizala
-            ('FONTNAME', (0, 1), (-1, -1), 'Montserrat'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 1), (-1, -1), 9),
             ('TOPPADDING', (0, 1), (-1, -1), 8),
             ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
