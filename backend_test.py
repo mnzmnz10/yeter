@@ -923,6 +923,9 @@ class KaravanAPITester:
             # CRITICAL: Test NaN fix comprehensively
             self.test_nan_fix_comprehensive()
             
+            # CRITICAL: Test PDF generation with Turkish characters and Montserrat font
+            self.test_pdf_generation_comprehensive()
+            
             # Test comparison endpoint
             self.test_comparison_endpoint()
             
