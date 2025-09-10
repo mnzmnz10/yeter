@@ -57,6 +57,7 @@ function App() {
       await Promise.all([
         loadCompanies(),
         loadProducts(),
+        loadCategories(),
         loadComparisonData(),
         loadExchangeRates()
       ]);
