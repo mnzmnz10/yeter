@@ -1540,7 +1540,7 @@ function App() {
                     {/* Quote Summary */}
                     <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
                       <h4 className="font-semibold text-emerald-900 mb-3">Teklif Özeti</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-emerald-800">
                             {calculateQuoteTotals().productCount}
@@ -1559,6 +1559,14 @@ function App() {
                           </div>
                           <div className="text-sm text-red-500">İndirim ({quoteDiscount}%)</div>
                         </div>
+                        {quoteLaborCost > 0 && (
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-600">
+                              + ₺ {formatPrice(calculateQuoteTotals().laborCost)}
+                            </div>
+                            <div className="text-sm text-green-500">İşçilik</div>
+                          </div>
+                        )}
                         <div className="text-center">
                           <div className="text-2xl font-bold text-emerald-800">
                             ₺ {formatPrice(calculateQuoteTotals().totalNetPrice)}
@@ -1567,11 +1575,15 @@ function App() {
                         </div>
                       </div>
                       
-                      {quoteDiscount > 0 && (
+                      {(quoteDiscount > 0 || quoteLaborCost > 0) && (
                         <div className="mt-4 p-3 bg-white rounded border border-emerald-300">
                           <div className="text-sm text-emerald-700">
-                            <strong>İndirim Detayları:</strong> Liste fiyatı üzerinden %{quoteDiscount} indirim uygulandı.
-                            Tasarruf tutarı: <strong>₺ {formatPrice(calculateQuoteTotals().discountAmount)}</strong>
+                            {quoteDiscount > 0 && (
+                              <div><strong>İndirim:</strong> Liste fiyatı üzerinden %{quoteDiscount} indirim uygulandı. Tasarruf: <strong>₺ {formatPrice(calculateQuoteTotals().discountAmount)}</strong></div>
+                            )}
+                            {quoteLaborCost > 0 && (
+                              <div><strong>İşçilik:</strong> Ek işçilik maliyeti eklendi. Tutar: <strong>₺ {formatPrice(calculateQuoteTotals().laborCost)}</strong></div>
+                            )}
                           </div>
                         </div>
                       )}
