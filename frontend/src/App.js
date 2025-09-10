@@ -1905,8 +1905,26 @@ function App() {
                   placeholder="0.00"
                   value={quoteLaborCost}
                   onChange={(e) => setQuoteLaborCost(parseFloat(e.target.value) || 0)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && quoteLaborCost > 0) {
+                      toast.success(`₺${formatPrice(quoteLaborCost)} işçilik maliyeti dialog'a eklendi!`);
+                    }
+                  }}
                   className="flex-1"
                 />
+                {/* Dialog İçin Yeşil Tik */}
+                {quoteLaborCost > 0 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      toast.success(`₺${formatPrice(quoteLaborCost)} işçilik maliyeti eklendi!`);
+                    }}
+                    className="bg-green-600 hover:bg-green-700 px-2"
+                  >
+                    <Check className="w-4 h-4" />
+                  </Button>
+                )}
                 <div className="flex gap-1">
                   <Button
                     type="button"
