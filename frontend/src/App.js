@@ -47,7 +47,7 @@ function App() {
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
   const [showAddProductDialog, setShowAddProductDialog] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState(new Set());
+  const [selectedProducts, setSelectedProducts] = useState(new Map()); // Map<productId, quantity>
   const [quoteName, setQuoteName] = useState('');
   const [showCreateQuoteDialog, setShowCreateQuoteDialog] = useState(false);
   const [quoteDiscount, setQuoteDiscount] = useState(0);
