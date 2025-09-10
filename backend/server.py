@@ -1327,7 +1327,8 @@ class PDFQuoteGenerator:
         
         # Ürün satırları
         for product in products:
-            quantity = 1  # Default quantity - ileride quote'ta quantity bilgisi olacak
+            # Adet bilgisini product'tan al veya 1 varsayılan yap
+            quantity = product.get('quantity', 1)
             unit_price = product.get('discounted_price_try', product.get('list_price_try', 0))
             total_price = unit_price * quantity
             
