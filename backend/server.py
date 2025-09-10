@@ -105,7 +105,7 @@ class QuoteCreate(BaseModel):
     customer_name: Optional[str] = None
     customer_email: Optional[str] = None
     discount_percentage: float = 0
-    products: List[str]  # Product IDs
+    products: List[Dict[str, Any]]  # Product objects with ID and quantity
     notes: Optional[str] = None
 
 class QuoteResponse(BaseModel):
