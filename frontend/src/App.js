@@ -105,10 +105,46 @@ function App() {
       const response = await fetch(`${API}/quotes`);
       const data = await response.json();
       setQuotes(data);
+      setFilteredQuotes(data); // Başlangıçta tüm teklifler görünsün
     } catch (error) {
       console.error('Teklifler yüklenirken hata:', error);
       toast.error('Teklifler yüklenemedi');
     }
+  };
+
+  // Teklif arama fonksiyonu
+  const filterQuotes = (searchTerm) => {
+    if (!searchTerm.trim()) {
+      setFilteredQuotes(quotes);
+      return;
+    }
+
+    const filtered = quotes.filter(quote => {
+      const searchLower = searchTerm.toLowerCase();
+      
+      // Teklif adında ara
+      const nameMatch = quote.name.toLowerCase().includes(searchLower);
+      
+      // Müşteri adında ara (varsa)
+      const customerMatch = quote.customer_name && 
+        quote.customer_name.toLowerCase().includes(searchLower);
+      
+      // Teklifteki ürün adlarında ara
+      const productMatch = quote.products.some(product => 
+        product.name.toLowerCase().includes(searchLower) ||
+        product.company_name.toLowerCase().includes(searchLower)
+      );
+      
+      return nameMatch || customerMatch || productMatch;
+    });
+
+    setFilteredQuotes(filtered);
+  };
+
+  // Arama terimi değiştiğinde filtreleme yap
+  const handleQuoteSearch = (searchTerm) => {
+    setQuoteSearchTerm(searchTerm);
+    filterQuotes(searchTerm);
   };
 
   const loadProducts = async () => {
