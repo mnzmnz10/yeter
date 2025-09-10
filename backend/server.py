@@ -1599,10 +1599,14 @@ async def download_quote_pdf(quote_id: str):
         pdf_generator = PDFQuoteGenerator()
         pdf_buffer = pdf_generator.create_quote_pdf(quote)
         
-        # Response headers
+        # Response headers - ensure proper encoding for Turkish characters
+        safe_filename = quote["name"].encode('ascii', 'ignore').decode('ascii')
+        if not safe_filename:
+            safe_filename = "teklif"
+        
         headers = {
             'Content-Type': 'application/pdf',
-            'Content-Disposition': f'attachment; filename="{quote["name"]}.pdf"'
+            'Content-Disposition': f'attachment; filename="{safe_filename}.pdf"'
         }
         
         return StreamingResponse(
