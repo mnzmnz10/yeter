@@ -1304,7 +1304,9 @@ class PDFQuoteGenerator:
         story.append(Spacer(1, 20))
         
         # Toplam hesaplama
-        story.append(self._create_totals_section(quote_data))
+        totals_section = self._create_totals_section(quote_data)
+        for item in totals_section:
+            story.append(item)
         story.append(Spacer(1, 30))
         
         # Footer mesajı
