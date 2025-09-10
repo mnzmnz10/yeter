@@ -464,9 +464,16 @@ class ColorBasedExcelService:
                     company_cell = sheet.cell(row=row_idx + 1, column=column_mapping['company'] + 1)
                     if company_cell.value:
                         company_value = str(company_cell.value).strip()
-                        # Excel formülü değilse kullan
+                        # Excel formülü değilse VE sayısal değer değilse kullan
                         if not company_value.startswith('='):
-                            detected_company = company_value
+                            try:
+                                # Sayısal değer mi kontrol et
+                                float(company_value)
+                                # Sayısal değerse varsayılan firma adını kullan
+                                logger.warning(f"Skipping numeric company name: {company_value}")
+                            except ValueError:
+                                # Sayısal değer değilse kullan
+                                detected_company = company_value
 
                 # Liste Fiyatı (Yeşil)
                 if column_mapping['list_price'] >= 0:
