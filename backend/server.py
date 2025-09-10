@@ -529,7 +529,7 @@ class ColorBasedExcelService:
                         'company_name': detected_company,
                         'list_price': list_price,
                         'discounted_price': discounted_price if discounted_price and discounted_price > 0 else None,
-                        'currency': 'TRY'  # Türkiye'de genelde TRY olur, gerekirse değiştirilebilir
+                        'currency': column_mapping.get('currency', 'TRY')  # Algılanan dövizi kullan
                     })
                     
             except Exception as e:
