@@ -205,6 +205,8 @@ function App() {
     setEditingProduct(product.id);
     setEditForm({
       name: product.name,
+      description: product.description || '',
+      image_url: product.image_url || '',
       list_price: product.list_price.toString(),
       discounted_price: product.discounted_price ? product.discounted_price.toString() : '',
       currency: product.currency,
