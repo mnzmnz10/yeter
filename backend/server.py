@@ -290,6 +290,123 @@ class ExcelService:
     @staticmethod
     def _extract_products_from_dataframe(df) -> List[Dict[str, Any]]:
         """DataFrame'den ürün verilerini çıkar"""
+        products = []
+        
+        # ELEKTROZİRVE formatını kontrol et (basit 4 kolon)
+        if len(df.columns) == 4:
+            logger.info("Detected ELEKTROZİRVE format (4 columns)")
+            return ExcelService._parse_elektrozirve_format(df)
+        
+        # HAVENSİS formatını kontrol et (karmaşık multi-column)
+        elif len(df.columns) > 10:
+            logger.info("Detected HAVENSİS format (multi-column)")
+            return ExcelService._parse_havensis_format(df)
+        
+        # Genel format parsing
+        else:
+            logger.info("Using general format parsing")
+            return ExcelService._parse_general_format(df)
+    
+    @staticmethod
+    def _parse_elektrozirve_format(df) -> List[Dict[str, Any]]:
+        """ELEKTROZİRVE formatında Excel parse et"""
+        products = []
+        
+        # İlk satır header (Güneş Panelleri, LİSTE FİYATI, İskonto, Net Fiyat)
+        df.columns = ['product_name', 'list_price', 'discount_rate', 'net_price']
+        
+        for index, row in df.iterrows():
+            try:
+                if index == 0:  # Header satırını atla
+                    continue
+                
+                product_name = str(row['product_name']).strip() if pd.notna(row['product_name']) else ""
+                list_price = float(row['list_price']) if pd.notna(row['list_price']) else 0
+                net_price = float(row['net_price']) if pd.notna(row['net_price']) else 0
+                
+                # Kategori başlıkları atla (örn: "Esnek Güneş Panelleri")
+                if ('panelleri' in product_name.lower() or 'aküler' in product_name.lower() or 
+                    'regülatörler' in product_name.lower()) and list_price == 0:
+                    continue
+                
+                # Geçerli ürün kontrolü
+                if (product_name and len(product_name) > 5 and 
+                    list_price > 0 and not product_name.lower().startswith('liste')):
+                    
+                    products.append({
+                        'name': product_name,
+                        'list_price': list_price,
+                        'currency': 'TRY',  # ELEKTROZİRVE TL fiyatları
+                        'discounted_price': net_price if net_price != list_price else None
+                    })
+                    logger.info(f"Added ELEKTROZİRVE product: {product_name[:50]}... - {list_price} TL")
+                    
+            except Exception as e:
+                logger.warning(f"Error processing ELEKTROZİRVE row {index}: {e}")
+                continue
+        
+        return products
+    
+    @staticmethod
+    def _parse_havensis_format(df) -> List[Dict[str, Any]]:
+        """HAVENSİS formatında Excel parse et"""
+        products = []
+        
+        # HAVENSİS formatı: Col3=Ürün, Col6=Fiyat$, Col7=İskonto, Col8=İskontolu Fiyat$
+        product_col = 3
+        price_col = 6
+        discount_rate_col = 7
+        discounted_price_col = 8
+        
+        for index, row in df.iterrows():
+            try:
+                if index < 12:  # İlk 12 satır header/boş satırlar
+                    continue
+                
+                # Ürün adı (Col3)
+                product_name = ""
+                if len(row) > product_col and pd.notna(row.iloc[product_col]):
+                    product_name = str(row.iloc[product_col]).strip()
+                
+                # Liste fiyatı (Col6)
+                list_price = 0
+                if len(row) > price_col and pd.notna(row.iloc[price_col]):
+                    try:
+                        list_price = float(row.iloc[price_col])
+                    except:
+                        list_price = 0
+                
+                # İndirimli fiyat (Col8)
+                discounted_price = None
+                if len(row) > discounted_price_col and pd.notna(row.iloc[discounted_price_col]):
+                    try:
+                        discounted_price = float(row.iloc[discounted_price_col])
+                    except:
+                        discounted_price = None
+                
+                # Geçerli ürün kontrolü
+                if (product_name and len(product_name) > 10 and 
+                    list_price > 0 and 'panel' in product_name.lower()):
+                    
+                    products.append({
+                        'name': product_name,
+                        'list_price': list_price,
+                        'currency': 'USD',  # HAVENSİS USD fiyatları
+                        'discounted_price': discounted_price
+                    })
+                    logger.info(f"Added HAVENSİS product: {product_name[:50]}... - ${list_price}")
+                    
+            except Exception as e:
+                logger.warning(f"Error processing HAVENSİS row {index}: {e}")
+                continue
+        
+        return products
+    
+    @staticmethod
+    def _parse_general_format(df) -> List[Dict[str, Any]]:
+        """Genel format parsing"""
+        products = []
+        
         # Gelişmiş kolon mapping
         column_mapping = {
             # Ürün adı varyantları
@@ -353,7 +470,6 @@ class ExcelService:
                     break
         
         # Ürünleri çıkar
-        products = []
         for index, row in df.iterrows():
             try:
                 # Ürün adı
