@@ -51,6 +51,8 @@ function App() {
   const [quoteName, setQuoteName] = useState('');
   const [showCreateQuoteDialog, setShowCreateQuoteDialog] = useState(false);
   const [quoteDiscount, setQuoteDiscount] = useState(0);
+  const [quotes, setQuotes] = useState([]);
+  const [selectedQuote, setSelectedQuote] = useState(null);
   const [newProductForm, setNewProductForm] = useState({
     name: '',
     company_id: '',
