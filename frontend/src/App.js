@@ -33,6 +33,8 @@ function App() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [editForm, setEditForm] = useState({
     name: '',
+    description: '',
+    image_url: '',
     list_price: '',
     discounted_price: '',
     currency: '',
