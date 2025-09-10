@@ -1628,7 +1628,8 @@ function App() {
                             </details>
                           </div>
                         ))}
-                      </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}
