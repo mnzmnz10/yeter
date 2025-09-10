@@ -117,6 +117,7 @@ class QuoteResponse(BaseModel):
     customer_name: Optional[str] = None
     customer_email: Optional[str] = None
     discount_percentage: float
+    labor_cost: float = 0  # İşçilik maliyeti
     total_list_price: float
     total_discounted_price: float 
     total_net_price: float
