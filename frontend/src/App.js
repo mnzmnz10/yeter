@@ -97,6 +97,17 @@ function App() {
     }
   };
 
+  const fetchQuotes = async () => {
+    try {
+      const response = await fetch(`${API}/quotes`);
+      const data = await response.json();
+      setQuotes(data);
+    } catch (error) {
+      console.error('Teklifler yüklenirken hata:', error);
+      toast.error('Teklifler yüklenemedi');
+    }
+  };
+
   const loadProducts = async () => {
     try {
       const params = new URLSearchParams();
