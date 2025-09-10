@@ -218,6 +218,8 @@ function App() {
     setEditingProduct(null);
     setEditForm({
       name: '',
+      description: '',
+      image_url: '',
       list_price: '',
       discounted_price: '',
       currency: '',
