@@ -1501,36 +1501,32 @@ function App() {
                       </div>
                     </div>
 
-                    {/* Manual Discount Control */}
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-amber-900 mb-3">İndirim Uygula</h4>
-                      <div className="flex items-center gap-4">
-                        <Label htmlFor="discount-input" className="font-medium">İndirim Yüzdesi:</Label>
+                    {/* İndirim Bölümü - Küçültülmüş */}
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-amber-600" />
+                          <span className="font-medium text-amber-900 text-sm">İndirim</span>
+                        </div>
                         <div className="flex items-center gap-2">
                           <Input
-                            id="discount-input"
                             type="number"
                             min="0"
                             max="100"
-                            step="0.1"
+                            step="1"
+                            placeholder="0"
                             value={quoteDiscount}
                             onChange={(e) => setQuoteDiscount(parseFloat(e.target.value) || 0)}
-                            className="w-20"
+                            className="w-16 text-sm"
                           />
-                          <span className="text-amber-700">%</span>
+                          <span className="text-amber-700 text-sm">%</span>
                         </div>
-                        <div className="flex gap-2 ml-auto">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setQuoteDiscount(5)}
-                          >
-                            5%
-                          </Button>
+                        <div className="flex gap-1">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setQuoteDiscount(10)}
+                            className="text-xs px-2"
                           >
                             10%
                           </Button>
@@ -1538,15 +1534,9 @@ function App() {
                             variant="outline"
                             size="sm"
                             onClick={() => setQuoteDiscount(15)}
+                            className="text-xs px-2"
                           >
                             15%
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setQuoteDiscount(20)}
-                          >
-                            20%
                           </Button>
                         </div>
                       </div>
