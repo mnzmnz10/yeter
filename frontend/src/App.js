@@ -1280,22 +1280,24 @@ function App() {
                                           `${getCurrencySymbol(product.currency)} ${formatPrice(product.list_price)}`
                                         )}
                                       </TableCell>
-                                      <TableCell>
-                                        {isEditing ? (
-                                          <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={editForm.discounted_price}
-                                            onChange={(e) => setEditForm({...editForm, discounted_price: e.target.value})}
-                                            className="w-24"
-                                            placeholder="İndirimli fiyat"
-                                          />
-                                        ) : (
-                                          product.discounted_price ? (
-                                            `${getCurrencySymbol(product.currency)} ${formatPrice(product.discounted_price)}`
-                                          ) : '-'
-                                        )}
-                                      </TableCell>
+                                      {showDiscountedPrices && (
+                                        <TableCell>
+                                          {isEditing ? (
+                                            <Input
+                                              type="number"
+                                              step="0.01"
+                                              value={editForm.discounted_price}
+                                              onChange={(e) => setEditForm({...editForm, discounted_price: e.target.value})}
+                                              className="w-24"
+                                              placeholder="İndirimli fiyat"
+                                            />
+                                          ) : (
+                                            product.discounted_price ? (
+                                              `${getCurrencySymbol(product.currency)} ${formatPrice(product.discounted_price)}`
+                                            ) : '-'
+                                          )}
+                                        </TableCell>
+                                      )}
                                       <TableCell>
                                         {isEditing ? (
                                           <Select 
