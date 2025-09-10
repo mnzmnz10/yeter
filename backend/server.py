@@ -191,6 +191,11 @@ class CurrencyService:
 
 currency_service = CurrencyService()
 
+# Database helper function
+async def get_db():
+    """Get database connection"""
+    return db
+
 # Color-based Excel parsing service
 class ColorBasedExcelService:
     @staticmethod
