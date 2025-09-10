@@ -1438,16 +1438,56 @@ class PDFQuoteGenerator:
         return buffer
     
     def _create_modern_header(self):
-        """Modern firma bilgileri başlığı"""
-        primary_color = colors.HexColor('#25c7eb')
+        """Logo ve Çorlu Karavan bilgileri başlığı"""
+        from reportlab.platypus import Table as PDFTable
         
+        # Logo yolu
+        logo_path = Path(__file__).parent / 'images' / 'corlu_karavan_logo.png'
+        
+        # Header tablosu oluştur (Logo + Firma bilgileri)
+        if logo_path.exists():
+            try:
+                logo_img = Image(str(logo_path), width=80, height=80)
+                
+                # Firma bilgileri
+                company_info = [
+                    "<font size='16' color='#25c7eb'><b>ÇORLU KARAVAN</b></font>",
+                    " ",
+                    "<font size='10'>Adres: Hatip, Sarı Salkım 3.Sokak Mobilyacılar Sitesi No: B1, 59000 Çorlu/Tekirdağ</font>",
+                    "<font size='10'>Telefon: 0505 813 77 65</font>",
+                    "<font size='10'>E-posta: info@corlukaravan.com</font>",
+                    "<font size='10'>Teknik Destek: mehmetnecdet@corlukaravan.com</font>"
+                ]
+                
+                company_text = "<br/>".join(company_info)
+                company_paragraph = Paragraph(company_text, self.company_style)
+                
+                # Logo ve metin tablosu
+                header_data = [[logo_img, company_paragraph]]
+                header_table = PDFTable(header_data, colWidths=[100, 400])
+                header_table.setStyle(TableStyle([
+                    ('ALIGN', (0, 0), (0, 0), 'CENTER'),  # Logo ortala
+                    ('ALIGN', (1, 0), (1, 0), 'LEFT'),    # Metin sola hizala
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), # Dikey ortala
+                    ('TOPPADDING', (0, 0), (-1, -1), 0),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                ]))
+                
+                return header_table
+                
+            except Exception as e:
+                logger.error(f"Logo loading error: {e}")
+        
+        # Logo yoksa sadece metin
         company_info = [
-            "<b><font size='16' color='#25c7eb'>KARAVAN ELEKTRİK EKİPMANLARI</font></b>",
-            "<font size='11' color='#1ba3cc'><b>Güneş Enerjisi Sistemleri ve Ekipmanları</b></font>",
+            "<font size='16' color='#25c7eb'><b>ÇORLU KARAVAN</b></font>",
             " ",
             "<font size='10'>Adres: Hatip, Sarı Salkım 3.Sokak Mobilyacılar Sitesi No: B1, 59000 Çorlu/Tekirdağ</font>",
             "<font size='10'>Telefon: 0505 813 77 65</font>",
-            "<font size='10'>E-posta: info@karavan-elektrik.com</font>"
+            "<font size='10'>E-posta: info@corlukaravan.com</font>",
+            "<font size='10'>Teknik Destek: mehmetnecdet@corlukaravan.com</font>"
         ]
         
         header_text = "<br/>".join(company_info)
