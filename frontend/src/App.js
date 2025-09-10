@@ -236,8 +236,10 @@ function App() {
         updateData.discounted_price = parseFloat(editForm.discounted_price);
       }
 
-      if (editForm.category_id) {
+      if (editForm.category_id && editForm.category_id !== 'none') {
         updateData.category_id = editForm.category_id;
+      } else if (editForm.category_id === 'none') {
+        updateData.category_id = null;
       }
 
       const response = await axios.patch(`${API}/products/${editingProduct}`, updateData);
