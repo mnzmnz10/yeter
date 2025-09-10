@@ -365,6 +365,20 @@ function App() {
     return products.filter(p => selectedProducts.has(p.id));
   };
 
+  const calculateQuoteTotals = () => {
+    const selectedProductsData = getSelectedProductsData();
+    const totalListPrice = selectedProductsData.reduce((sum, p) => sum + (p.list_price_try || 0), 0);
+    const discountAmount = totalListPrice * (quoteDiscount / 100);
+    const totalNetPrice = totalListPrice - discountAmount;
+    
+    return {
+      totalListPrice,
+      discountAmount,
+      totalNetPrice,
+      productCount: selectedProductsData.length
+    };
+  };
+
   const resetNewProductForm = () => {
     setNewProductForm({
       name: '',
