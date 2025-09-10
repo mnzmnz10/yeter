@@ -1452,10 +1452,26 @@ function App() {
                                   />
                                 </div>
                                 <div className="text-right">
-                                  <div className="font-medium">₺ {formatPrice((product.list_price_try || 0) * (product.quantity || 1))}</div>
-                                  <div className="text-xs text-slate-500">
-                                    ₺ {formatPrice(product.list_price_try || 0)} × {product.quantity || 1}
-                                  </div>
+                                  {showQuoteDiscountedPrices && product.discounted_price_try ? (
+                                    // İndirimli fiyat varsa ve gösterilmesi isteniyorsa
+                                    <>
+                                      <div className="font-medium text-green-600">₺ {formatPrice((product.discounted_price_try || 0) * (product.quantity || 1))}</div>
+                                      <div className="text-xs text-slate-500 line-through">
+                                        ₺ {formatPrice((product.list_price_try || 0) * (product.quantity || 1))} (Liste)
+                                      </div>
+                                      <div className="text-xs text-green-600">
+                                        ₺ {formatPrice(product.discounted_price_try || 0)} × {product.quantity || 1}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    // Liste fiyatı veya indirimli fiyat gizliyse
+                                    <>
+                                      <div className="font-medium">₺ {formatPrice((product.list_price_try || 0) * (product.quantity || 1))}</div>
+                                      <div className="text-xs text-slate-500">
+                                        ₺ {formatPrice(product.list_price_try || 0)} × {product.quantity || 1}
+                                      </div>
+                                    </>
+                                  )}
                                 </div>
                                 <Button
                                   variant="ghost"
