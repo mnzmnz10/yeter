@@ -1399,9 +1399,25 @@ function App() {
                   <div className="space-y-6">
                     {/* Selected Products Summary */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-blue-900 mb-2">
-                        Seçili Ürünler ({selectedProducts.size} çeşit, {calculateQuoteTotals().totalQuantity} adet)
-                      </h4>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-blue-900">
+                          Seçili Ürünler ({selectedProducts.size} çeşit, {calculateQuoteTotals().totalQuantity} adet)
+                        </h4>
+                        {/* Teklif İndirimli Fiyat Toggle Butonu */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowQuoteDiscountedPrices(!showQuoteDiscountedPrices)}
+                          className="p-1 ml-2"
+                          title={showQuoteDiscountedPrices ? "İndirimli fiyatları gizle" : "İndirimli fiyatları göster"}
+                        >
+                          {showQuoteDiscountedPrices ? (
+                            <EyeOff className="w-3 h-3" />
+                          ) : (
+                            <Eye className="w-3 h-3" />
+                          )}
+                        </Button>
+                      </div>
                       <div className="grid gap-2">
                         {getSelectedProductsData().slice(0, 5).map((product) => {
                           const company = companies.find(c => c.id === product.company_id);
