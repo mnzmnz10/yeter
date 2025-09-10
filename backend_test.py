@@ -163,11 +163,12 @@ class KaravanAPITester:
                 company_id = company_data.get('id')
                 if company_id:
                     self.created_companies.append(company_id)
-                    self.log_test("Company ID Generated", True, f"ID: {company_id}")
+                    created_company_ids["TEST"] = company_id
+                    self.log_test("Test Company ID Generated", True, f"ID: {company_id}")
                 else:
-                    self.log_test("Company ID Generated", False, "No ID in response")
+                    self.log_test("Test Company ID Generated", False, "No ID in response")
             except Exception as e:
-                self.log_test("Company Creation Response", False, f"Error parsing: {e}")
+                self.log_test("Test Company Creation Response", False, f"Error parsing: {e}")
         
         # Test getting all companies
         success, response = self.run_test(
@@ -183,16 +184,16 @@ class KaravanAPITester:
                 if isinstance(companies, list):
                     self.log_test("Companies List Format", True, f"Found {len(companies)} companies")
                     
-                    # Check if our created company is in the list
-                    if company_id:
-                        found_company = any(c.get('id') == company_id for c in companies)
-                        self.log_test("Created Company in List", found_company, f"Company ID: {company_id}")
+                    # Check if our created companies are in the list
+                    for company_name, comp_id in created_company_ids.items():
+                        found_company = any(c.get('id') == comp_id for c in companies)
+                        self.log_test(f"Created Company {company_name} in List", found_company, f"Company ID: {comp_id}")
                 else:
                     self.log_test("Companies List Format", False, "Response is not a list")
             except Exception as e:
                 self.log_test("Companies List Parsing", False, f"Error: {e}")
         
-        return company_id
+        return created_company_ids
 
     def test_excel_upload(self, company_id):
         """Test Excel file upload functionality"""
