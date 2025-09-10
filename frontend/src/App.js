@@ -1625,44 +1625,70 @@ function App() {
                         <Button 
                           onClick={async () => {
                             try {
-                              // Geçici teklif oluştur
-                              const selectedProductData = getSelectedProductsData().map(p => ({
-                                id: p.id,
-                                quantity: p.quantity || 1
-                              }));
+                              let quoteId = null;
                               
-                              const tempQuoteData = {
-                                name: quoteName || `İşçilik Dahil Teklif - ${new Date().toLocaleDateString('tr-TR')}`,
-                                discount_percentage: parseFloat(quoteDiscount) || 0,
-                                labor_cost: parseFloat(quoteLaborCost) || 0,
-                                products: selectedProductData,
-                                notes: `İşçilik maliyeti: ₺${formatPrice(quoteLaborCost)}`
-                              };
-                              
-                              const response = await fetch(`${API}/quotes`, {
-                                method: 'POST',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(tempQuoteData)
-                              });
-                              
-                              if (!response.ok) {
-                                throw new Error('Teklif oluşturulamadı');
+                              // Eğer mevcut bir teklif yüklenmişse onu güncelle
+                              if (loadedQuote && loadedQuote.id) {
+                                const updateResponse = await fetch(`${API}/quotes/${loadedQuote.id}`, {
+                                  method: 'PUT',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify({
+                                    labor_cost: parseFloat(quoteLaborCost) || 0,
+                                    discount_percentage: parseFloat(quoteDiscount) || 0
+                                  })
+                                });
+                                
+                                if (!updateResponse.ok) {
+                                  throw new Error('Teklif güncellenemedi');
+                                }
+                                
+                                const updatedQuote = await updateResponse.json();
+                                quoteId = updatedQuote.id;
+                                
+                                toast.success(`"${loadedQuote.name}" teklifine ₺${formatPrice(quoteLaborCost)} işçilik eklendi!`);
+                              } else {
+                                // Yeni teklif oluştur
+                                const selectedProductData = getSelectedProductsData().map(p => ({
+                                  id: p.id,
+                                  quantity: p.quantity || 1
+                                }));
+                                
+                                const newQuoteData = {
+                                  name: quoteName || `İşçilik Dahil Teklif - ${new Date().toLocaleDateString('tr-TR')}`,
+                                  discount_percentage: parseFloat(quoteDiscount) || 0,
+                                  labor_cost: parseFloat(quoteLaborCost) || 0,
+                                  products: selectedProductData,
+                                  notes: `İşçilik maliyeti: ₺${formatPrice(quoteLaborCost)}`
+                                };
+                                
+                                const createResponse = await fetch(`${API}/quotes`, {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify(newQuoteData)
+                                });
+                                
+                                if (!createResponse.ok) {
+                                  throw new Error('Teklif oluşturulamadı');
+                                }
+                                
+                                const savedQuote = await createResponse.json();
+                                quoteId = savedQuote.id;
+                                
+                                toast.success('İşçilik dahil yeni teklif oluşturuldu!');
                               }
                               
-                              const savedQuote = await response.json();
-                              
                               // PDF'i hemen indir
-                              const pdfUrl = `${API}/quotes/${savedQuote.id}/pdf`;
+                              const pdfUrl = `${API}/quotes/${quoteId}/pdf`;
                               const link = document.createElement('a');
                               link.href = pdfUrl;
-                              link.download = `${savedQuote.name}.pdf`;
+                              link.download = `${loadedQuote?.name || quoteName || 'Teklif'}.pdf`;
                               document.body.appendChild(link);
                               link.click();
                               document.body.removeChild(link);
-                              
-                              toast.success('İşçilik dahil PDF indiriliyor...');
                               
                               // Teklifleri yenile
                               await fetchQuotes();
@@ -1675,7 +1701,7 @@ function App() {
                           className="bg-green-600 hover:bg-green-700"
                         >
                           <Download className="w-4 h-4 mr-2" />
-                          İşçilik Dahil PDF İndir
+                          {loadedQuote ? `${loadedQuote.name}'e İşçilik Ekle & PDF İndir` : 'İşçilik Dahil PDF İndir'}
                         </Button>
                       )}
                       
