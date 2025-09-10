@@ -427,8 +427,9 @@ function App() {
         </div>
 
         <Tabs defaultValue="companies" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="companies">Firmalar</TabsTrigger>
+            <TabsTrigger value="categories">Kategoriler</TabsTrigger>
             <TabsTrigger value="upload">Excel Yükle</TabsTrigger>
             <TabsTrigger value="products">Ürünler</TabsTrigger>
             <TabsTrigger value="comparison">Karşılaştırma</TabsTrigger>
