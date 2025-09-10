@@ -1106,22 +1106,25 @@ function App() {
                               <TableHeader>
                                 <TableRow>
                                   <TableHead className="w-12">
-                                    <input
-                                      type="checkbox"
-                                      className="rounded border-gray-300"
-                                      checked={categoryProducts.every(p => selectedProducts.has(p.id))}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          const newSelected = new Map(selectedProducts);
-                                          categoryProducts.forEach(p => newSelected.set(p.id, 1));
-                                          setSelectedProducts(newSelected);
-                                        } else {
-                                          const newSelected = new Map(selectedProducts);
-                                          categoryProducts.forEach(p => newSelected.delete(p.id));
-                                          setSelectedProducts(newSelected);
-                                        }
-                                      }}
-                                    />
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="checkbox"
+                                        className="rounded border-gray-300"
+                                        checked={categoryProducts.every(p => selectedProducts.has(p.id))}
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            const newSelected = new Map(selectedProducts);
+                                            categoryProducts.forEach(p => newSelected.set(p.id, 1));
+                                            setSelectedProducts(newSelected);
+                                          } else {
+                                            const newSelected = new Map(selectedProducts);
+                                            categoryProducts.forEach(p => newSelected.delete(p.id));
+                                            setSelectedProducts(newSelected);
+                                          }
+                                        }}
+                                      />
+                                      <span className="text-xs">Seç / Adet</span>
+                                    </div>
                                   </TableHead>
                                   <TableHead>Ürün</TableHead>
                                   <TableHead>Firma</TableHead>
