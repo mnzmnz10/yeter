@@ -1608,8 +1608,9 @@ function App() {
                             return `"${p.name}","${company?.name || 'Unknown'}","₺ ${formatPrice(listPrice)}","₺ ${formatPrice(netPrice)}","%${quoteDiscount}"`;
                           }).join('\n');
                           const header = `"Ürün Adı","Firma","Liste Fiyatı","Net Fiyat","İndirim"\n`;
-                          const totalRow = `\n"TOPLAM","","₺ ${formatPrice(calculateQuoteTotals().totalListPrice)}","₺ ${formatPrice(calculateQuoteTotals().totalNetPrice)}","₺ ${formatPrice(calculateQuoteTotals().discountAmount)}"`;
-                          const blob = new Blob([header + csvContent + totalRow], { type: 'text/csv' });
+                          const laborRow = quoteLaborCost > 0 ? `\n"İŞÇİLİK","","","₺ ${formatPrice(quoteLaborCost)}",""` : '';
+                          const totalRow = `\n"NET TOPLAM","","₺ ${formatPrice(calculateQuoteTotals().totalListPrice)}","₺ ${formatPrice(calculateQuoteTotals().totalNetPrice)}","₺ ${formatPrice(calculateQuoteTotals().discountAmount)}"`;
+                          const blob = new Blob([header + csvContent + laborRow + totalRow], { type: 'text/csv' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
                           a.href = url;
