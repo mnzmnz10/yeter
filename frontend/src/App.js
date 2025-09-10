@@ -865,14 +865,6 @@ function App() {
                         >
                           Seçimi Temizle
                         </Button>
-                        <Button 
-                          onClick={() => setShowCreateQuoteDialog(true)}
-                          className="bg-blue-600 hover:bg-blue-700"
-                          size="sm"
-                        >
-                          <FileText className="w-4 h-4 mr-2" />
-                          Teklif Oluştur
-                        </Button>
                       </>
                     )}
                     <Button 
