@@ -940,6 +940,8 @@ async def create_product(product: ProductCreate):
             "name": product.name,
             "company_id": product.company_id,
             "category_id": product.category_id,
+            "description": product.description,
+            "image_url": product.image_url,
             "list_price": float(product.list_price),
             "discounted_price": float(product.discounted_price) if product.discounted_price else None,
             "currency": product.currency.upper(),
