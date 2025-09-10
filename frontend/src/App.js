@@ -1042,7 +1042,18 @@ function App() {
                                   const isEditing = editingProduct === product.id;
                                   
                                   return (
-                                    <TableRow key={product.id}>
+                                    <TableRow 
+                                      key={product.id}
+                                      className={selectedProducts.has(product.id) ? 'bg-blue-50 border-blue-200' : ''}
+                                    >
+                                      <TableCell>
+                                        <input
+                                          type="checkbox"
+                                          className="rounded border-gray-300"
+                                          checked={selectedProducts.has(product.id)}
+                                          onChange={() => toggleProductSelection(product.id)}
+                                        />
+                                      </TableCell>
                                       <TableCell className="font-medium">
                                         {isEditing ? (
                                           <div className="space-y-2">
