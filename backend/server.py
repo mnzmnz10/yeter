@@ -1143,7 +1143,7 @@ async def create_quote(quote: QuoteCreate):
             total_discounted_price += discounted_price_try * quantity
             
             processed_products.append({
-                "id": str(product["_id"]),
+                "id": product["id"],
                 "name": product["name"],
                 "description": product.get("description"),
                 "company_name": company["name"] if company else "Unknown",
