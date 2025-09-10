@@ -210,23 +210,38 @@ class ExcelService:
             
             # Clean and convert data
             products = []
-            for _, row in df.iterrows():
+            for index, row in df.iterrows():
                 try:
+                    # Convert to string and check for valid data
+                    product_name = str(row['product_name']).strip() if pd.notna(row['product_name']) else ""
+                    list_price = float(row['list_price']) if pd.notna(row['list_price']) else 0
+                    currency = str(row['currency']).strip().upper() if pd.notna(row['currency']) else ""
+                    
+                    # Handle discounted price
+                    discounted_price = None
+                    if 'discounted_price' in row and pd.notna(row['discounted_price']):
+                        try:
+                            discounted_price = float(row['discounted_price'])
+                        except (ValueError, TypeError):
+                            discounted_price = None
+                    
                     product = {
-                        'name': str(row['product_name']).strip(),
-                        'list_price': float(row['list_price']) if pd.notna(row['list_price']) else 0,
-                        'currency': str(row['currency']).strip().upper(),
-                        'discounted_price': float(row['discounted_price']) if 'discounted_price' in row and pd.notna(row['discounted_price']) and str(row['discounted_price']).strip() != '' else None
+                        'name': product_name,
+                        'list_price': list_price,
+                        'currency': currency,
+                        'discounted_price': discounted_price
                     }
                     
                     # Skip empty rows
-                    if not product['name'] or len(str(product['name']).strip()) == 0 or product['list_price'] <= 0:
+                    if not product_name or len(product_name) == 0 or list_price <= 0 or not currency:
+                        logger.info(f"Skipping row {index}: name='{product_name}', price={list_price}, currency='{currency}'")
                         continue
                         
                     products.append(product)
+                    logger.info(f"Added product: {product}")
                     
-                except (ValueError, TypeError) as e:
-                    logger.warning(f"Skipping invalid row: {e}")
+                except Exception as e:
+                    logger.warning(f"Skipping invalid row {index}: {e}")
                     continue
             
             return products
