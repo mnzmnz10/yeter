@@ -100,6 +100,11 @@ function App() {
     }
   };
 
+  // Quotes değiştiğinde filtreleme yap
+  useEffect(() => {
+    filterQuotes(quoteSearchTerm);
+  }, [quotes]);
+
   const fetchQuotes = async () => {
     try {
       const response = await fetch(`${API}/quotes`);
