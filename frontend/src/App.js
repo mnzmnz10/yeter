@@ -650,7 +650,7 @@ function App() {
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Select value={selectedCategory || ""} onValueChange={handleCategoryFilter}>
+                    <Select value={selectedCategory || "all"} onValueChange={handleCategoryFilter}>
                       <SelectTrigger className="w-48">
                         <SelectValue placeholder="Kategori seç" />
                       </SelectTrigger>
