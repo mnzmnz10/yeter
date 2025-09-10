@@ -167,93 +167,245 @@ class ExcelService:
             # Read Excel file
             df = pd.read_excel(io.BytesIO(file_content))
             
-            # Expected columns: Ürün Adı, Liste Fiyatı, İndirimli Fiyat, Para Birimi
-            # Try different column name variations
-            # Order matters - more specific matches first
-            column_mapping = {
-                'indirimli fiyat': 'discounted_price',
-                'i̇ndirimli fiyat': 'discounted_price',
-                'indirimli fiyati': 'discounted_price',
-                'discounted price': 'discounted_price',
-                'liste fiyatı': 'list_price',
-                'liste fiyati': 'list_price',
-                'list price': 'list_price',
-                'ürün adı': 'product_name',
-                'urun adi': 'product_name',
-                'product name': 'product_name',
-                'para birimi': 'currency',
-                'currency': 'currency',
-                'fiyat': 'list_price',
-                'liste': 'list_price',
-                'ürün': 'product_name',
-                'ad': 'product_name',
-                'indirim': 'discounted_price',
-                'birim': 'currency',
-                'döviz': 'currency'
-            }
+            logger.info(f"Excel file loaded: {len(df)} rows, {len(df.columns)} columns")
             
-            # Normalize column names
-            df.columns = df.columns.str.lower().str.strip()
-            logger.info(f"Original columns: {list(df.columns)}")
+            # İlk veri satırını bul (header'ı tespit et)
+            header_row = ExcelService._find_header_row(df)
+            logger.info(f"Header row found at index: {header_row}")
             
-            # Find and rename columns
+            if header_row == -1:
+                # Header bulunamazsa tüm kolonları kontrol et
+                products = ExcelService._parse_without_header(df)
+            else:
+                # Header bulunduysa o satırdan itibaren parse et
+                products = ExcelService._parse_with_header(df, header_row)
+            
+            logger.info(f"Total products extracted: {len(products)}")
+            return products
+            
+        except Exception as e:
+            logger.error(f"Error parsing Excel file: {e}")
+            raise HTTPException(status_code=400, detail=f"Excel dosyası işlenemedi: {str(e)}")
+    
+    @staticmethod
+    def _find_header_row(df) -> int:
+        """Excel dosyasında header satırını bul"""
+        # Aranacak header kelimeleri
+        header_keywords = [
+            # Ürün adı varyantları
+            'ürün', 'urun', 'product', 'malzeme', 'güneş', 'panel', 'solar', 'akü', 'batarya',
+            'inverter', 'regülatör', 'kablo', 'malzemeler', 'items',
+            # Fiyat varyantları  
+            'fiyat', 'price', 'liste', 'list', 'tutar', 'amount', 'maliyet', 'cost',
+            # İndirim varyantları
+            'indirim', 'iskonto', 'discount', 'net', 'indirimli',
+            # Para birimi varyantları
+            'para', 'currency', 'birim', 'döviz', 'tl', 'usd', 'eur', '$', '€', '₺'
+        ]
+        
+        for row_idx in range(min(20, len(df))):  # İlk 20 satırı kontrol et
+            row_text = ""
+            for col_idx in range(len(df.columns)):
+                cell_value = df.iloc[row_idx, col_idx]
+                if pd.notna(cell_value):
+                    row_text += str(cell_value).lower() + " "
+            
+            # Bu satırda header keyword'leri var mı?
+            keyword_count = sum(1 for keyword in header_keywords if keyword in row_text)
+            if keyword_count >= 2:  # En az 2 keyword varsa header olabilir
+                logger.info(f"Header row candidate at {row_idx}: '{row_text[:100]}...'")
+                return row_idx
+        
+        return -1
+    
+    @staticmethod
+    def _parse_with_header(df, header_row: int) -> List[Dict[str, Any]]:
+        """Header'lı Excel dosyasını parse et"""
+        # Header satırını kullanarak kolonları yeniden adlandır
+        df_data = df.iloc[header_row:].copy()
+        df_data.columns = df.iloc[header_row]
+        df_data = df_data.iloc[1:]  # Header satırını atla
+        
+        return ExcelService._extract_products_from_dataframe(df_data)
+    
+    @staticmethod
+    def _parse_without_header(df) -> List[Dict[str, Any]]:
+        """Header'sız Excel dosyasını parse et"""
+        logger.info("Parsing without header, analyzing all columns...")
+        
+        products = []
+        
+        # Her satırı kontrol et, veri olan satırları bul
+        for row_idx in range(len(df)):
+            row_data = {}
+            product_name = ""
+            list_price = 0
+            discounted_price = None
+            currency = "USD"  # Default currency
+            
+            # Bu satırdaki tüm hücreleri kontrol et
+            for col_idx in range(len(df.columns)):
+                cell_value = df.iloc[row_idx, col_idx]
+                
+                if pd.notna(cell_value):
+                    str_value = str(cell_value).strip()
+                    
+                    # Fiyat hücresi mi kontrol et (sayısal değer)
+                    try:
+                        numeric_value = float(str_value.replace(',', '.'))
+                        if 1 <= numeric_value <= 100000:  # Makul fiyat aralığı
+                            if list_price == 0:
+                                list_price = numeric_value
+                            elif discounted_price is None and numeric_value < list_price:
+                                discounted_price = numeric_value
+                    except:
+                        pass
+                    
+                    # Ürün adı hücresi mi kontrol et (text ve uzun)
+                    if len(str_value) > 10 and any(char.isalpha() for char in str_value):
+                        if not product_name or len(str_value) > len(product_name):
+                            product_name = str_value
+                    
+                    # Para birimi kontrol et
+                    if any(curr in str_value.upper() for curr in ['USD', 'EUR', 'TRY', '$', '€', '₺']):
+                        if 'USD' in str_value.upper() or '$' in str_value:
+                            currency = 'USD'
+                        elif 'EUR' in str_value.upper() or '€' in str_value:
+                            currency = 'EUR'
+                        elif 'TRY' in str_value.upper() or '₺' in str_value:
+                            currency = 'TRY'
+            
+            # Geçerli ürün bilgisi var mı kontrol et
+            if product_name and list_price > 0:
+                products.append({
+                    'name': product_name,
+                    'list_price': list_price,
+                    'currency': currency,
+                    'discounted_price': discounted_price
+                })
+                logger.info(f"Extracted product: {product_name[:50]}... - ${list_price}")
+        
+        return products
+    
+    @staticmethod
+    def _extract_products_from_dataframe(df) -> List[Dict[str, Any]]:
+        """DataFrame'den ürün verilerini çıkar"""
+        # Gelişmiş kolon mapping
+        column_mapping = {
+            # Ürün adı varyantları
+            'ürün adı': 'product_name', 'urun adi': 'product_name', 'product name': 'product_name',
+            'ürün': 'product_name', 'urun': 'product_name', 'product': 'product_name',
+            'malzeme': 'product_name', 'malzemeler': 'product_name', 'item': 'product_name',
+            'güneş panelleri': 'product_name', 'gunes panelleri': 'product_name',
+            'solar panel': 'product_name', 'panel': 'product_name',
+            'aküler': 'product_name', 'akü': 'product_name', 'batarya': 'product_name',
+            'ad': 'product_name', 'name': 'product_name',
+            
+            # Liste fiyatı varyantları
+            'liste fiyatı': 'list_price', 'liste fiyati': 'list_price', 'list price': 'list_price',
+            'fiyat$': 'list_price', 'fiyat $': 'list_price', 'fiyat': 'list_price',
+            'liste': 'list_price', 'list': 'list_price', 'price': 'list_price',
+            'tutar': 'list_price', 'amount': 'list_price', 'maliyet': 'list_price',
+            
+            # İndirimli fiyat varyantları
+            'indirimli fiyat $': 'discounted_price', 'indirimli fiyat$': 'discounted_price',
+            'iskontolu fiyat $': 'discounted_price', 'iskontolu fiyat$': 'discounted_price',
+            'indirimli fiyat': 'discounted_price', 'indirimli fiyati': 'discounted_price',
+            'iskontolu fiyat': 'discounted_price', 'iskontolu fiyati': 'discounted_price',
+            'net fiyat': 'discounted_price', 'net price': 'discounted_price',
+            'discounted price': 'discounted_price', 'discount price': 'discounted_price',
+            'net': 'discounted_price', 'indirim': 'discounted_price', 'iskonto': 'discounted_price',
+            
+            # Para birimi varyantları
+            'para birimi': 'currency', 'currency': 'currency', 'birim': 'currency',
+            'döviz': 'currency', 'doviz': 'currency'
+        }
+        
+        # Kolonları normalize et
+        df.columns = df.columns.astype(str).str.lower().str.strip()
+        logger.info(f"Normalized columns: {list(df.columns)}")
+        
+        # Kolon mapping uygula
+        for col in df.columns:
+            for mapping_key, mapping_value in column_mapping.items():
+                if mapping_key in col:
+                    df = df.rename(columns={col: mapping_value})
+                    logger.info(f"Mapped column '{col}' to '{mapping_value}'")
+                    break
+        
+        logger.info(f"Final mapped columns: {list(df.columns)}")
+        
+        # Eğer standart kolonlar yoksa, konum bazlı mapping dene
+        if 'product_name' not in df.columns:
+            # İlk metin kolonu ürün adı olabilir
             for col in df.columns:
-                for mapping_key, mapping_value in column_mapping.items():
-                    if mapping_key in col:
-                        df = df.rename(columns={col: mapping_value})
-                        logger.info(f"Renamed column '{col}' to '{mapping_value}'")
-                        break
-            
-            logger.info(f"Final columns: {list(df.columns)}")
-            
-            # Ensure required columns exist
-            required_columns = ['product_name', 'list_price', 'currency']
-            missing_columns = [col for col in required_columns if col not in df.columns]
-            
-            if missing_columns:
-                raise ValueError(f"Missing required columns: {missing_columns}")
-            
-            # Clean and convert data
-            products = []
-            for index, row in df.iterrows():
-                try:
-                    # Convert to string and check for valid data
+                if df[col].dtype == 'object':
+                    df = df.rename(columns={col: 'product_name'})
+                    logger.info(f"Using first text column '{col}' as product_name")
+                    break
+        
+        if 'list_price' not in df.columns:
+            # İlk sayısal kolon liste fiyatı olabilir  
+            for col in df.columns:
+                if col != 'product_name' and pd.api.types.is_numeric_dtype(df[col]):
+                    df = df.rename(columns={col: 'list_price'})
+                    logger.info(f"Using first numeric column '{col}' as list_price")
+                    break
+        
+        # Ürünleri çıkar
+        products = []
+        for index, row in df.iterrows():
+            try:
+                # Ürün adı
+                product_name = ""
+                if 'product_name' in row:
                     product_name = str(row['product_name']).strip() if pd.notna(row['product_name']) else ""
-                    list_price = float(row['list_price']) if pd.notna(row['list_price']) else 0
-                    currency = str(row['currency']).strip().upper() if pd.notna(row['currency']) else ""
-                    
-                    # Handle discounted price
-                    discounted_price = None
-                    if 'discounted_price' in row and pd.notna(row['discounted_price']):
-                        try:
-                            discounted_price = float(row['discounted_price'])
-                        except (ValueError, TypeError):
-                            discounted_price = None
-                    
+                
+                # Liste fiyatı
+                list_price = 0
+                if 'list_price' in row:
+                    try:
+                        list_price = float(row['list_price']) if pd.notna(row['list_price']) else 0
+                    except:
+                        list_price = 0
+                
+                # İndirimli fiyat
+                discounted_price = None
+                if 'discounted_price' in row and pd.notna(row['discounted_price']):
+                    try:
+                        discounted_price = float(row['discounted_price'])
+                    except:
+                        discounted_price = None
+                
+                # Para birimi - varsayılan USD
+                currency = "USD"
+                if 'currency' in row and pd.notna(row['currency']):
+                    currency = str(row['currency']).strip().upper()
+                
+                # USD işareti olan fiyatları tespit et
+                for col_name, col_value in row.items():
+                    if pd.notna(col_value) and '$' in str(col_value):
+                        currency = 'USD'
+                        break
+                
+                # Geçerli ürün kontrolü
+                if product_name and len(product_name) > 3 and list_price > 0:
                     product = {
                         'name': product_name,
                         'list_price': list_price,
                         'currency': currency,
                         'discounted_price': discounted_price
                     }
-                    
-                    # Skip empty rows
-                    if not product_name or len(product_name) == 0 or list_price <= 0 or not currency:
-                        logger.info(f"Skipping row {index}: name='{product_name}', price={list_price}, currency='{currency}'")
-                        continue
-                        
                     products.append(product)
-                    logger.info(f"Added product: {product}")
+                    logger.info(f"Added product: {product_name[:50]}... - {list_price} {currency}")
+                else:
+                    logger.info(f"Skipped row {index}: name='{product_name}', price={list_price}")
                     
-                except Exception as e:
-                    logger.warning(f"Skipping invalid row {index}: {e}")
-                    continue
-            
-            return products
-            
-        except Exception as e:
-            logger.error(f"Error parsing Excel file: {e}")
-            raise HTTPException(status_code=400, detail=f"Excel dosyası işlenemedi: {str(e)}")
+            except Exception as e:
+                logger.warning(f"Error processing row {index}: {e}")
+                continue
+        
+        return products
 
 excel_service = ExcelService()
 
