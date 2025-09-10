@@ -629,6 +629,8 @@ async def update_product(product_id: str, update_data: ProductUpdate):
             update_dict["discounted_price"] = float(update_data.discounted_price)
         if update_data.currency is not None:
             update_dict["currency"] = update_data.currency.upper()
+        if update_data.category_id is not None:
+            update_dict["category_id"] = update_data.category_id
         
         # If currency or prices changed, recalculate TRY prices
         if update_data.currency is not None or update_data.list_price is not None or update_data.discounted_price is not None:
