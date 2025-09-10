@@ -437,6 +437,10 @@ function App() {
   };
 
   const formatPrice = (price) => {
+    // Handle NaN, null, undefined cases
+    if (isNaN(price) || price === null || price === undefined) {
+      return '0,00';
+    }
     return new Intl.NumberFormat('tr-TR', { 
       style: 'decimal', 
       minimumFractionDigits: 2 
