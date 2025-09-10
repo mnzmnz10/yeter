@@ -1472,6 +1472,98 @@ function App() {
                     </Button>
                   </div>
                 )}
+                
+                {/* Kayıtlı Teklifler Bölümü */}
+                {quotes.length > 0 && (
+                  <Card className="mt-8">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Archive className="w-5 h-5" />
+                        Kayıtlı Teklifler
+                      </CardTitle>
+                      <CardDescription>
+                        Daha önce oluşturduğunuz {quotes.length} teklif
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {quotes.map((quote) => (
+                          <div key={quote.id} className="border rounded-lg p-4 hover:bg-slate-50">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-lg">{quote.name}</h4>
+                                <p className="text-sm text-slate-600 mt-1">
+                                  {quote.products.length} ürün • %{quote.discount_percentage} indirim
+                                </p>
+                                <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                                  <span>Ara Toplam: ₺{formatPrice(quote.total_discounted_price)}</span>
+                                  <span>Net Toplam: ₺{formatPrice(quote.total_net_price)}</span>
+                                  <span>{new Date(quote.created_at).toLocaleDateString('tr-TR')}</span>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    // Teklifin ürünlerini seç
+                                    const productIds = new Set(quote.products.map(p => p.id));
+                                    setSelectedProducts(productIds);
+                                    setQuoteDiscount(quote.discount_percentage);
+                                    toast.success(`"${quote.name}" teklifi yüklendi`);
+                                  }}
+                                >
+                                  Yükle
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={async () => {
+                                    if (window.confirm(`"${quote.name}" teklifini silmek istediğinizden emin misiniz?`)) {
+                                      try {
+                                        const response = await fetch(`${API}/quotes/${quote.id}`, {
+                                          method: 'DELETE'
+                                        });
+                                        
+                                        if (response.ok) {
+                                          await fetchQuotes();
+                                          toast.success('Teklif silindi');
+                                        } else {
+                                          throw new Error('Silme işlemi başarısız');
+                                        }
+                                      } catch (error) {
+                                        toast.error('Teklif silinemedi');
+                                      }
+                                    }
+                                  }}
+                                >
+                                  Sil
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {/* Teklif detayları açılır bölüm */}
+                            <details className="mt-3">
+                              <summary className="cursor-pointer text-sm text-blue-600 hover:text-blue-800">
+                                Ürünleri Göster ({quote.products.length} ürün)
+                              </summary>
+                              <div className="mt-2 space-y-2">
+                                {quote.products.map((product, index) => (
+                                  <div key={index} className="flex justify-between items-center py-1 px-2 bg-slate-50 rounded text-sm">
+                                    <span>{product.name}</span>
+                                    <span className="text-slate-600">
+                                      ₺{formatPrice(product.discounted_price_try || product.list_price_try)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
