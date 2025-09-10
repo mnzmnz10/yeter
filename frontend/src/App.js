@@ -1552,39 +1552,50 @@ function App() {
               İptal
             </Button>
             <Button 
-              onClick={() => {
-                // Create PDF or print functionality can be added here
-                const quoteTotals = calculateQuoteTotals();
-                const quoteData = {
-                  name: quoteName || `Teklif ${new Date().toLocaleDateString('tr-TR')}`,
-                  discount: quoteDiscount,
-                  products: getSelectedProductsData().map(p => ({
-                    ...p,
-                    quote_price: (p.list_price_try || 0) * (1 - quoteDiscount / 100)
-                  })),
-                  summary: {
-                    productCount: quoteTotals.productCount,
-                    totalListPrice: quoteTotals.totalListPrice,
-                    discountAmount: quoteTotals.discountAmount,
-                    totalNetPrice: quoteTotals.totalNetPrice,
-                    discountPercentage: quoteDiscount
-                  },
-                  createdAt: new Date().toISOString()
-                };
-                
-                // For now, just download as JSON
-                const blob = new Blob([JSON.stringify(quoteData, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${quoteName || 'teklif'}.json`;
-                a.click();
-                
-                setShowCreateQuoteDialog(false);
-                setQuoteName('');
-                toast.success('Teklif başarıyla oluşturuldu ve indirildi');
+              onClick={async () => {
+                try {
+                  // Backend'e teklif kaydet
+                  const quoteTotals = calculateQuoteTotals();
+                  const selectedProductIds = getSelectedProductsData().map(p => p.id);
+                  
+                  const quoteData = {
+                    name: quoteName || `Teklif ${new Date().toLocaleDateString('tr-TR')}`,
+                    discount_percentage: parseFloat(quoteDiscount) || 0,
+                    products: selectedProductIds,
+                    notes: null
+                  };
+                  
+                  const response = await fetch(`${API}/quotes`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(quoteData)
+                  });
+                  
+                  if (!response.ok) {
+                    throw new Error('Teklif kaydedilemedi');
+                  }
+                  
+                  const savedQuote = await response.json();
+                  
+                  // Teklifleri yeniden yükle
+                  await fetchQuotes();
+                  
+                  // Dialog'u kapat ve formu temizle
+                  setShowCreateQuoteDialog(false);
+                  setQuoteName('');
+                  setQuoteDiscount(0);
+                  
+                  toast.success(`"${savedQuote.name}" teklifi başarıyla kaydedildi`);
+                  
+                } catch (error) {
+                  console.error('Teklif kaydetme hatası:', error);
+                  toast.error('Teklif kaydedilemedi: ' + error.message);
+                }
               }}
               className="bg-blue-600 hover:bg-blue-700"
+              disabled={!quoteName.trim()}
             >
               <FileText className="w-4 h-4 mr-2" />
               Teklif Oluştur
