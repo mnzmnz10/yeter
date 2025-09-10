@@ -914,13 +914,46 @@ function App() {
                           <TableRow key={product.id}>
                             <TableCell className="font-medium">
                               {isEditing ? (
-                                <Input
-                                  value={editForm.name}
-                                  onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                                  className="min-w-[200px]"
-                                />
+                                <div className="space-y-2">
+                                  <Input
+                                    value={editForm.name}
+                                    onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                                    className="min-w-[200px]"
+                                    placeholder="Ürün adı"
+                                  />
+                                  <Input
+                                    value={editForm.description}
+                                    onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                                    className="min-w-[200px]"
+                                    placeholder="Açıklama (opsiyonel)"
+                                  />
+                                  <Input
+                                    value={editForm.image_url}
+                                    onChange={(e) => setEditForm({...editForm, image_url: e.target.value})}
+                                    className="min-w-[200px]"
+                                    placeholder="Görsel URL (opsiyonel)"
+                                    type="url"
+                                  />
+                                </div>
                               ) : (
-                                product.name
+                                <div className="space-y-1">
+                                  <div className="flex items-start gap-3">
+                                    {product.image_url && (
+                                      <img 
+                                        src={product.image_url} 
+                                        alt={product.name}
+                                        className="w-12 h-12 object-cover rounded border"
+                                        onError={(e) => {e.target.style.display = 'none'}}
+                                      />
+                                    )}
+                                    <div>
+                                      <div className="font-medium">{product.name}</div>
+                                      {product.description && (
+                                        <div className="text-sm text-slate-500 mt-1">{product.description}</div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
                               )}
                             </TableCell>
                             <TableCell>
