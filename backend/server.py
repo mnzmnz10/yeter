@@ -1537,10 +1537,9 @@ class PDFQuoteGenerator:
         secondary_color = colors.HexColor('#1ba3cc')
         accent_color = colors.HexColor('#f0f9ff')
         
-        # Tablo başlıkları
+        # Tablo başlıkları (Marka sütunu kaldırıldı)
         headers = [
             Paragraph("<b>Ürün Adı</b>", self.data_style),
-            Paragraph("<b>Marka</b>", self.data_style), 
             Paragraph("<b>Miktar</b>", self.data_style),
             Paragraph("<b>Birim Fiyat</b>", self.data_style),
             Paragraph("<b>Toplam Fiyat</b>", self.data_style)
@@ -1548,7 +1547,7 @@ class PDFQuoteGenerator:
         
         data = [headers]
         
-        # Ürün satırları
+        # Ürün satırları (Marka sütunu kaldırıldı)
         for product in products:
             quantity = product.get('quantity', 1)
             unit_price = product.get('discounted_price_try', product.get('list_price_try', 0))
@@ -1556,15 +1555,14 @@ class PDFQuoteGenerator:
             
             row = [
                 Paragraph(product.get('name', ''), self.data_style),
-                Paragraph(product.get('company_name', ''), self.data_style),
                 Paragraph(str(quantity), self.data_style),
                 Paragraph(f"₺ {self._format_price_modern(unit_price)}", self.data_style),
                 Paragraph(f"<b>₺ {self._format_price_modern(total_price)}</b>", self.data_style)
             ]
             data.append(row)
         
-        # Tablo oluştur
-        table = Table(data, colWidths=[6*cm, 3*cm, 2*cm, 3*cm, 3*cm])
+        # Tablo oluştur (4 sütun)
+        table = Table(data, colWidths=[8*cm, 2*cm, 3*cm, 3*cm])
         table.setStyle(TableStyle([
             # Başlık stili
             ('BACKGROUND', (0, 0), (-1, 0), primary_color),
