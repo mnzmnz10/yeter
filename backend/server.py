@@ -169,25 +169,25 @@ class ExcelService:
             
             # Expected columns: Ürün Adı, Liste Fiyatı, İndirimli Fiyat, Para Birimi
             # Try different column name variations
+            # Order matters - more specific matches first
             column_mapping = {
-                'ürün adı': 'product_name',
-                'urun adi': 'product_name',
-                'product name': 'product_name',
-                'ürün': 'product_name',
-                'ad': 'product_name',
-                'liste fiyatı': 'list_price',
-                'liste fiyati': 'list_price',
-                'list price': 'list_price',
-                'fiyat': 'list_price',
-                'liste': 'list_price',
                 'indirimli fiyat': 'discounted_price',
                 'i̇ndirimli fiyat': 'discounted_price',
                 'indirimli fiyati': 'discounted_price',
                 'discounted price': 'discounted_price',
-                'indirim': 'discounted_price',
-                'para birimi': 'currency',
+                'liste fiyatı': 'list_price',
+                'liste fiyati': 'list_price',
+                'list price': 'list_price',
+                'ürün adı': 'product_name',
+                'urun adi': 'product_name',
+                'product name': 'product_name',
                 'para birimi': 'currency',
                 'currency': 'currency',
+                'fiyat': 'list_price',
+                'liste': 'list_price',
+                'ürün': 'product_name',
+                'ad': 'product_name',
+                'indirim': 'discounted_price',
                 'birim': 'currency',
                 'döviz': 'currency'
             }
