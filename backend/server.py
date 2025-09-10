@@ -107,6 +107,7 @@ class QuoteCreate(BaseModel):
     customer_name: Optional[str] = None
     customer_email: Optional[str] = None
     discount_percentage: float = 0
+    labor_cost: float = 0  # İşçilik maliyeti
     products: List[Dict[str, Any]]  # Product objects with ID and quantity
     notes: Optional[str] = None
 
