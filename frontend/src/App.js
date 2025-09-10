@@ -36,8 +36,15 @@ function App() {
     name: '',
     list_price: '',
     discounted_price: '',
-    currency: ''
+    currency: '',
+    category_id: ''
   });
+  const [categories, setCategories] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryDescription, setNewCategoryDescription] = useState('');
+  const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
 
   // Load initial data
   useEffect(() => {
