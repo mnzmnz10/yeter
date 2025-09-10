@@ -197,9 +197,12 @@ class ColorBasedExcelService:
                 # Sarı tonları (Firma) - FFFFFF00 formatını kontrol et
                 elif 'FFFFFF00' in rgb or 'FFFF00' in rgb or 'FFC000' in rgb:
                     return 'YELLOW'
-                # Yeşil tonları (Fiyat) - FF00B050 formatını kontrol et
+                # Yeşil tonları (Liste Fiyatı) - FF00B050 formatını kontrol et
                 elif 'FF00B050' in rgb or '00B050' in rgb or '00FF00' in rgb or '008000' in rgb:
                     return 'GREEN'
+                # Turuncu tonları (İndirimli Fiyat) - FFF4B183, FF7F00, FFA500 gibi
+                elif 'FFF4B183' in rgb or 'F4B183' in rgb or 'FF7F00' in rgb or 'FFA500' in rgb or 'FF8C00' in rgb or 'FFFF9900' in rgb or 'FF9900' in rgb:
+                    return 'ORANGE'
                     
             except Exception as e:
                 logger.warning(f"RGB parsing error: {e}")
@@ -217,6 +220,8 @@ class ColorBasedExcelService:
                     return 'YELLOW'
                 elif index in ['11', '4']:  # Yeşil
                     return 'GREEN'
+                elif index in ['46', '53']:  # Turuncu
+                    return 'ORANGE'
             except Exception as e:
                 logger.warning(f"Index parsing error: {e}")
                 
