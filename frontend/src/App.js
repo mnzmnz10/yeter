@@ -928,7 +928,7 @@ function App() {
                               <SelectValue placeholder="Kategori seçin" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="none">Kategorsiz</SelectItem>
+                              <SelectItem value="none">Kategorisiz</SelectItem>
                               {categories.map((category) => (
                                 <SelectItem key={category.id} value={category.id}>
                                   <div className="flex items-center gap-2">
