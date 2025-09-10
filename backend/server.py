@@ -87,15 +87,7 @@ class CategoryCreate(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = None
 
-class ProductMatch(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    product_name: str
-    product_ids: List[str] = []
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class ProductMatchCreate(BaseModel):
-    product_name: str
-    product_ids: List[str]
 
 class ExchangeRate(BaseModel):
     currency: str
