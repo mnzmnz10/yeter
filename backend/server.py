@@ -1625,11 +1625,11 @@ class PDFQuoteGenerator:
         return totals_content
     
     def _create_modern_footer(self):
-        """Güncellenmiş footer mesajı"""
+        """Güncellenmiş footer mesajı - Yeni renk ile"""
         footer_content = []
         
-        # Önemli notlar başlığı
-        footer_content.append(Paragraph("<b><font color='#1ba3cc'>ÖNEMLİ NOTLAR:</font></b>", self.subtitle_style))
+        # Önemli notlar başlığı - YENİ RENK (#2F4B68)
+        footer_content.append(Paragraph("<b><font color='#2F4B68'>ÖNEMLİ NOTLAR:</font></b>", self.subtitle_style))
         footer_content.append(Spacer(1, 8))
         
         # Güncellenmiş notlar listesi
