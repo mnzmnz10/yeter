@@ -1388,14 +1388,37 @@ function App() {
                                 )}
                                 <div>
                                   <div className="font-medium">{product.name}</div>
-                                  <div className="text-slate-500">
-                                    {company?.name} • {getCurrencySymbol(product.currency)} {formatPrice(product.list_price)}
-                                  </div>
+                                  <div className="text-slate-500 text-xs">{company?.name}</div>
                                 </div>
                               </div>
-                              <div className="text-right">
-                                <div className="font-semibold">₺ {formatPrice(product.list_price_try)}</div>
-                                <div className="text-sm text-slate-500">Liste Fiyatı</div>
+                              <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-slate-600">Adet:</span>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    value={product.quantity || 1}
+                                    onChange={(e) => {
+                                      const quantity = parseInt(e.target.value) || 1;
+                                      toggleProductSelection(product.id, quantity);
+                                    }}
+                                    className="w-16 px-2 py-1 text-sm border rounded"
+                                  />
+                                </div>
+                                <div className="text-right">
+                                  <div className="font-medium">₺ {formatPrice((product.list_price_try || 0) * (product.quantity || 1))}</div>
+                                  <div className="text-xs text-slate-500">
+                                    ₺ {formatPrice(product.list_price_try || 0)} × {product.quantity || 1}
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleProductSelection(product.id, 0)}
+                                  className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
                               </div>
                             </div>
                           );
