@@ -1275,7 +1275,7 @@ class PDFQuoteGenerator:
         self.title_style = ParagraphStyle(
             'CustomTitle',
             parent=self.styles['Heading1'],
-            fontName='Montserrat-Bold',
+            fontName='Montserrat-Bold' if 'Montserrat-Bold' in [f.fontName for f in pdfmetrics.getRegisteredFontNames()] else 'Helvetica-Bold',
             fontSize=22,
             spaceAfter=25,
             spaceBefore=10,
