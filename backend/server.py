@@ -182,33 +182,43 @@ class ColorBasedExcelService:
         
         # RGB renk kontrolü
         if hasattr(color, 'rgb') and color.rgb:
-            rgb = str(color.rgb).upper()
-            
-            # Kırmızı tonları (Ürün Adı)
-            if 'FF0000' in rgb or 'FF4444' in rgb or 'FFAAAA' in rgb or 'CC0000' in rgb:
-                return 'RED'
-            # Mavi tonları (Ürün Açıklaması)
-            elif '0000FF' in rgb or '4444FF' in rgb or 'AAAAFF' in rgb or '0080FF' in rgb or '007ACC' in rgb:
-                return 'BLUE'  
-            # Sarı tonları (Firma)
-            elif 'FFFF00' in rgb or 'FFFF99' in rgb or 'FFFFAA' in rgb or 'FFF000' in rgb:
-                return 'YELLOW'
-            # Yeşil tonları (Fiyat)
-            elif '00FF00' in rgb or '44FF44' in rgb or 'AAFFAA' in rgb or '008000' in rgb or '00AA00' in rgb:
-                return 'GREEN'
+            try:
+                rgb = str(color.rgb).upper()
+                
+                # Debug için
+                logger.debug(f"Checking RGB: {rgb}")
+                
+                # Kırmızı tonları (Ürün Adı) - FFFF0000 formatını kontrol et
+                if 'FFFF0000' in rgb or 'FF0000' in rgb or 'CC0000' in rgb:
+                    return 'RED'
+                # Mavi tonları (Ürün Açıklaması) - özel mavi tonları
+                elif 'FF0070C0' in rgb or '0070C0' in rgb or '0000FF' in rgb or '4472C4' in rgb:
+                    return 'BLUE'  
+                # Sarı tonları (Firma) - FFFFFF00 formatını kontrol et
+                elif 'FFFFFF00' in rgb or 'FFFF00' in rgb or 'FFC000' in rgb:
+                    return 'YELLOW'
+                # Yeşil tonları (Fiyat) - FF00B050 formatını kontrol et
+                elif 'FF00B050' in rgb or '00B050' in rgb or '00FF00' in rgb or '008000' in rgb:
+                    return 'GREEN'
+                    
+            except Exception as e:
+                logger.warning(f"RGB parsing error: {e}")
                 
         # Index renk kontrolü
         if hasattr(color, 'index') and color.index:
-            index = str(color.index)
-            # Excel'in standart renk indeksleri
-            if index in ['10', '3']:  # Kırmızı
-                return 'RED' 
-            elif index in ['12', '5']:  # Mavi
-                return 'BLUE'
-            elif index in ['13', '6']:  # Sarı
-                return 'YELLOW'
-            elif index in ['11', '4']:  # Yeşil
-                return 'GREEN'
+            try:
+                index = str(color.index)
+                # Excel'in standart renk indeksleri
+                if index in ['10', '3']:  # Kırmızı
+                    return 'RED' 
+                elif index in ['12', '5']:  # Mavi
+                    return 'BLUE'
+                elif index in ['13', '6']:  # Sarı
+                    return 'YELLOW'
+                elif index in ['11', '4']:  # Yeşil
+                    return 'GREEN'
+            except Exception as e:
+                logger.warning(f"Index parsing error: {e}")
                 
         return 'NONE'
     
