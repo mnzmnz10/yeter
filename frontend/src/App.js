@@ -466,7 +466,7 @@ function App() {
       await Promise.all(updatePromises);
       
       // Ürünleri yeniden yükle
-      await fetchProducts();
+      await loadProducts();
       
       // Dialog'u kapat
       setShowCategoryProductDialog(false);
