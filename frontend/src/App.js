@@ -1110,19 +1110,13 @@ function App() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setShowDiscountedPrices(!showDiscountedPrices)}
-                                className="ml-2 flex items-center gap-1"
+                                className="ml-2 p-2"
                                 title={showDiscountedPrices ? "İndirimli fiyatları gizle" : "İndirimli fiyatları göster"}
                               >
                                 {showDiscountedPrices ? (
-                                  <>
-                                    <EyeOff className="w-4 h-4" />
-                                    <span className="text-xs">İndirim Gizle</span>
-                                  </>
+                                  <EyeOff className="w-4 h-4" />
                                 ) : (
-                                  <>
-                                    <Eye className="w-4 h-4" />
-                                    <span className="text-xs">İndirim Göster</span>
-                                  </>
+                                  <Eye className="w-4 h-4" />
                                 )}
                               </Button>
                             )}
