@@ -186,23 +186,28 @@ class ColorBasedExcelService:
                 rgb = str(color.rgb).upper()
                 
                 # Debug için
-                logger.debug(f"Checking RGB: {rgb}")
+                logger.info(f"Checking RGB: {rgb}")
                 
                 # Kırmızı tonları (Ürün Adı) - FFFF0000 formatını kontrol et
                 if 'FFFF0000' in rgb or 'FF0000' in rgb or 'CC0000' in rgb:
+                    logger.info(f"RGB {rgb} -> RED")
                     return 'RED'
                 # Mavi tonları (Ürün Açıklaması) - özel mavi tonları
                 elif 'FF0070C0' in rgb or '0070C0' in rgb or '0000FF' in rgb or '4472C4' in rgb:
+                    logger.info(f"RGB {rgb} -> BLUE")
                     return 'BLUE'  
                 # Sarı tonları (Firma) - FFFFFF00 formatını kontrol et
                 elif 'FFFFFF00' in rgb or 'FFFF00' in rgb or 'FFC000' in rgb:
+                    logger.info(f"RGB {rgb} -> YELLOW")
                     return 'YELLOW'
                 # Yeşil tonları (Liste Fiyatı) - FF00B050 formatını kontrol et
                 elif 'FF00B050' in rgb or '00B050' in rgb or '00FF00' in rgb or '008000' in rgb:
+                    logger.info(f"RGB {rgb} -> GREEN")
                     return 'GREEN'
                 # Turuncu tonları (İndirimli Fiyat) - FFF4B183, FF7F00, FFA500 gibi
                 elif ('FFF4B183' in rgb or 'F4B183' in rgb or 'FF7F00' in rgb or 'FFA500' in rgb or 
                       'FF8C00' in rgb or 'FFFF9900' in rgb or 'FF9900' in rgb or 'FFFFC000' in rgb or 'FFC000' in rgb):
+                    logger.info(f"RGB {rgb} -> ORANGE")
                     return 'ORANGE'
                     
             except Exception as e:
