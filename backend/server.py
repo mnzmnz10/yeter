@@ -1476,29 +1476,35 @@ class PDFQuoteGenerator:
         secondary_color = colors.HexColor('#1ba3cc')
         accent_color = colors.HexColor('#f0f9ff')
         
-        # Tablo başlıkları
+        # Tablo başlıkları - Font HTML tag ile direkt belirt
+        font_name = self.get_font_name(is_bold=True)
         headers = [
-            Paragraph("<b>Ürün Adı</b>", self.data_style),
-            Paragraph("<b>Marka</b>", self.data_style), 
-            Paragraph("<b>Miktar</b>", self.data_style),
-            Paragraph("<b>Birim Fiyat</b>", self.data_style),
-            Paragraph("<b>Toplam Fiyat</b>", self.data_style)
+            Paragraph(f"<font name='{font_name}'><b>Ürün Adı</b></font>", self.data_style),
+            Paragraph(f"<font name='{font_name}'><b>Marka</b></font>", self.data_style), 
+            Paragraph(f"<font name='{font_name}'><b>Miktar</b></font>", self.data_style),
+            Paragraph(f"<font name='{font_name}'><b>Birim Fiyat</b></font>", self.data_style),
+            Paragraph(f"<font name='{font_name}'><b>Toplam Fiyat</b></font>", self.data_style)
         ]
         
         data = [headers]
         
-        # Ürün satırları
+        # Ürün satırları - Font HTML tag ile direkt belirt
+        normal_font = self.get_font_name()
         for product in products:
             quantity = product.get('quantity', 1)
             unit_price = product.get('discounted_price_try', product.get('list_price_try', 0))
             total_price = unit_price * quantity
             
+            # Türkçe karakterleri direkt HTML entity'ye çevir
+            product_name = product.get('name', '').replace('ğ', '&#287;').replace('Ğ', '&#286;').replace('ü', '&#252;').replace('Ü', '&#220;').replace('ş', '&#351;').replace('Ş', '&#350;').replace('ı', '&#305;').replace('İ', '&#304;').replace('ç', '&#231;').replace('Ç', '&#199;').replace('ö', '&#246;').replace('Ö', '&#214;')
+            company_name = product.get('company_name', '').replace('ğ', '&#287;').replace('Ğ', '&#286;').replace('ü', '&#252;').replace('Ü', '&#220;').replace('ş', '&#351;').replace('Ş', '&#350;').replace('ı', '&#305;').replace('İ', '&#304;').replace('ç', '&#231;').replace('Ç', '&#199;').replace('ö', '&#246;').replace('Ö', '&#214;')
+            
             row = [
-                Paragraph(product.get('name', ''), self.data_style),
-                Paragraph(product.get('company_name', ''), self.data_style),
-                Paragraph(str(quantity), self.data_style),
-                Paragraph(f"₺ {self._format_price_modern(unit_price)}", self.data_style),
-                Paragraph(f"<b>₺ {self._format_price_modern(total_price)}</b>", self.data_style)
+                Paragraph(f"<font name='{normal_font}'>{product_name}</font>", self.data_style),
+                Paragraph(f"<font name='{normal_font}'>{company_name}</font>", self.data_style),
+                Paragraph(f"<font name='{normal_font}'>{str(quantity)}</font>", self.data_style),
+                Paragraph(f"<font name='{normal_font}'>₺ {self._format_price_modern(unit_price)}</font>", self.data_style),
+                Paragraph(f"<font name='{self.get_font_name(is_bold=True)}'><b>₺ {self._format_price_modern(total_price)}</b></font>", self.data_style)
             ]
             data.append(row)
         
