@@ -1633,7 +1633,7 @@ function App() {
                               const savedQuote = await response.json();
                               
                               // PDF'i hemen indir
-                              const pdfUrl = `${BACKEND_URL}/api/quotes/${savedQuote.id}/pdf`;
+                              const pdfUrl = `${API}/quotes/${savedQuote.id}/pdf`;
                               const link = document.createElement('a');
                               link.href = pdfUrl;
                               link.download = `${savedQuote.name}.pdf`;
