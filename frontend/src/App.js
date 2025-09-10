@@ -1774,9 +1774,15 @@ function App() {
                                 <h4 className="font-semibold text-lg">{quote.name}</h4>
                                 <p className="text-sm text-slate-600 mt-1">
                                   {quote.products.length} ürün • %{quote.discount_percentage} indirim
+                                  {quote.labor_cost > 0 && (
+                                    <span className="text-green-600"> • ₺{formatPrice(quote.labor_cost)} işçilik</span>
+                                  )}
                                 </p>
                                 <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
                                   <span>Ara Toplam: ₺{formatPrice(quote.total_discounted_price)}</span>
+                                  {quote.labor_cost > 0 && (
+                                    <span className="text-green-600">İşçilik: ₺{formatPrice(quote.labor_cost)}</span>
+                                  )}
                                   <span>Net Toplam: ₺{formatPrice(quote.total_net_price)}</span>
                                   <span>{new Date(quote.created_at).toLocaleDateString('tr-TR')}</span>
                                 </div>
