@@ -339,6 +339,56 @@ function App() {
     return () => clearTimeout(delayedSearch);
   }, [searchQuery, selectedCategory]);
 
+  const resetNewProductForm = () => {
+    setNewProductForm({
+      name: '',
+      company_id: '',
+      category_id: '',
+      list_price: '',
+      discounted_price: '',
+      currency: 'USD'
+    });
+  };
+
+  const createProduct = async () => {
+    if (!newProductForm.name.trim() || !newProductForm.company_id || !newProductForm.list_price) {
+      toast.error('Ürün adı, firma ve liste fiyatı gerekli');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const productData = {
+        name: newProductForm.name,
+        company_id: newProductForm.company_id,
+        list_price: parseFloat(newProductForm.list_price),
+        currency: newProductForm.currency
+      };
+
+      if (newProductForm.discounted_price) {
+        productData.discounted_price = parseFloat(newProductForm.discounted_price);
+      }
+
+      if (newProductForm.category_id && newProductForm.category_id !== 'none') {
+        productData.category_id = newProductForm.category_id;
+      }
+
+      const response = await axios.post(`${API}/products`, productData);
+      
+      if (response.data) {
+        await loadProducts();
+        setShowAddProductDialog(false);
+        resetNewProductForm();
+        toast.success('Ürün başarıyla eklendi');
+      }
+    } catch (error) {
+      console.error('Error creating product:', error);
+      toast.error(error.response?.data?.detail || 'Ürün eklenemedi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('tr-TR', { 
       style: 'decimal', 
