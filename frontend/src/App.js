@@ -424,7 +424,7 @@ function App() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatsCard
             title="Toplam Firma"
             value={stats.totalCompanies}
@@ -436,12 +436,6 @@ function App() {
             value={stats.totalProducts}
             icon={Package}
             description="Sisteme yüklenmiş ürün"
-          />
-          <StatsCard
-            title="Eşleştirme"
-            value={stats.totalMatches}
-            icon={TrendingUp}
-            description="Karşılaştırma grubu"
           />
           <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
