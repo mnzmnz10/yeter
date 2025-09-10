@@ -206,7 +206,7 @@ function App() {
       list_price: product.list_price.toString(),
       discounted_price: product.discounted_price ? product.discounted_price.toString() : '',
       currency: product.currency,
-      category_id: product.category_id || ''
+      category_id: product.category_id || 'none'
     });
   };
 
