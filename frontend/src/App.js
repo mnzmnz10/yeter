@@ -47,6 +47,9 @@ function App() {
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
   const [showAddProductDialog, setShowAddProductDialog] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState(new Set());
+  const [quoteName, setQuoteName] = useState('');
+  const [showCreateQuoteDialog, setShowCreateQuoteDialog] = useState(false);
   const [newProductForm, setNewProductForm] = useState({
     name: '',
     company_id: '',
