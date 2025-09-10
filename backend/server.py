@@ -489,16 +489,6 @@ class ColorBasedExcelService:
                     list_price = discounted_price * (1 + markup_percentage / 100)
                     logger.info(f"Generated list price for {product_name}: {discounted_price} + {markup_percentage:.1f}% = {list_price:.2f}")
 
-                # Eğer liste fiyatı yoksa ama indirim de yoksa, eski sistemle uyumluluk için
-                # price kolonunu liste fiyatı olarak kullan (eski sistem için fallback)
-                if list_price == 0 and 'price' in column_mapping and column_mapping['price'] >= 0:
-                    price_cell = sheet.cell(row=row_idx + 1, column=column_mapping['price'] + 1)
-                    if price_cell.value:
-                        try:
-                            list_price = float(str(price_cell.value).replace(',', '.'))
-                        except:
-                            list_price = 0
-
                 # Geçerli ürün kontrolü - en az liste fiyatı olmalı
                 if (product_name and len(product_name) > 3 and 
                     list_price > 0 and 
