@@ -217,7 +217,7 @@ function App() {
       list_price: '',
       discounted_price: '',
       currency: '',
-      category_id: ''
+      category_id: 'none'
     });
   };
 
