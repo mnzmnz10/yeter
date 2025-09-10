@@ -1639,13 +1639,33 @@ function App() {
                                   size="sm"
                                   onClick={() => {
                                     // Teklifin ürünlerini seç
-                                    const productIds = new Set(quote.products.map(p => p.id));
+                                    const productIds = new Map();
+                                    quote.products.forEach(p => productIds.set(p.id, 1));
                                     setSelectedProducts(productIds);
                                     setQuoteDiscount(quote.discount_percentage);
                                     toast.success(`"${quote.name}" teklifi yüklendi`);
                                   }}
                                 >
                                   Yükle
+                                </Button>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => {
+                                    // PDF indir
+                                    const pdfUrl = `${API}/quotes/${quote.id}/pdf`;
+                                    const link = document.createElement('a');
+                                    link.href = pdfUrl;
+                                    link.download = `${quote.name}.pdf`;
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    toast.success('PDF indiriliyor...');
+                                  }}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  <Download className="w-4 h-4 mr-1" />
+                                  PDF İndir
                                 </Button>
                                 <Button
                                   variant="destructive"
