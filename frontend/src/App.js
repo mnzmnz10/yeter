@@ -362,6 +362,8 @@ function App() {
       const productData = {
         name: newProductForm.name,
         company_id: newProductForm.company_id,
+        description: newProductForm.description || null,
+        image_url: newProductForm.image_url || null,
         list_price: parseFloat(newProductForm.list_price),
         currency: newProductForm.currency
       };
