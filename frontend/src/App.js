@@ -272,6 +272,62 @@ function App() {
     }
   };
 
+  const createCategory = async () => {
+    if (!newCategoryName.trim()) {
+      toast.error('Kategori adı gerekli');
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/categories`, {
+        name: newCategoryName,
+        description: newCategoryDescription,
+        color: newCategoryColor
+      });
+      setNewCategoryName('');
+      setNewCategoryDescription('');
+      setNewCategoryColor('#3B82F6');
+      await loadCategories();
+      toast.success('Kategori başarıyla oluşturuldu');
+    } catch (error) {
+      console.error('Error creating category:', error);
+      toast.error('Kategori oluşturulamadı');
+    }
+  };
+
+  const deleteCategory = async (categoryId) => {
+    if (!window.confirm('Bu kategoriyi silmek istediğinizden emin misiniz? Kategorideki ürünler kategorsiz kalacak.')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/categories/${categoryId}`);
+      await loadCategories();
+      await loadProducts(); // Refresh products to show updated category info
+      toast.success('Kategori silindi');
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error('Kategori silinemedi');
+    }
+  };
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
+
+  const handleCategoryFilter = (categoryId) => {
+    setSelectedCategory(categoryId);
+  };
+
+  // Search and category filter effects
+  React.useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      loadProducts();
+    }, 300); // Debounce search
+
+    return () => clearTimeout(delayedSearch);
+  }, [searchQuery, selectedCategory]);
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('tr-TR', { 
       style: 'decimal', 
