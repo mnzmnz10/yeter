@@ -1526,11 +1526,36 @@ function App() {
                       </CardTitle>
                       <CardDescription>
                         Daha önce oluşturduğunuz {quotes.length} teklif
+                        {filteredQuotes.length !== quotes.length && ` (${filteredQuotes.length} sonuç gösteriliyor)`}
                       </CardDescription>
+                      
+                      {/* Teklif Arama */}
+                      <div className="mt-4">
+                        <Input
+                          placeholder="Teklif adı, müşteri adı veya ürün adı ile ara..."
+                          value={quoteSearchTerm}
+                          onChange={(e) => handleQuoteSearch(e.target.value)}
+                          className="max-w-md"
+                        />
+                      </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        {quotes.map((quote) => (
+                      {filteredQuotes.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500">
+                          <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                          <p>"{quoteSearchTerm}" araması için sonuç bulunamadı</p>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={() => handleQuoteSearch('')}
+                          >
+                            Aramayı Temizle
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {filteredQuotes.map((quote) => (
                           <div key={quote.id} className="border rounded-lg p-4 hover:bg-slate-50">
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
