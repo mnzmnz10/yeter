@@ -269,13 +269,18 @@ class ColorBasedExcelService:
                 # Find header row by looking for colored cells
                 header_row = ColorBasedExcelService._find_colored_header_row(sheet)
                 if header_row == -1:
-                    logger.warning(f"No colored header found in sheet {sheet_name}, skipping")
-                    continue
+                    logger.warning(f"No header found in sheet {sheet_name}, trying to analyze first row as data")
+                    # Header yoksa direkt 0. satırı data olarak kabul et ve renkleri analiz et
+                    column_mapping = ColorBasedExcelService._analyze_data_row_colors(sheet, 0)
+                    if all(val == -1 for val in column_mapping.values()):
+                        logger.warning(f"No colored columns found in {sheet_name}, skipping")
+                        continue
+                    header_row = -1  # Data başlangıcı için -1 kullan
+                else:
+                    logger.info(f"Found colored header at row {header_row + 1}")
+                    # Analyze header colors to map columns
+                    column_mapping = ColorBasedExcelService._analyze_header_colors(sheet, header_row)
                 
-                logger.info(f"Found colored header at row {header_row + 1}")
-                
-                # Analyze header colors to map columns
-                column_mapping = ColorBasedExcelService._analyze_header_colors(sheet, header_row)
                 logger.info(f"Column mapping: {column_mapping}")
                 
                 # Extract products from this sheet
