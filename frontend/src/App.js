@@ -1799,6 +1799,8 @@ function App() {
                                     setSelectedProducts(productIds);
                                     setQuoteDiscount(quote.discount_percentage);
                                     setQuoteLaborCost(quote.labor_cost || 0); // İşçilik maliyetini de yükle
+                                    setLoadedQuote(quote); // Yüklenen teklifi kaydet
+                                    setQuoteName(quote.name); // Teklif adını da yükle
                                     toast.success(`"${quote.name}" teklifi yüklendi ${quote.labor_cost > 0 ? `(₺${formatPrice(quote.labor_cost)} işçilik dahil)` : ''}`);
                                   }}
                                 >
