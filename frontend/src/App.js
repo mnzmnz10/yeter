@@ -216,7 +216,8 @@ function App() {
       name: '',
       list_price: '',
       discounted_price: '',
-      currency: ''
+      currency: '',
+      category_id: ''
     });
   };
 
