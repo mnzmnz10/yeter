@@ -1219,6 +1219,219 @@ async def delete_quote(quote_id: str):
         logger.error(f"Error deleting quote: {e}")
         raise HTTPException(status_code=500, detail=f"Error deleting quote: {str(e)}")
 
+class PDFQuoteGenerator:
+    def __init__(self):
+        self.styles = getSampleStyleSheet()
+        self.setup_styles()
+    
+    def setup_styles(self):
+        """PDF için özel stiller tanımla"""
+        # Başlık stili
+        self.title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=self.styles['Heading1'],
+            fontSize=18,
+            spaceAfter=30,
+            alignment=TA_CENTER,
+            textColor=colors.HexColor('#2563eb')
+        )
+        
+        # Firma bilgi stili
+        self.company_style = ParagraphStyle(
+            'CompanyInfo',
+            parent=self.styles['Normal'],
+            fontSize=10,
+            spaceAfter=6,
+            alignment=TA_LEFT
+        )
+        
+        # Normal metin stili
+        self.normal_style = ParagraphStyle(
+            'CustomNormal',
+            parent=self.styles['Normal'],
+            fontSize=10,
+            spaceAfter=12
+        )
+        
+        # Footer stili
+        self.footer_style = ParagraphStyle(
+            'Footer',
+            parent=self.styles['Normal'],
+            fontSize=9,
+            alignment=TA_CENTER,
+            textColor=colors.grey,
+            spaceAfter=6
+        )
+
+    def create_quote_pdf(self, quote_data: Dict) -> BytesIO:
+        """Teklif PDF'i oluştur"""
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=2*cm,
+            leftMargin=2*cm,
+            topMargin=2*cm,
+            bottomMargin=2*cm
+        )
+        
+        story = []
+        
+        # Firma bilgileri ve logo (simüle edilmiş)
+        story.append(self._create_company_header())
+        story.append(Spacer(1, 20))
+        
+        # Teklif başlığı
+        story.append(Paragraph(f"<b>{quote_data['name']}</b>", self.title_style))
+        story.append(Spacer(1, 10))
+        
+        # Teklif tarihi
+        created_date = datetime.fromisoformat(quote_data['created_at'].replace('Z', '+00:00'))
+        story.append(Paragraph(f"Tarih: {created_date.strftime('%d.%m.%Y')}", self.normal_style))
+        story.append(Spacer(1, 20))
+        
+        # Ürün tablosu
+        story.append(self._create_products_table(quote_data['products']))
+        story.append(Spacer(1, 20))
+        
+        # Toplam hesaplama
+        story.append(self._create_totals_section(quote_data))
+        story.append(Spacer(1, 30))
+        
+        # Footer mesajı
+        story.append(self._create_footer())
+        
+        doc.build(story)
+        buffer.seek(0)
+        return buffer
+    
+    def _create_company_header(self):
+        """Firma bilgileri başlığı"""
+        company_info = [
+            "<b>KARAVAN ELEKTRİK EKİPMANLARI</b>",
+            "Güneş Enerjisi Sistemleri ve Ekipmanları",
+            "Adres: İstanbul, Türkiye",
+            "Tel: +90 (212) 123 45 67",
+            "Email: info@karavan-elektrik.com"
+        ]
+        
+        header_text = "<br/>".join(company_info)
+        return Paragraph(header_text, self.company_style)
+    
+    def _create_products_table(self, products: List[Dict]):
+        """Ürün tablosu oluştur"""
+        # Tablo başlıkları
+        data = [
+            ['Ürün Adı', 'Marka', 'Miktar', 'Birim Fiyat', 'Toplam Fiyat']
+        ]
+        
+        # Ürün satırları
+        for product in products:
+            quantity = 1  # Default quantity - ileride quote'ta quantity bilgisi olacak
+            unit_price = product.get('discounted_price_try', product.get('list_price_try', 0))
+            total_price = unit_price * quantity
+            
+            row = [
+                Paragraph(product['name'], self.normal_style),
+                Paragraph(product.get('company_name', ''), self.normal_style),
+                str(quantity),
+                f"₺ {self._format_price(unit_price)}",
+                f"₺ {self._format_price(total_price)}"
+            ]
+            data.append(row)
+        
+        # Tablo oluştur
+        table = Table(data, colWidths=[6*cm, 3*cm, 2*cm, 3*cm, 3*cm])
+        table.setStyle(TableStyle([
+            # Başlık stili
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563eb')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            
+            # Veri satırları
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('ALIGN', (2, 1), (2, -1), 'CENTER'),  # Miktar ortala
+            ('ALIGN', (3, 1), (-1, -1), 'RIGHT'),  # Fiyatları sağa hizala
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            
+            # Çerçeve
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        
+        return table
+    
+    def _create_totals_section(self, quote_data: Dict):
+        """Toplam hesaplama bölümü"""
+        totals = []
+        
+        # Ara toplam
+        totals.append(Paragraph(f"<b>Ara Toplam: ₺ {self._format_price(quote_data['total_discounted_price'])}</b>", 
+                               self.normal_style))
+        
+        # İndirim (eğer varsa)
+        if quote_data.get('discount_percentage', 0) > 0:
+            totals.append(Paragraph(f"İndirim (%{quote_data['discount_percentage']}): -₺ {self._format_price(quote_data['total_discounted_price'] - quote_data['total_net_price'])}", 
+                                   self.normal_style))
+        
+        # Net toplam
+        totals.append(Paragraph(f"<b>NET TOPLAM: ₺ {self._format_price(quote_data['total_net_price'])}</b>", 
+                               self.title_style))
+        
+        return totals
+    
+    def _create_footer(self):
+        """Footer mesajı"""
+        footer_text = """
+        <b>ÖNEMLİ NOTLAR:</b><br/>
+        • Fiyatlar 1 hafta için geçerlidir. 1 hafta sonra yeni teklif alınız.<br/>
+        • Fiyatlara KDV dahildir.<br/>
+        • Ürün özellikleri değişiklik gösterebilir.<br/>
+        """
+        return Paragraph(footer_text, self.footer_style)
+    
+    def _format_price(self, price):
+        """Fiyat formatla"""
+        try:
+            return f"{float(price):,.2f}".replace(',', '.')
+        except:
+            return "0.00"
+
+# ===== PDF QUOTE ENDPOINT =====
+
+@app.get("/api/quotes/{quote_id}/pdf")
+async def download_quote_pdf(quote_id: str):
+    """Teklif PDF'ini indir"""
+    try:
+        db = await get_db()
+        quote = await db.quotes.find_one({"_id": ObjectId(quote_id)})
+        
+        if not quote:
+            raise HTTPException(status_code=404, detail="Quote not found")
+        
+        # PDF oluştur
+        pdf_generator = PDFQuoteGenerator()
+        pdf_buffer = pdf_generator.create_quote_pdf(quote)
+        
+        # Response headers
+        headers = {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': f'attachment; filename="{quote["name"]}.pdf"'
+        }
+        
+        return StreamingResponse(
+            BytesIO(pdf_buffer.read()),
+            media_type='application/pdf',
+            headers=headers
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating PDF: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
+
 # Category endpoints
 @api_router.post("/categories", response_model=Category)
 async def create_category(category: CategoryCreate):
