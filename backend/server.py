@@ -1494,20 +1494,26 @@ class PDFQuoteGenerator:
         return Paragraph(header_text, self.company_style)
     
     def _create_quote_info_section(self, quote_data: Dict):
-        """Teklif bilgileri bölümü (tarih, geçerlilik vs.)"""
+        """Teklif bilgileri bölümü (başlangıç tarihi ve 7 gün sonrası bitiş tarihi)"""
         try:
             created_date = datetime.fromisoformat(quote_data['created_at'].replace('Z', '+00:00'))
-            date_str = created_date.strftime('%d.%m.%Y')
+            start_date_str = created_date.strftime('%d.%m.%Y')
+            
+            # Bitiş tarihi her zaman 7 gün sonra
+            end_date = created_date + timedelta(days=7)
+            end_date_str = end_date.strftime('%d.%m.%Y')
         except:
-            date_str = datetime.now().strftime('%d.%m.%Y')
+            today = datetime.now()
+            start_date_str = today.strftime('%d.%m.%Y')
+            end_date_str = (today + timedelta(days=7)).strftime('%d.%m.%Y')
         
         # Bilgi tablosu oluştur
         info_data = [
             [
                 Paragraph("<b>Başlangıç Tarihi:</b>", self.normal_style),
-                Paragraph(date_str, self.normal_style),
+                Paragraph(start_date_str, self.normal_style),
                 Paragraph("<b>Bitiş Tarihi:</b>", self.normal_style),
-                Paragraph(date_str, self.normal_style)
+                Paragraph(end_date_str, self.normal_style)
             ]
         ]
         
