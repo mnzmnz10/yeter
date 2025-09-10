@@ -715,7 +715,7 @@ function App() {
                             <TableCell>
                               {isEditing ? (
                                 <Select 
-                                  value={editForm.category_id || ""} 
+                                  value={editForm.category_id || "none"} 
                                   onValueChange={(value) => setEditForm({...editForm, category_id: value})}
                                 >
                                   <SelectTrigger className="w-32">
