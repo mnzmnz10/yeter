@@ -367,12 +367,18 @@ function App() {
 
   const calculateQuoteTotals = () => {
     const selectedProductsData = getSelectedProductsData();
+    console.log('Selected products data:', selectedProductsData);
+    
     const totalListPrice = selectedProductsData.reduce((sum, p) => {
       const price = parseFloat(p.list_price_try) || 0;
+      console.log(`Product ${p.name}: list_price_try=${p.list_price_try}, parsed=${price}`);
       return sum + price;
     }, 0);
+    
     const discountAmount = totalListPrice * (parseFloat(quoteDiscount) || 0) / 100;
     const totalNetPrice = totalListPrice - discountAmount;
+    
+    console.log(`Totals: totalListPrice=${totalListPrice}, discountAmount=${discountAmount}, totalNetPrice=${totalNetPrice}`);
     
     return {
       totalListPrice: isNaN(totalListPrice) ? 0 : totalListPrice,
