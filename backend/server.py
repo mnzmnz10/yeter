@@ -1283,9 +1283,12 @@ class PDFQuoteGenerator:
             self.montserrat_bold_available = False
     
     def get_font_name(self, is_bold=False):
-        """Türkçe karakter desteği olan font adını döndür"""
-        # Montserrat yerine Helvetica kullan - ReportLab'ın unicode desteği daha iyi
-        if is_bold:
+        """Montserrat font adını döndür - Türkçe karakter desteği ile"""
+        if is_bold and self.montserrat_bold_available:
+            return 'Montserrat-Bold'
+        elif not is_bold and self.montserrat_available:
+            return 'Montserrat'
+        elif is_bold:
             return 'Helvetica-Bold'
         else:
             return 'Helvetica'
