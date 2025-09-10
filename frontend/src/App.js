@@ -1089,7 +1089,7 @@ function App() {
 
                     return sortedGroups.map(([categoryId, categoryProducts]) => {
                       const category = categories.find(c => c.id === categoryId);
-                      const categoryName = category ? category.name : 'Kategorsiz Ürünler';
+                      const categoryName = category ? category.name : 'Kategorisiz Ürünler';
                       const categoryColor = category ? category.color : '#64748b';
 
                       return (
