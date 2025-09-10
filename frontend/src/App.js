@@ -1303,35 +1303,95 @@ function App() {
                       </div>
                     </div>
 
+                    {/* Manual Discount Control */}
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-amber-900 mb-3">İndirim Uygula</h4>
+                      <div className="flex items-center gap-4">
+                        <Label htmlFor="discount-input" className="font-medium">İndirim Yüzdesi:</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            id="discount-input"
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            value={quoteDiscount}
+                            onChange={(e) => setQuoteDiscount(parseFloat(e.target.value) || 0)}
+                            className="w-20"
+                          />
+                          <span className="text-amber-700">%</span>
+                        </div>
+                        <div className="flex gap-2 ml-auto">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteDiscount(5)}
+                          >
+                            5%
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteDiscount(10)}
+                          >
+                            10%
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteDiscount(15)}
+                          >
+                            15%
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteDiscount(20)}
+                          >
+                            20%
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Quote Summary */}
                     <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
                       <h4 className="font-semibold text-emerald-900 mb-3">Teklif Özeti</h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-emerald-800">
-                            {selectedProducts.size}
+                            {calculateQuoteTotals().productCount}
                           </div>
                           <div className="text-sm text-emerald-600">Ürün Sayısı</div>
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-emerald-800">
-                            ₺ {formatPrice(getSelectedProductsData().reduce((sum, p) => sum + (p.list_price_try || 0), 0))}
+                            ₺ {formatPrice(calculateQuoteTotals().totalListPrice)}
                           </div>
                           <div className="text-sm text-emerald-600">Toplam Liste Fiyatı</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-emerald-800">
-                            ₺ {formatPrice(getSelectedProductsData().reduce((sum, p) => sum + (p.discounted_price_try || p.list_price_try || 0), 0))}
+                          <div className="text-2xl font-bold text-red-600">
+                            - ₺ {formatPrice(calculateQuoteTotals().discountAmount)}
                           </div>
-                          <div className="text-sm text-emerald-600">Toplam Net Fiyat</div>
+                          <div className="text-sm text-red-500">İndirim ({quoteDiscount}%)</div>
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-emerald-800">
-                            {Math.round((1 - getSelectedProductsData().reduce((sum, p) => sum + (p.discounted_price_try || p.list_price_try || 0), 0) / getSelectedProductsData().reduce((sum, p) => sum + (p.list_price_try || 0), 0)) * 100) || 0}%
+                            ₺ {formatPrice(calculateQuoteTotals().totalNetPrice)}
                           </div>
-                          <div className="text-sm text-emerald-600">Ortalama İndirim</div>
+                          <div className="text-sm text-emerald-600">Net Toplam</div>
                         </div>
                       </div>
+                      
+                      {quoteDiscount > 0 && (
+                        <div className="mt-4 p-3 bg-white rounded border border-emerald-300">
+                          <div className="text-sm text-emerald-700">
+                            <strong>İndirim Detayları:</strong> Liste fiyatı üzerinden %{quoteDiscount} indirim uygulandı.
+                            Tasarruf tutarı: <strong>₺ {formatPrice(calculateQuoteTotals().discountAmount)}</strong>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Action Buttons */}
