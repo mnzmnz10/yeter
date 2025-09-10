@@ -1108,6 +1108,61 @@ async def delete_product(product_id: str):
         logger.error(f"Error deleting product: {e}")
         raise HTTPException(status_code=500, detail="Ürün silinemedi")
 
+@api_router.put("/products/{product_id}")
+async def update_product(product_id: str, product_update: Dict[str, Any]):
+    """Update a product (especially for category assignment)"""
+    try:
+        # Mevcut ürünü bul
+        existing_product = await db.products.find_one({"id": product_id})
+        if not existing_product:
+            raise HTTPException(status_code=404, detail="Ürün bulunamadı")
+        
+        # Güncellenecek alanları hazırla
+        update_data = {}
+        
+        # Kategori güncellenmesi
+        if "category_id" in product_update:
+            category_id = product_update["category_id"]
+            
+            # Kategori var mı kontrol et (eğer none değilse)
+            if category_id and category_id != "none":
+                category = await db.categories.find_one({"id": category_id})
+                if not category:
+                    raise HTTPException(status_code=404, detail="Kategori bulunamadı")
+            
+            update_data["category_id"] = category_id
+        
+        # Diğer güncellenebilir alanlar
+        allowed_fields = ["name", "description", "list_price", "discounted_price", "currency", "company_id"]
+        for field in allowed_fields:
+            if field in product_update:
+                update_data[field] = product_update[field]
+        
+        # Güncelleme zamanını ekle
+        update_data["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        
+        # Ürünü güncelle
+        result = await db.products.update_one(
+            {"id": product_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Ürün bulunamadı")
+        
+        # Güncellenmiş ürünü döndür
+        updated_product = await db.products.find_one({"id": product_id})
+        if updated_product:
+            updated_product.pop('_id', None)
+        
+        return updated_product
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating product: {e}")
+        raise HTTPException(status_code=500, detail=f"Ürün güncellenemedi: {str(e)}")
+
 # ===== QUOTE ENDPOINTS =====
 
 @api_router.post("/quotes", response_model=QuoteResponse)
