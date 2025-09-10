@@ -608,6 +608,7 @@ class ProductUpdate(BaseModel):
     list_price: Optional[Decimal] = None
     discounted_price: Optional[Decimal] = None
     currency: Optional[str] = None
+    category_id: Optional[str] = None
 
 @api_router.patch("/products/{product_id}")
 async def update_product(product_id: str, update_data: ProductUpdate):
