@@ -474,13 +474,12 @@ function App() {
           </Button>
         </div>
 
-        <Tabs defaultValue="companies" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="products" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="products">Ürünler</TabsTrigger>
             <TabsTrigger value="companies">Firmalar</TabsTrigger>
             <TabsTrigger value="categories">Kategoriler</TabsTrigger>
             <TabsTrigger value="upload">Excel Yükle</TabsTrigger>
-            <TabsTrigger value="products">Ürünler</TabsTrigger>
-            <TabsTrigger value="comparison">Karşılaştırma</TabsTrigger>
           </TabsList>
 
           {/* Companies Tab */}
