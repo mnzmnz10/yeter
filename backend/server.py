@@ -246,8 +246,8 @@ class ColorBasedExcelService:
                     return 'GREEN'
                 elif index in ['46', '53']:  # Turuncu
                     return 'ORANGE'
-                elif index == '9':  # Bu dosyada index 9 fiyat için kullanılıyor
-                    return 'GREEN'
+                elif index == '9':  # Bu dosyada index 9 İNDİRİMLİ fiyat için kullanılıyor
+                    return 'ORANGE'
             except Exception as e:
                 logger.warning(f"Index parsing error: {e}")
                 
