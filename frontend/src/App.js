@@ -432,6 +432,54 @@ function App() {
     setQuoteName(''); // Teklif adını da temizle
   };
 
+  // Kategorisi olmayan ürünleri getir
+  const getUncategorizedProducts = () => {
+    return products.filter(product => !product.category_id || product.category_id === 'none');
+  };
+
+  // Kategori ürün atama dialog'unu aç
+  const openCategoryProductDialog = (category) => {
+    setSelectedCategoryForProducts(category);
+    setUncategorizedProducts(getUncategorizedProducts());
+    setSelectedProductsForCategory(new Set());
+    setShowCategoryProductDialog(true);
+  };
+
+  // Seçili ürünleri kategoriye ata
+  const assignProductsToCategory = async () => {
+    try {
+      const productIds = Array.from(selectedProductsForCategory);
+      
+      // Her ürün için kategori güncelleme isteği gönder
+      const updatePromises = productIds.map(productId => 
+        fetch(`${API}/products/${productId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            category_id: selectedCategoryForProducts.id
+          })
+        })
+      );
+
+      await Promise.all(updatePromises);
+      
+      // Ürünleri yeniden yükle
+      await fetchProducts();
+      
+      // Dialog'u kapat
+      setShowCategoryProductDialog(false);
+      setSelectedProductsForCategory(new Set());
+      
+      toast.success(`${productIds.length} ürün "${selectedCategoryForProducts.name}" kategorisine eklendi!`);
+      
+    } catch (error) {
+      console.error('Ürün kategori atama hatası:', error);
+      toast.error('Ürünler kategoriye eklenemedi: ' + error.message);
+    }
+  };
+
   const selectAllVisible = () => {
     const newSelected = new Map();
     products.forEach(p => newSelected.set(p.id, 1));
