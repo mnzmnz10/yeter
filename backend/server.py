@@ -390,6 +390,38 @@ class ColorBasedExcelService:
         return column_mapping
     
     @staticmethod
+    def _analyze_data_row_colors(sheet, data_row: int) -> Dict[str, int]:
+        """Analyze first data row colors when no header is found"""
+        column_mapping = {
+            'product_name': -1,
+            'description': -1, 
+            'company': -1,
+            'list_price': -1,
+            'discounted_price': -1
+        }
+        
+        for col_idx in range(min(15, sheet.max_column)):
+            cell = sheet.cell(row=data_row + 1, column=col_idx + 1)
+            if not cell.value:
+                continue
+                
+            color_category = ColorBasedExcelService.detect_color_category(cell.fill)
+            
+            # Renk kategorilerine göre kolon belirleme
+            if color_category == 'RED':  # Kırmızı = Ürün Adı
+                column_mapping['product_name'] = col_idx
+            elif color_category == 'BLUE':  # Mavi = Ürün Açıklaması
+                column_mapping['description'] = col_idx
+            elif color_category == 'YELLOW':  # Sarı = Firma
+                column_mapping['company'] = col_idx
+            elif color_category == 'GREEN':  # Yeşil = Liste Fiyatı
+                column_mapping['list_price'] = col_idx
+            elif color_category == 'ORANGE':  # Turuncu = İndirimli Fiyat
+                column_mapping['discounted_price'] = col_idx
+        
+        return column_mapping
+    
+    @staticmethod
     def _extract_products_from_sheet(sheet, header_row: int, column_mapping: Dict[str, int], company_name: str) -> List[Dict[str, Any]]:
         """Extract products from a sheet using column mapping"""
         import random
