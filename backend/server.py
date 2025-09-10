@@ -1291,7 +1291,7 @@ class PDFQuoteGenerator:
         self.title_style = ParagraphStyle(
             'CustomTitle',
             parent=self.styles['Heading1'],
-            fontName='Montserrat-Bold',
+            fontName=self.get_font_name(is_bold=True),
             fontSize=22,
             spaceAfter=25,
             spaceBefore=10,
@@ -1304,7 +1304,7 @@ class PDFQuoteGenerator:
         self.subtitle_style = ParagraphStyle(
             'SubTitle',
             parent=self.styles['Heading2'],
-            fontName='Montserrat-Bold',
+            fontName=self.get_font_name(is_bold=True),
             fontSize=14,
             spaceAfter=15,
             spaceBefore=10,
@@ -1317,7 +1317,7 @@ class PDFQuoteGenerator:
         self.company_style = ParagraphStyle(
             'CompanyInfo',
             parent=self.styles['Normal'],
-            fontName='Montserrat',
+            fontName=self.get_font_name(),
             fontSize=11,
             spaceAfter=6,
             alignment=TA_LEFT,
@@ -1329,7 +1329,7 @@ class PDFQuoteGenerator:
         self.normal_style = ParagraphStyle(
             'CustomNormal',
             parent=self.styles['Normal'],
-            fontName='Montserrat',
+            fontName=self.get_font_name(),
             fontSize=10,
             spaceAfter=8,
             textColor=text_color,
@@ -1340,7 +1340,7 @@ class PDFQuoteGenerator:
         self.data_style = ParagraphStyle(
             'DataText',
             parent=self.styles['Normal'],
-            fontName='Montserrat',
+            fontName=self.get_font_name(),
             fontSize=9,
             spaceAfter=4,
             textColor=text_color,
@@ -1351,7 +1351,7 @@ class PDFQuoteGenerator:
         self.footer_style = ParagraphStyle(
             'Footer',
             parent=self.styles['Normal'],
-            fontName='Montserrat',
+            fontName=self.get_font_name(),
             fontSize=9,
             alignment=TA_LEFT,
             textColor=colors.HexColor('#718096'),
@@ -1363,7 +1363,7 @@ class PDFQuoteGenerator:
         self.price_style = ParagraphStyle(
             'PriceHighlight',
             parent=self.styles['Normal'],
-            fontName='Montserrat-Bold',
+            fontName=self.get_font_name(is_bold=True),
             fontSize=16,
             alignment=TA_RIGHT,
             textColor=primary_color,
