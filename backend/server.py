@@ -1417,7 +1417,7 @@ async def download_quote_pdf(quote_id: str):
     """Teklif PDF'ini indir"""
     try:
         db = await get_db()
-        quote = await db.quotes.find_one({"_id": ObjectId(quote_id)})
+        quote = await db.quotes.find_one({"id": quote_id})
         
         if not quote:
             raise HTTPException(status_code=404, detail="Quote not found")
