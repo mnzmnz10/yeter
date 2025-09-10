@@ -1188,17 +1188,26 @@ async def create_product(product: ProductCreate):
         await currency_service.get_exchange_rates()
         
         # Convert prices to TRY
-        list_price_try = await currency_service.convert_to_try(
-            product.list_price, 
-            product.currency
-        )
+        try:
+            list_price_try = await currency_service.convert_to_try(
+                product.list_price, 
+                product.currency
+            )
+        except Exception as e:
+            logger.warning(f"Failed to convert price to TRY for product {product.name}: {e}")
+            # Fallback: Use original price as TRY if conversion fails
+            list_price_try = product.list_price
         
         discounted_price_try = None
         if product.discounted_price:
-            discounted_price_try = await currency_service.convert_to_try(
-                product.discounted_price, 
-                product.currency
-            )
+            try:
+                discounted_price_try = await currency_service.convert_to_try(
+                    product.discounted_price, 
+                    product.currency
+                )
+            except Exception as e:
+                logger.warning(f"Failed to convert discounted price to TRY for product {product.name}: {e}")
+                discounted_price_try = product.discounted_price
         
         # Create product
         product_dict = {
