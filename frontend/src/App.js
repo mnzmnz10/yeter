@@ -1845,6 +1845,12 @@ function App() {
                       <span>- ₺ {formatPrice(calculateQuoteTotals().discountAmount)}</span>
                     </div>
                   )}
+                  {quoteLaborCost > 0 && (
+                    <div className="flex justify-between items-center text-sm text-green-600">
+                      <span>İşçilik:</span>
+                      <span>+ ₺ {formatPrice(calculateQuoteTotals().laborCost)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center font-bold text-lg">
                     <span>NET TOPLAM:</span>
                     <span>₺ {formatPrice(calculateQuoteTotals().totalNetPrice)}</span>
