@@ -4,13 +4,22 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from bson import ObjectId
 import os
 import uuid
 import pandas as pd
 import requests
 import logging
+from io import BytesIO
+
+from reportlab.lib.pagesizes import A4, letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm, mm
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from PIL import Image as PILImage
 from pathlib import Path
 from dotenv import load_dotenv
 import io
