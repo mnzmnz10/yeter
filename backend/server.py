@@ -69,6 +69,18 @@ class ProductCreate(BaseModel):
     discounted_price: Optional[Decimal] = None
     currency: str
 
+class Category(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    color: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CategoryCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    color: Optional[str] = None
+
 class ProductMatch(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     product_name: str
