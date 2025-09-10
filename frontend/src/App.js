@@ -54,6 +54,7 @@ function App() {
   const [quoteLaborCost, setQuoteLaborCost] = useState(0); // İşçilik maliyeti state'i
   const [loadedQuote, setLoadedQuote] = useState(null); // Yüklenen teklif bilgisi
   const [showDiscountedPrices, setShowDiscountedPrices] = useState(true); // İndirimli fiyat görünürlüğü
+  const [showQuoteDiscountedPrices, setShowQuoteDiscountedPrices] = useState(true); // Teklif indirimli fiyat görünürlüğü
   const [quotes, setQuotes] = useState([]);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [quoteSearchTerm, setQuoteSearchTerm] = useState('');
