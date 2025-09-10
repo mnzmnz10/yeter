@@ -399,27 +399,37 @@ function App() {
     return () => clearTimeout(delayedSearch);
   }, [searchQuery, selectedCategory]);
 
-  const toggleProductSelection = (productId) => {
-    const newSelected = new Set(selectedProducts);
+  const toggleProductSelection = (productId, quantity = 1) => {
+    const newSelected = new Map(selectedProducts);
     if (newSelected.has(productId)) {
-      newSelected.delete(productId);
+      if (quantity === 0) {
+        newSelected.delete(productId);
+      } else {
+        newSelected.set(productId, quantity);
+      }
     } else {
-      newSelected.add(productId);
+      if (quantity > 0) {
+        newSelected.set(productId, quantity);
+      }
     }
     setSelectedProducts(newSelected);
   };
 
   const clearSelection = () => {
-    setSelectedProducts(new Set());
+    setSelectedProducts(new Map());
   };
 
   const selectAllVisible = () => {
-    const visibleProductIds = products.map(p => p.id);
-    setSelectedProducts(new Set(visibleProductIds));
+    const newSelected = new Map();
+    products.forEach(p => newSelected.set(p.id, 1));
+    setSelectedProducts(newSelected);
   };
 
   const getSelectedProductsData = () => {
-    return products.filter(p => selectedProducts.has(p.id));
+    return Array.from(selectedProducts.entries()).map(([productId, quantity]) => {
+      const product = products.find(p => p.id === productId);
+      return product ? { ...product, quantity } : null;
+    }).filter(Boolean);
   };
 
   const calculateQuoteTotals = () => {
