@@ -470,27 +470,82 @@ function App() {
                         <TableHead>Para Birimi</TableHead>
                         <TableHead>TL Fiyat</TableHead>
                         <TableHead>TL İndirimli</TableHead>
+                        <TableHead>İşlemler</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {products.map((product) => {
                         const company = companies.find(c => c.id === product.company_id);
+                        const isEditing = editingProduct === product.id;
+                        
                         return (
                           <TableRow key={product.id}>
-                            <TableCell className="font-medium">{product.name}</TableCell>
+                            <TableCell className="font-medium">
+                              {isEditing ? (
+                                <Input
+                                  value={editForm.name}
+                                  onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                                  className="min-w-[200px]"
+                                />
+                              ) : (
+                                product.name
+                              )}
+                            </TableCell>
                             <TableCell>
                               <Badge variant="outline">{company?.name || 'Unknown'}</Badge>
                             </TableCell>
                             <TableCell>
-                              {getCurrencySymbol(product.currency)} {formatPrice(product.list_price)}
+                              {isEditing ? (
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={editForm.list_price}
+                                  onChange={(e) => setEditForm({...editForm, list_price: e.target.value})}
+                                  className="w-24"
+                                />
+                              ) : (
+                                `${getCurrencySymbol(product.currency)} ${formatPrice(product.list_price)}`
+                              )}
                             </TableCell>
                             <TableCell>
-                              {product.discounted_price ? (
-                                `${getCurrencySymbol(product.currency)} ${formatPrice(product.discounted_price)}`
-                              ) : '-'}
+                              {isEditing ? (
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={editForm.discounted_price}
+                                  onChange={(e) => setEditForm({...editForm, discounted_price: e.target.value})}
+                                  className="w-24"
+                                  placeholder="İndirimli fiyat"
+                                />
+                              ) : (
+                                product.discounted_price ? (
+                                  `${getCurrencySymbol(product.currency)} ${formatPrice(product.discounted_price)}`
+                                ) : '-'
+                              )}
                             </TableCell>
                             <TableCell>
-                              <Badge>{product.currency}</Badge>
+                              {isEditing ? (
+                                <Select 
+                                  value={editForm.currency} 
+                                  onValueChange={(value) => setEditForm({...editForm, currency: value})}
+                                >
+                                  <SelectTrigger className="w-20">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="USD">USD</SelectItem>
+                                    <SelectItem value="EUR">EUR</SelectItem>
+                                    <SelectItem value="TRY">TRY</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <Badge 
+                                  className="cursor-pointer hover:bg-primary/90" 
+                                  onClick={() => startEditProduct(product)}
+                                >
+                                  {product.currency}
+                                </Badge>
+                              )}
                             </TableCell>
                             <TableCell>
                               ₺ {product.list_price_try ? formatPrice(product.list_price_try) : '---'}
@@ -499,6 +554,46 @@ function App() {
                               {product.discounted_price_try ? (
                                 `₺ ${formatPrice(product.discounted_price_try)}`
                               ) : '-'}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                {isEditing ? (
+                                  <>
+                                    <Button 
+                                      size="sm" 
+                                      onClick={saveEditProduct}
+                                      disabled={loading}
+                                      className="bg-green-600 hover:bg-green-700"
+                                    >
+                                      <Save className="w-4 h-4" />
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      onClick={cancelEditProduct}
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      onClick={() => startEditProduct(product)}
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="destructive" 
+                                      onClick={() => deleteProduct(product.id)}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
                             </TableCell>
                           </TableRow>
                         );
