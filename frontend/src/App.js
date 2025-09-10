@@ -698,6 +698,144 @@ function App() {
                 <CardDescription>Tüm yüklenmiş ürünler ve fiyatları</CardDescription>
               </CardHeader>
               <CardContent>
+                {/* Action Bar */}
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Ürün Yönetimi</h3>
+                  <Dialog open={showAddProductDialog} onOpenChange={setShowAddProductDialog}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-emerald-600 hover:bg-emerald-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Yeni Ürün Ekle
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Yeni Ürün Ekle</DialogTitle>
+                        <DialogDescription>
+                          Manuel olarak yeni bir ürün ekleyebilirsiniz
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="product-name">Ürün Adı</Label>
+                          <Input
+                            id="product-name"
+                            placeholder="Ürün adını girin"
+                            value={newProductForm.name}
+                            onChange={(e) => setNewProductForm({...newProductForm, name: e.target.value})}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="product-company">Firma</Label>
+                          <Select 
+                            value={newProductForm.company_id} 
+                            onValueChange={(value) => setNewProductForm({...newProductForm, company_id: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Firma seçin" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {companies.map((company) => (
+                                <SelectItem key={company.id} value={company.id}>
+                                  {company.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="product-category">Kategori (Opsiyonel)</Label>
+                          <Select 
+                            value={newProductForm.category_id || "none"} 
+                            onValueChange={(value) => setNewProductForm({...newProductForm, category_id: value === "none" ? "" : value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Kategori seçin" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Kategorsiz</SelectItem>
+                              {categories.map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  <div className="flex items-center gap-2">
+                                    <div 
+                                      className="w-2 h-2 rounded-full" 
+                                      style={{backgroundColor: category.color}}
+                                    ></div>
+                                    {category.name}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="product-price">Liste Fiyatı</Label>
+                            <Input
+                              id="product-price"
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              value={newProductForm.list_price}
+                              onChange={(e) => setNewProductForm({...newProductForm, list_price: e.target.value})}
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="product-currency">Para Birimi</Label>
+                            <Select 
+                              value={newProductForm.currency} 
+                              onValueChange={(value) => setNewProductForm({...newProductForm, currency: value})}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="USD">USD ($)</SelectItem>
+                                <SelectItem value="EUR">EUR (€)</SelectItem>
+                                <SelectItem value="TRY">TRY (₺)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="product-discounted">İndirimli Fiyat (Opsiyonel)</Label>
+                          <Input
+                            id="product-discounted"
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            value={newProductForm.discounted_price}
+                            onChange={(e) => setNewProductForm({...newProductForm, discounted_price: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setShowAddProductDialog(false);
+                            resetNewProductForm();
+                          }}
+                        >
+                          İptal
+                        </Button>
+                        <Button 
+                          onClick={createProduct}
+                          disabled={loading}
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          {loading ? 'Ekleniyor...' : 'Ürün Ekle'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
                 {/* Search and Filter Controls */}
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
                   <div className="flex-1">
