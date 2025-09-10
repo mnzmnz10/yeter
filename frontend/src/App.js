@@ -598,7 +598,7 @@ function App() {
                       </SelectTrigger>
                       <SelectContent>
                         {companies.map((company) => (
-                          <SelectItem key={company.id} value={company.id}>
+                          <SelectItem key={company.id} value={company.id || ""}>
                             {company.name}
                           </SelectItem>
                         ))}
