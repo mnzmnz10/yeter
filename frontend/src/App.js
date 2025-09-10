@@ -434,18 +434,25 @@ function App() {
 
   const calculateQuoteTotals = () => {
     const selectedProductsData = getSelectedProductsData();
+    
     const totalListPrice = selectedProductsData.reduce((sum, p) => {
       const price = parseFloat(p.list_price_try) || 0;
-      return sum + price;
+      const quantity = p.quantity || 1;
+      return sum + (price * quantity);
     }, 0);
+    
     const discountAmount = totalListPrice * (parseFloat(quoteDiscount) || 0) / 100;
     const totalNetPrice = totalListPrice - discountAmount;
+    
+    // Toplam ürün adedi hesapla
+    const totalQuantity = selectedProductsData.reduce((sum, p) => sum + (p.quantity || 1), 0);
     
     return {
       totalListPrice: isNaN(totalListPrice) ? 0 : totalListPrice,
       discountAmount: isNaN(discountAmount) ? 0 : discountAmount,
       totalNetPrice: isNaN(totalNetPrice) ? 0 : totalNetPrice,
-      productCount: selectedProductsData.length
+      productCount: selectedProductsData.length,
+      totalQuantity: totalQuantity
     };
   };
 
