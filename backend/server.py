@@ -181,6 +181,7 @@ class ExcelService:
                 'fiyat': 'list_price',
                 'liste': 'list_price',
                 'indirimli fiyat': 'discounted_price',
+                'i̇ndirimli fiyat': 'discounted_price',
                 'indirimli fiyati': 'discounted_price',
                 'discounted price': 'discounted_price',
                 'indirim': 'discounted_price',
