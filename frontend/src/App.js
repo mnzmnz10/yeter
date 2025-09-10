@@ -769,7 +769,8 @@ function App() {
                     >
                       Tümünü Seç
                     </Button>
-                    <Dialog open={showAddProductDialog} onOpenChange={setShowAddProductDialog}>
+                  </div>
+                  <Dialog open={showAddProductDialog} onOpenChange={setShowAddProductDialog}>
                     <DialogTrigger asChild>
                       <Button className="bg-emerald-600 hover:bg-emerald-700">
                         <Plus className="w-4 h-4 mr-2" />
