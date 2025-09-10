@@ -13,6 +13,8 @@ import logging
 from pathlib import Path
 from dotenv import load_dotenv
 import io
+import openpyxl
+from openpyxl.styles import PatternFill
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
