@@ -1631,11 +1631,11 @@ function App() {
                               }));
                               
                               const tempQuoteData = {
-                                name: `Geçici Teklif - ${new Date().toLocaleDateString('tr-TR')}`,
+                                name: quoteName || `İşçilik Dahil Teklif - ${new Date().toLocaleDateString('tr-TR')}`,
                                 discount_percentage: parseFloat(quoteDiscount) || 0,
                                 labor_cost: parseFloat(quoteLaborCost) || 0,
                                 products: selectedProductData,
-                                notes: "İşçilik dahil geçici teklif"
+                                notes: `İşçilik maliyeti: ₺${formatPrice(quoteLaborCost)}`
                               };
                               
                               const response = await fetch(`${API}/quotes`, {
