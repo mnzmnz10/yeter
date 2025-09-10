@@ -186,7 +186,7 @@ class ColorBasedExcelService:
                 rgb = str(color.rgb).upper()
                 
                 # Debug için
-                logger.info(f"Checking RGB: {rgb}")
+                logger.debug(f"Checking RGB: {rgb}")
                 
                 # Kırmızı tonları (Ürün Adı) - FFFF0000 formatını kontrol et
                 if 'FFFF0000' in rgb or 'FF0000' in rgb or 'CC0000' in rgb:
