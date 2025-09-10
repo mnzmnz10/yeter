@@ -231,12 +231,29 @@ function App() {
             icon={TrendingUp}
             description="Karşılaştırma grubu"
           />
-          <StatsCard
-            title="USD/TRY"
-            value={exchangeRates.USD ? formatPrice(exchangeRates.USD) : '---'}
-            icon={DollarSign}
-            description="Güncel döviz kuru"
-          />
+          <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-emerald-800">Döviz Kurları</CardTitle>
+              <DollarSign className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-emerald-700">USD/TRY:</span>
+                  <span className="text-lg font-bold text-emerald-900">
+                    {exchangeRates.USD ? formatPrice(exchangeRates.USD) : '---'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-emerald-700">EUR/TRY:</span>
+                  <span className="text-lg font-bold text-emerald-900">
+                    {exchangeRates.EUR ? formatPrice(exchangeRates.EUR) : '---'}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-emerald-600 mt-1">Güncel döviz kurları</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Action Buttons */}
