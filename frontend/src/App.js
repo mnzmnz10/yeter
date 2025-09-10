@@ -2033,6 +2033,127 @@ function App() {
 
         </Tabs>
       </div>
+
+      {/* Kategori Ürün Atama Dialog'u */}
+      <Dialog open={showCategoryProductDialog} onOpenChange={setShowCategoryProductDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div 
+                className="w-4 h-4 rounded-full" 
+                style={{backgroundColor: selectedCategoryForProducts?.color}}
+              ></div>
+              "{selectedCategoryForProducts?.name}" Kategorisine Ürün Ekle
+            </DialogTitle>
+            <DialogDescription>
+              Kategorisi olmayan {uncategorizedProducts.length} ürün arasından seçim yapabilirsiniz
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            {uncategorizedProducts.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <Package className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+                <p>Kategorisi olmayan ürün bulunmuyor.</p>
+                <p className="text-sm">Tüm ürünler zaten kategorilere atanmış.</p>
+              </div>
+            ) : (
+              <>
+                {/* Tümünü Seç/Bırak Butonu */}
+                <div className="flex items-center justify-between mb-4 pb-4 border-b">
+                  <p className="text-sm text-slate-600">
+                    {selectedProductsForCategory.size} / {uncategorizedProducts.length} ürün seçildi
+                  </p>
+                  <div className="space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const allIds = new Set(uncategorizedProducts.map(p => p.id));
+                        setSelectedProductsForCategory(allIds);
+                      }}
+                    >
+                      Tümünü Seç
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedProductsForCategory(new Set())}
+                    >
+                      Seçimi Temizle
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Ürün Listesi */}
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {uncategorizedProducts.map((product) => {
+                    const company = companies.find(c => c.id === product.company_id);
+                    const isSelected = selectedProductsForCategory.has(product.id);
+                    
+                    return (
+                      <div
+                        key={product.id}
+                        className={`flex items-center p-3 rounded-lg border transition-colors cursor-pointer ${
+                          isSelected 
+                            ? 'bg-blue-50 border-blue-200' 
+                            : 'bg-white border-slate-200 hover:bg-slate-50'
+                        }`}
+                        onClick={() => {
+                          const newSelected = new Set(selectedProductsForCategory);
+                          if (isSelected) {
+                            newSelected.delete(product.id);
+                          } else {
+                            newSelected.add(product.id);
+                          }
+                          setSelectedProductsForCategory(newSelected);
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {}} // Handled by div onClick
+                          className="mr-3"
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium text-slate-900">{product.name}</div>
+                          <div className="text-sm text-slate-500">
+                            {company?.name || 'Bilinmeyen Firma'} • ₺ {formatPrice(product.list_price_try || 0)}
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <Check className="w-5 h-5 text-blue-600" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowCategoryProductDialog(false);
+                setSelectedProductsForCategory(new Set());
+              }}
+            >
+              İptal
+            </Button>
+            {selectedProductsForCategory.size > 0 && (
+              <Button 
+                onClick={assignProductsToCategory}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {selectedProductsForCategory.size} Ürünü Kategoriye Ekle
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
