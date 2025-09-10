@@ -153,7 +153,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Fix NaN issue in price calculations"
     - "Fix NaN issue in quote totals calculation"
   stuck_tasks: []
   test_all: false
