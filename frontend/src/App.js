@@ -70,7 +70,6 @@ function App() {
         loadCompanies(),
         loadProducts(),
         loadCategories(),
-        loadComparisonData(),
         loadExchangeRates()
       ]);
     } catch (error) {
