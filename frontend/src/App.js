@@ -1801,12 +1801,15 @@ function App() {
                 try {
                   // Backend'e teklif kaydet
                   const quoteTotals = calculateQuoteTotals();
-                  const selectedProductIds = getSelectedProductsData().map(p => p.id);
+                  const selectedProductData = getSelectedProductsData().map(p => ({
+                    id: p.id,
+                    quantity: p.quantity || 1
+                  }));
                   
                   const quoteData = {
                     name: quoteName || `Teklif ${new Date().toLocaleDateString('tr-TR')}`,
                     discount_percentage: parseFloat(quoteDiscount) || 0,
-                    products: selectedProductIds,
+                    products: selectedProductData,
                     notes: null
                   };
                   
