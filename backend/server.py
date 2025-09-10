@@ -170,6 +170,212 @@ class CurrencyService:
 
 currency_service = CurrencyService()
 
+# Color-based Excel parsing service
+class ColorBasedExcelService:
+    @staticmethod
+    def detect_color_category(fill):
+        """Detect color category from cell fill"""
+        if not fill or not hasattr(fill, 'start_color'):
+            return 'NONE'
+            
+        color = fill.start_color
+        
+        # RGB renk kontrolü
+        if hasattr(color, 'rgb') and color.rgb:
+            rgb = str(color.rgb).upper()
+            
+            # Kırmızı tonları (Ürün Adı)
+            if 'FF0000' in rgb or 'FF4444' in rgb or 'FFAAAA' in rgb or 'CC0000' in rgb:
+                return 'RED'
+            # Mavi tonları (Ürün Açıklaması)
+            elif '0000FF' in rgb or '4444FF' in rgb or 'AAAAFF' in rgb or '0080FF' in rgb or '007ACC' in rgb:
+                return 'BLUE'  
+            # Sarı tonları (Firma)
+            elif 'FFFF00' in rgb or 'FFFF99' in rgb or 'FFFFAA' in rgb or 'FFF000' in rgb:
+                return 'YELLOW'
+            # Yeşil tonları (Fiyat)
+            elif '00FF00' in rgb or '44FF44' in rgb or 'AAFFAA' in rgb or '008000' in rgb or '00AA00' in rgb:
+                return 'GREEN'
+                
+        # Index renk kontrolü
+        if hasattr(color, 'index') and color.index:
+            index = str(color.index)
+            # Excel'in standart renk indeksleri
+            if index in ['10', '3']:  # Kırmızı
+                return 'RED' 
+            elif index in ['12', '5']:  # Mavi
+                return 'BLUE'
+            elif index in ['13', '6']:  # Sarı
+                return 'YELLOW'
+            elif index in ['11', '4']:  # Yeşil
+                return 'GREEN'
+                
+        return 'NONE'
+    
+    @staticmethod
+    def parse_colored_excel(file_content: bytes, company_name: str = "Unknown") -> List[Dict[str, Any]]:
+        """Parse Excel file using color-based column detection"""
+        try:
+            workbook = openpyxl.load_workbook(io.BytesIO(file_content))
+            all_products = []
+            
+            logger.info(f"Processing Excel with {len(workbook.sheetnames)} sheets: {workbook.sheetnames}")
+            
+            for sheet_name in workbook.sheetnames:
+                logger.info(f"Processing sheet: {sheet_name}")
+                sheet = workbook[sheet_name]
+                
+                # Find header row by looking for colored cells
+                header_row = ColorBasedExcelService._find_colored_header_row(sheet)
+                if header_row == -1:
+                    logger.warning(f"No colored header found in sheet {sheet_name}, skipping")
+                    continue
+                
+                logger.info(f"Found colored header at row {header_row + 1}")
+                
+                # Analyze header colors to map columns
+                column_mapping = ColorBasedExcelService._analyze_header_colors(sheet, header_row)
+                logger.info(f"Column mapping: {column_mapping}")
+                
+                # Extract products from this sheet
+                sheet_products = ColorBasedExcelService._extract_products_from_sheet(
+                    sheet, header_row, column_mapping, company_name
+                )
+                
+                logger.info(f"Extracted {len(sheet_products)} products from {sheet_name}")
+                all_products.extend(sheet_products)
+            
+            logger.info(f"Total products extracted: {len(all_products)}")
+            return all_products
+            
+        except Exception as e:
+            logger.error(f"Error in color-based Excel parsing: {e}")
+            raise HTTPException(status_code=400, detail=f"Renkli Excel dosyası işlenemedi: {str(e)}")
+    
+    @staticmethod
+    def _find_colored_header_row(sheet) -> int:
+        """Find the header row with colored cells"""
+        max_search_rows = min(20, sheet.max_row)
+        
+        for row_idx in range(max_search_rows):
+            colored_cells = 0
+            non_empty_cells = 0
+            
+            for col_idx in range(min(10, sheet.max_column)):
+                cell = sheet.cell(row=row_idx + 1, column=col_idx + 1)
+                if cell.value:
+                    non_empty_cells += 1
+                    color_category = ColorBasedExcelService.detect_color_category(cell.fill)
+                    if color_category != 'NONE':
+                        colored_cells += 1
+            
+            # Header satırında en az 2 renkli hücre ve 3 dolu hücre olmalı
+            if colored_cells >= 2 and non_empty_cells >= 3:
+                return row_idx
+        
+        return -1
+    
+    @staticmethod
+    def _analyze_header_colors(sheet, header_row: int) -> Dict[str, int]:
+        """Analyze header colors and map to column purposes"""
+        column_mapping = {
+            'product_name': -1,
+            'description': -1, 
+            'company': -1,
+            'price': -1
+        }
+        
+        for col_idx in range(min(15, sheet.max_column)):
+            cell = sheet.cell(row=header_row + 1, column=col_idx + 1)
+            if not cell.value:
+                continue
+                
+            color_category = ColorBasedExcelService.detect_color_category(cell.fill)
+            cell_text = str(cell.value).lower()
+            
+            # Renk kategorilerine göre kolon belirleme
+            if color_category == 'RED':  # Kırmızı = Ürün Adı
+                column_mapping['product_name'] = col_idx
+            elif color_category == 'BLUE':  # Mavi = Ürün Açıklaması
+                column_mapping['description'] = col_idx
+            elif color_category == 'YELLOW':  # Sarı = Firma
+                column_mapping['company'] = col_idx
+            elif color_category == 'GREEN':  # Yeşil = Fiyat
+                column_mapping['price'] = col_idx
+            
+            # Alternatif: Text tabanlı fallback
+            elif 'ürün' in cell_text and 'ad' in cell_text and column_mapping['product_name'] == -1:
+                column_mapping['product_name'] = col_idx
+            elif 'açık' in cell_text and column_mapping['description'] == -1:
+                column_mapping['description'] = col_idx
+            elif ('marka' in cell_text or 'firma' in cell_text) and column_mapping['company'] == -1:
+                column_mapping['company'] = col_idx
+            elif 'fiyat' in cell_text and column_mapping['price'] == -1:
+                column_mapping['price'] = col_idx
+        
+        return column_mapping
+    
+    @staticmethod
+    def _extract_products_from_sheet(sheet, header_row: int, column_mapping: Dict[str, int], company_name: str) -> List[Dict[str, Any]]:
+        """Extract products from a sheet using column mapping"""
+        products = []
+        
+        # Start from the row after header
+        for row_idx in range(header_row + 1, sheet.max_row):
+            try:
+                # Extract data based on column mapping
+                product_name = ""
+                description = ""
+                detected_company = company_name
+                price = 0
+                
+                # Ürün adı (Kırmızı)
+                if column_mapping['product_name'] >= 0:
+                    name_cell = sheet.cell(row=row_idx + 1, column=column_mapping['product_name'] + 1)
+                    if name_cell.value:
+                        product_name = str(name_cell.value).strip()
+                
+                # Açıklama (Mavi)
+                if column_mapping['description'] >= 0:
+                    desc_cell = sheet.cell(row=row_idx + 1, column=column_mapping['description'] + 1)
+                    if desc_cell.value:
+                        description = str(desc_cell.value).strip()
+                
+                # Firma (Sarı)
+                if column_mapping['company'] >= 0:
+                    company_cell = sheet.cell(row=row_idx + 1, column=column_mapping['company'] + 1)
+                    if company_cell.value:
+                        detected_company = str(company_cell.value).strip()
+                
+                # Fiyat (Yeşil)
+                if column_mapping['price'] >= 0:
+                    price_cell = sheet.cell(row=row_idx + 1, column=column_mapping['price'] + 1)
+                    if price_cell.value:
+                        try:
+                            price = float(str(price_cell.value).replace(',', '.'))
+                        except:
+                            price = 0
+                
+                # Geçerli ürün kontrolü
+                if (product_name and len(product_name) > 3 and 
+                    price > 0 and 
+                    not any(skip_word in product_name.lower() for skip_word in ['no', 'resim', 'ürün adı', 'toplam'])):
+                    
+                    products.append({
+                        'name': product_name,
+                        'description': description if description else None,
+                        'company_name': detected_company,
+                        'list_price': price,
+                        'currency': 'USD',  # VENTA listesi USD
+                        'discounted_price': None
+                    })
+                    
+            except Exception as e:
+                logger.warning(f"Error processing row {row_idx + 1}: {e}")
+                continue
+        
+        return products
+
 # Excel parsing service
 class ExcelService:
     @staticmethod
