@@ -1116,72 +1116,7 @@ function App() {
             </Card>
           </TabsContent>
 
-          {/* Comparison Tab */}
-          <TabsContent value="comparison" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Fiyat Karşılaştırması</CardTitle>
-                <CardDescription>
-                  Eşleştirdiğiniz ürünlerin fiyat karşılaştırması
-                  <br />
-                  <span className="text-sm text-amber-600">
-                    Henüz karşılaştırma özelliği geliştirilmektedir. Şu an için ürün listesini inceleyebilirsiniz.
-                  </span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {comparisonData.length > 0 ? (
-                  <div className="space-y-6">
-                    {comparisonData.map((comparison) => (
-                      <Card key={comparison.id} className="border-emerald-200">
-                        <CardHeader>
-                          <CardTitle className="text-lg">{comparison.product_name}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Firma</TableHead>
-                                <TableHead>Liste Fiyatı (TL)</TableHead>
-                                <TableHead>İndirimli Fiyat (TL)</TableHead>
-                                <TableHead>Orijinal Para Birimi</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {comparison.products.map((product) => (
-                                <TableRow key={product.id}>
-                                  <TableCell>
-                                    <Badge variant="outline">{product.company_name}</Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    ₺ {formatPrice(product.list_price_try)}
-                                  </TableCell>
-                                  <TableCell>
-                                    {product.discounted_price_try ? (
-                                      `₺ ${formatPrice(product.discounted_price_try)}`
-                                    ) : '-'}
-                                  </TableCell>
-                                  <TableCell>
-                                    {getCurrencySymbol(product.currency)} {formatPrice(product.list_price)}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-slate-500">
-                    <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg">Henüz karşılaştırma verisi bulunmuyor</p>
-                    <p className="text-sm">Excel dosyalarınızı yükledikten sonra ürün eşleştirmeleri yapabilirsiniz</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+
         </Tabs>
       </div>
       <Toaster position="top-right" />
