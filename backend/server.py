@@ -1573,11 +1573,11 @@ class PDFQuoteGenerator:
             ('TOPPADDING', (0, 0), (-1, 0), 12),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
             
-            # Veri satırları - Alternatif renklendirme
+            # Veri satırları - Alternatif renklendirme (4 sütun)
             ('BACKGROUND', (0, 1), (-1, -1), accent_color),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, accent_color]),
-            ('ALIGN', (2, 1), (2, -1), 'CENTER'),  # Miktar ortala
-            ('ALIGN', (3, 1), (-1, -1), 'RIGHT'),  # Fiyatları sağa hizala
+            ('ALIGN', (1, 1), (1, -1), 'CENTER'),  # Miktar ortala
+            ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),  # Fiyatları sağa hizala
             ('FONTNAME', (0, 1), (-1, -1), self.get_font_name()),
             ('FONTSIZE', (0, 1), (-1, -1), 9),
             ('TOPPADDING', (0, 1), (-1, -1), 8),
@@ -1587,9 +1587,9 @@ class PDFQuoteGenerator:
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e0')),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             
-            # Son satır vurgusu (toplam fiyatlar için)
-            ('FONTNAME', (4, 1), (4, -1), 'Montserrat-Bold'),
-            ('TEXTCOLOR', (4, 1), (4, -1), secondary_color),
+            # Son sütun vurgusu (toplam fiyatlar için)
+            ('FONTNAME', (3, 1), (3, -1), self.get_font_name(is_bold=True)),
+            ('TEXTCOLOR', (3, 1), (3, -1), secondary_color),
         ]))
         
         return table
