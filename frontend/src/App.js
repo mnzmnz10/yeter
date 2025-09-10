@@ -234,6 +234,8 @@ function App() {
       setLoading(true);
       const updateData = {
         name: editForm.name,
+        description: editForm.description || null,
+        image_url: editForm.image_url || null,
         list_price: parseFloat(editForm.list_price),
         currency: editForm.currency
       };
