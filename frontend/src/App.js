@@ -1503,8 +1503,26 @@ function App() {
                             placeholder="0.00"
                             value={quoteLaborCost}
                             onChange={(e) => setQuoteLaborCost(parseFloat(e.target.value) || 0)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && quoteLaborCost > 0) {
+                                // Enter'a basınca işçilik maliyeti entegre edilir
+                                toast.success(`₺${formatPrice(quoteLaborCost)} işçilik maliyeti eklendi!`);
+                              }
+                            }}
                             className="w-32"
                           />
+                          {/* Yeşil Tik Butonu */}
+                          {quoteLaborCost > 0 && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                toast.success(`₺${formatPrice(quoteLaborCost)} işçilik maliyeti eklendi!`);
+                              }}
+                              className="bg-green-600 hover:bg-green-700 px-2"
+                            >
+                              <Check className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                         <div className="flex gap-2 ml-auto">
                           <Button
