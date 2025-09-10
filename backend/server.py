@@ -1561,12 +1561,27 @@ class PDFQuoteGenerator:
         
         return footer_content
     
-    def _format_price(self, price):
-        """Fiyat formatla"""
+    def _format_price_modern(self, price):
+        """Modern Türkçe fiyat formatla"""
         try:
-            return f"{float(price):,.2f}".replace(',', '.')
-        except:
-            return "0.00"
+            if price is None:
+                return "0,00"
+            
+            price_float = float(price)
+            if price_float == 0:
+                return "0,00"
+                
+            # Türkçe format: nokta binlik ayırıcı, virgül ondalık ayırıcı
+            formatted = f"{price_float:,.2f}"
+            # Binlik ayırıcıyı nokta, ondalık ayırıcıyı virgül yap
+            formatted = formatted.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
+            return formatted
+        except (ValueError, TypeError):
+            return "0,00"
+    
+    def _format_price(self, price):
+        """Eski format - geriye uyumluluk için"""
+        return self._format_price_modern(price)
 
 # ===== PDF QUOTE ENDPOINT =====
 
