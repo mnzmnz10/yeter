@@ -713,7 +713,7 @@ function App() {
                             <TableCell>
                               {isEditing ? (
                                 <Select 
-                                  value={editForm.category_id} 
+                                  value={editForm.category_id || ""} 
                                   onValueChange={(value) => setEditForm({...editForm, category_id: value})}
                                 >
                                   <SelectTrigger className="w-32">
@@ -723,13 +723,7 @@ function App() {
                                     <SelectItem value="">Kategorsiz</SelectItem>
                                     {categories.map((category) => (
                                       <SelectItem key={category.id} value={category.id}>
-                                        <div className="flex items-center gap-2">
-                                          <div 
-                                            className="w-2 h-2 rounded-full" 
-                                            style={{backgroundColor: category.color}}
-                                          ></div>
-                                          {category.name}
-                                        </div>
+                                        {category.name}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
