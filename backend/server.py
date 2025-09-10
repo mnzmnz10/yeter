@@ -348,7 +348,7 @@ class ColorBasedExcelService:
     
     @staticmethod
     def _analyze_header_colors(sheet, header_row: int) -> Dict[str, int]:
-        """Analyze header colors and map to column purposes"""
+        """Analyze header colors and map to column purposes - ONLY COLOR-BASED"""
         column_mapping = {
             'product_name': -1,
             'description': -1, 
@@ -363,9 +363,8 @@ class ColorBasedExcelService:
                 continue
                 
             color_category = ColorBasedExcelService.detect_color_category(cell.fill)
-            cell_text = str(cell.value).lower()
             
-            # Renk kategorilerine göre kolon belirleme
+            # SADECE renk kategorilerine göre kolon belirleme - text-based fallback YOK
             if color_category == 'RED':  # Kırmızı = Ürün Adı
                 column_mapping['product_name'] = col_idx
             elif color_category == 'BLUE':  # Mavi = Ürün Açıklaması
@@ -376,18 +375,7 @@ class ColorBasedExcelService:
                 column_mapping['list_price'] = col_idx
             elif color_category == 'ORANGE':  # Turuncu = İndirimli Fiyat
                 column_mapping['discounted_price'] = col_idx
-            
-            # Alternatif: Text tabanlı fallback
-            elif 'ürün' in cell_text and 'ad' in cell_text and column_mapping['product_name'] == -1:
-                column_mapping['product_name'] = col_idx
-            elif 'açık' in cell_text and column_mapping['description'] == -1:
-                column_mapping['description'] = col_idx
-            elif ('marka' in cell_text or 'firma' in cell_text) and column_mapping['company'] == -1:
-                column_mapping['company'] = col_idx
-            elif 'fiyat' in cell_text and 'liste' in cell_text and column_mapping['list_price'] == -1:
-                column_mapping['list_price'] = col_idx
-            elif ('indirim' in cell_text or 'özel' in cell_text) and 'fiyat' in cell_text and column_mapping['discounted_price'] == -1:
-                column_mapping['discounted_price'] = col_idx
+            # Diğer renkler veya renksiz veriler ignore edilir
         
         return column_mapping
     
