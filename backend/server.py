@@ -207,10 +207,34 @@ class ColorBasedExcelService:
             except Exception as e:
                 logger.warning(f"RGB parsing error: {e}")
                 
+        # Theme color kontrolü (Excel'de theme color kullanıldığında)
+        if hasattr(color, 'theme') and color.theme is not None:
+            try:
+                theme = color.theme
+                logger.debug(f"Checking theme color: {theme}")
+                
+                # Excel theme color mappings
+                if theme == 2:  # Theme color 2 genelde koyu kırmızı
+                    return 'RED'
+                elif theme == 4:  # Theme color 4 genelde mavi
+                    return 'BLUE'  
+                elif theme == 5:  # Theme color 5 genelde sarı/accent
+                    return 'YELLOW'
+                elif theme == 6:  # Theme color 6 genelde yeşil
+                    return 'GREEN'
+                elif theme == 9:  # Theme color 9 - bu dosyada fiyat için kullanılıyor, yeşil kabul edelim
+                    return 'GREEN'
+                elif theme == 7:  # Theme color 7 genelde turuncu
+                    return 'ORANGE'
+                    
+            except Exception as e:
+                logger.warning(f"Theme color parsing error: {e}")
+                
         # Index renk kontrolü
         if hasattr(color, 'index') and color.index:
             try:
                 index = str(color.index)
+                logger.debug(f"Checking color index: {index}")
                 # Excel'in standart renk indeksleri
                 if index in ['10', '3']:  # Kırmızı
                     return 'RED' 
@@ -222,6 +246,8 @@ class ColorBasedExcelService:
                     return 'GREEN'
                 elif index in ['46', '53']:  # Turuncu
                     return 'ORANGE'
+                elif index == '9':  # Bu dosyada index 9 fiyat için kullanılıyor
+                    return 'GREEN'
             except Exception as e:
                 logger.warning(f"Index parsing error: {e}")
                 
