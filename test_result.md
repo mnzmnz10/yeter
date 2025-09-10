@@ -118,29 +118,17 @@ backend:
         comment: "Upgraded PDF generation system with: 1) Montserrat font integration via TTF files, 2) Enhanced Turkish character support with UTF-8 encoding, 3) New color scheme (#25c7eb theme), 4) Modern table design with alternating row colors, 5) Updated company information (Çorlu/Tekirdağ address), 6) Turkish price formatting (dot for thousands, comma for decimals), 7) Improved layout with better spacing and typography. Requires testing with sample quotes."
 
 frontend:
-  - task: "Fix NaN issue in quote totals calculation"
+  - task: "Frontend support for PDF download with new design"
     implemented: true
     working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
-    priority: "high"
+    priority: "medium"
     needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Enhanced formatPrice function with NaN handling and confirmed calculateQuoteTotals already has NaN protection. Function returns 0 for invalid values."
-
-  - task: "Fix API URL configuration issue"
-    implemented: true
-    working: true
-    file: "/app/frontend/.env"
-    stuck_count: 0
-    priority: "high" 
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Fixed double /api prefix issue in REACT_APP_BACKEND_URL. Removed /api from .env file since code already appends it."
+        comment: "PDF download functionality exists and working. Frontend uses existing API endpoint /api/quotes/{quote_id}/pdf for downloading. No frontend changes needed as the improvement is in backend PDF generation."
 
 metadata:
   created_by: "main_agent"
