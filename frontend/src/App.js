@@ -1104,6 +1104,26 @@ function App() {
                             <h3 className="text-lg font-semibold text-slate-800">
                               {categoryName}
                             </h3>
+                            {/* İndirimli Fiyat Toggle Butonu */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowDiscountedPrices(!showDiscountedPrices)}
+                              className="ml-2 flex items-center gap-1"
+                              title={showDiscountedPrices ? "İndirimli fiyatları gizle" : "İndirimli fiyatları göster"}
+                            >
+                              {showDiscountedPrices ? (
+                                <>
+                                  <EyeOff className="w-4 h-4" />
+                                  <span className="text-xs">İndirim Gizle</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="w-4 h-4" />
+                                  <span className="text-xs">İndirim Göster</span>
+                                </>
+                              )}
+                            </Button>
                             <Badge variant="outline" className="ml-auto">
                               {categoryProducts.length} ürün
                             </Badge>
