@@ -53,6 +53,8 @@ function App() {
   const [quoteDiscount, setQuoteDiscount] = useState(0);
   const [quotes, setQuotes] = useState([]);
   const [selectedQuote, setSelectedQuote] = useState(null);
+  const [quoteSearchTerm, setQuoteSearchTerm] = useState('');
+  const [filteredQuotes, setFilteredQuotes] = useState([]);
   const [newProductForm, setNewProductForm] = useState({
     name: '',
     company_id: '',
