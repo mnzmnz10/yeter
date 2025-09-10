@@ -381,7 +381,7 @@ class ColorBasedExcelService:
     
     @staticmethod
     def _analyze_data_row_colors(sheet, data_row: int) -> Dict[str, int]:
-        """Analyze first data row colors when no header is found"""
+        """Analyze first data row colors when no header is found - ONLY COLOR-BASED"""
         column_mapping = {
             'product_name': -1,
             'description': -1, 
@@ -397,10 +397,10 @@ class ColorBasedExcelService:
                 
             color_category = ColorBasedExcelService.detect_color_category(cell.fill)
             
-            # Renk kategorilerine göre kolon belirleme
+            # SADECE renk kategorilerine göre kolon belirleme - text-based fallback YOK
             if color_category == 'RED':  # Kırmızı = Ürün Adı
                 column_mapping['product_name'] = col_idx
-            elif color_category == 'BLUE':  # Mavi = Ürün Açıklaması
+            elif color_category == 'BLUE':  # Mavi = Ürün Açıklaması  
                 column_mapping['description'] = col_idx
             elif color_category == 'YELLOW':  # Sarı = Firma
                 column_mapping['company'] = col_idx
@@ -408,6 +408,7 @@ class ColorBasedExcelService:
                 column_mapping['list_price'] = col_idx
             elif color_category == 'ORANGE':  # Turuncu = İndirimli Fiyat
                 column_mapping['discounted_price'] = col_idx
+            # Diğer renkler veya renksiz veriler ignore edilir
         
         return column_mapping
     
