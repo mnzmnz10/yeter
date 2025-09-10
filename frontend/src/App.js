@@ -1233,6 +1233,149 @@ function App() {
             </Card>
           </TabsContent>
 
+          {/* Quotes Tab */}
+          <TabsContent value="quotes" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Teklif Yönetimi
+                </CardTitle>
+                <CardDescription>Seçili ürünlerden teklif oluşturun ve yönetin</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {selectedProducts.size > 0 ? (
+                  <div className="space-y-6">
+                    {/* Selected Products Summary */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-blue-900 mb-2">
+                        Seçili Ürünler ({selectedProducts.size} adet)
+                      </h4>
+                      <div className="grid gap-2">
+                        {getSelectedProductsData().slice(0, 5).map((product) => {
+                          const company = companies.find(c => c.id === product.company_id);
+                          return (
+                            <div key={product.id} className="flex items-center justify-between bg-white rounded p-2 text-sm">
+                              <div className="flex items-center gap-3">
+                                {product.image_url && (
+                                  <img 
+                                    src={product.image_url} 
+                                    alt={product.name}
+                                    className="w-8 h-8 object-cover rounded"
+                                    onError={(e) => {e.target.style.display = 'none'}}
+                                  />
+                                )}
+                                <div>
+                                  <div className="font-medium">{product.name}</div>
+                                  <div className="text-slate-500">
+                                    {company?.name} • {getCurrencySymbol(product.currency)} {formatPrice(product.list_price)}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-semibold">₺ {formatPrice(product.list_price_try)}</div>
+                                {product.discounted_price_try && (
+                                  <div className="text-sm text-green-600">₺ {formatPrice(product.discounted_price_try)}</div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {selectedProducts.size > 5 && (
+                          <div className="text-center text-sm text-slate-500 py-2">
+                            ... ve {selectedProducts.size - 5} ürün daha
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Quote Summary */}
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-emerald-900 mb-3">Teklif Özeti</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-emerald-800">
+                            {selectedProducts.size}
+                          </div>
+                          <div className="text-sm text-emerald-600">Ürün Sayısı</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-emerald-800">
+                            ₺ {formatPrice(getSelectedProductsData().reduce((sum, p) => sum + (p.list_price_try || 0), 0))}
+                          </div>
+                          <div className="text-sm text-emerald-600">Toplam Liste Fiyatı</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-emerald-800">
+                            ₺ {formatPrice(getSelectedProductsData().reduce((sum, p) => sum + (p.discounted_price_try || p.list_price_try || 0), 0))}
+                          </div>
+                          <div className="text-sm text-emerald-600">Toplam Net Fiyat</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-emerald-800">
+                            {Math.round((1 - getSelectedProductsData().reduce((sum, p) => sum + (p.discounted_price_try || p.list_price_try || 0), 0) / getSelectedProductsData().reduce((sum, p) => sum + (p.list_price_try || 0), 0)) * 100) || 0}%
+                          </div>
+                          <div className="text-sm text-emerald-600">Ortalama İndirim</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-4">
+                      <Button 
+                        onClick={() => setShowCreateQuoteDialog(true)}
+                        className="bg-blue-600 hover:bg-blue-700 flex-1"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Resmi Teklif Oluştur
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          const csvContent = getSelectedProductsData().map(p => {
+                            const company = companies.find(c => c.id === p.company_id);
+                            return `"${p.name}","${company?.name || 'Unknown'}","${p.list_price} ${p.currency}","₺ ${formatPrice(p.list_price_try)}"`;
+                          }).join('\n');
+                          const blob = new Blob([`"Ürün Adı","Firma","Orijinal Fiyat","TL Fiyat"\n${csvContent}`], { type: 'text/csv' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'secili_urunler.csv';
+                          a.click();
+                        }}
+                      >
+                        CSV İndir
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={clearSelection}
+                      >
+                        Seçimi Temizle
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-slate-500">
+                    <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold mb-2">Henüz Ürün Seçilmedi</h3>
+                    <p className="text-sm mb-4">
+                      Teklif oluşturmak için önce "Ürünler" sekmesinden ürün seçin
+                    </p>
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        // Switch to products tab
+                        const productsTab = document.querySelector('[role="tab"][value="products"]');
+                        if (productsTab) productsTab.click();
+                      }}
+                    >
+                      Ürünlere Git
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
         </Tabs>
       </div>
