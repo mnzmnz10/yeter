@@ -722,7 +722,7 @@ function App() {
                                   <SelectContent>
                                     <SelectItem value="">Kategorsiz</SelectItem>
                                     {categories.map((category) => (
-                                      <SelectItem key={category.id} value={category.id}>
+                                      <SelectItem key={category.id} value={category.id || ""}>
                                         {category.name}
                                       </SelectItem>
                                     ))}
