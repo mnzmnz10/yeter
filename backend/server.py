@@ -1440,20 +1440,20 @@ class PDFQuoteGenerator:
         return buffer
     
     def _create_modern_header(self):
-        """Logo ve Çorlu Karavan bilgileri başlığı"""
+        """Logo ve Çorlu Karavan bilgileri başlığı - Yeni logo ile"""
         from reportlab.platypus import Table as PDFTable
         
-        # Logo yolu
-        logo_path = Path(__file__).parent / 'images' / 'corlu_karavan_logo.png'
+        # Yeni logo yolu
+        logo_path = Path(__file__).parent / 'images' / 'corlu_karavan_logo_new.png'
         
         # Header tablosu oluştur (Logo + Firma bilgileri)
         if logo_path.exists():
             try:
                 logo_img = Image(str(logo_path), width=80, height=80)
                 
-                # Firma bilgileri
+                # Firma bilgileri - ÇORLU KARAVAN yeni renk ile (#2F4B68)
                 company_info = [
-                    "<font size='16' color='#25c7eb'><b>ÇORLU KARAVAN</b></font>",
+                    "<font size='16' color='#2F4B68'><b>ÇORLU KARAVAN</b></font>",
                     " ",
                     "<font size='10'>Adres: Hatip, Sarı Salkım 3.Sokak Mobilyacılar Sitesi No: B1, 59000 Çorlu/Tekirdağ</font>",
                     "<font size='10'>Telefon: 0505 813 77 65</font>",
@@ -1482,9 +1482,9 @@ class PDFQuoteGenerator:
             except Exception as e:
                 logger.error(f"Logo loading error: {e}")
         
-        # Logo yoksa sadece metin
+        # Logo yoksa sadece metin - ÇORLU KARAVAN yeni renk ile
         company_info = [
-            "<font size='16' color='#25c7eb'><b>ÇORLU KARAVAN</b></font>",
+            "<font size='16' color='#2F4B68'><b>ÇORLU KARAVAN</b></font>",
             " ",
             "<font size='10'>Adres: Hatip, Sarı Salkım 3.Sokak Mobilyacılar Sitesi No: B1, 59000 Çorlu/Tekirdağ</font>",
             "<font size='10'>Telefon: 0505 813 77 65</font>",
