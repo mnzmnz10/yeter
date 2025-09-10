@@ -1485,6 +1485,58 @@ function App() {
                       </div>
                     </div>
 
+                    {/* İşçilik Maliyeti Bölümü */}
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Wrench className="w-4 h-4 text-green-600" />
+                          <span className="font-medium text-green-900">İşçilik Maliyeti</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-700">₺</span>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            value={quoteLaborCost}
+                            onChange={(e) => setQuoteLaborCost(parseFloat(e.target.value) || 0)}
+                            className="w-32"
+                          />
+                        </div>
+                        <div className="flex gap-2 ml-auto">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteLaborCost(500)}
+                          >
+                            ₺500
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteLaborCost(1000)}
+                          >
+                            ₺1000
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteLaborCost(1500)}
+                          >
+                            ₺1500
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteLaborCost(2000)}
+                          >
+                            ₺2000
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Quote Summary */}
                     <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
                       <h4 className="font-semibold text-emerald-900 mb-3">Teklif Özeti</h4>
