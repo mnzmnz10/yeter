@@ -1379,6 +1379,93 @@ function App() {
 
         </Tabs>
       </div>
+
+      {/* Create Quote Dialog */}
+      <Dialog open={showCreateQuoteDialog} onOpenChange={setShowCreateQuoteDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Resmi Teklif Oluştur</DialogTitle>
+            <DialogDescription>
+              Seçili {selectedProducts.size} ürün için profesyonel teklif hazırlayın
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="quote-name">Teklif Adı</Label>
+              <Input
+                id="quote-name"
+                placeholder="Örn: Solar Panel Sistemi Teklifi"
+                value={quoteName}
+                onChange={(e) => setQuoteName(e.target.value)}
+              />
+            </div>
+            
+            {/* Quote Preview */}
+            <div className="bg-slate-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+              <h4 className="font-semibold mb-3">Teklif Özeti</h4>
+              <div className="space-y-2 text-sm">
+                {getSelectedProductsData().map((product, index) => {
+                  const company = companies.find(c => c.id === product.company_id);
+                  return (
+                    <div key={product.id} className="flex justify-between items-center py-1 border-b border-slate-200">
+                      <div className="flex-1">
+                        <span className="font-medium">{index + 1}. {product.name}</span>
+                        <span className="text-slate-500 ml-2">({company?.name})</span>
+                      </div>
+                      <div className="text-right">
+                        <div>₺ {formatPrice(product.discounted_price_try || product.list_price_try)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="flex justify-between items-center pt-2 border-t-2 border-slate-300 font-bold">
+                  <span>TOPLAM:</span>
+                  <span>₺ {formatPrice(getSelectedProductsData().reduce((sum, p) => sum + (p.discounted_price_try || p.list_price_try || 0), 0))}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowCreateQuoteDialog(false);
+                setQuoteName('');
+              }}
+            >
+              İptal
+            </Button>
+            <Button 
+              onClick={() => {
+                // Create PDF or print functionality can be added here
+                const quoteData = {
+                  name: quoteName || `Teklif ${new Date().toLocaleDateString('tr-TR')}`,
+                  products: getSelectedProductsData(),
+                  totalAmount: getSelectedProductsData().reduce((sum, p) => sum + (p.discounted_price_try || p.list_price_try || 0), 0),
+                  createdAt: new Date().toISOString()
+                };
+                
+                // For now, just download as JSON
+                const blob = new Blob([JSON.stringify(quoteData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${quoteName || 'teklif'}.json`;
+                a.click();
+                
+                setShowCreateQuoteDialog(false);
+                setQuoteName('');
+                toast.success('Teklif başarıyla oluşturuldu ve indirildi');
+              }}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Teklif Oluştur
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Toaster position="top-right" />
     </div>
   );
