@@ -66,6 +66,7 @@ class Product(BaseModel):
 class ProductCreate(BaseModel):
     name: str
     company_id: str
+    category_id: Optional[str] = None
     list_price: Decimal
     discounted_price: Optional[Decimal] = None
     currency: str
