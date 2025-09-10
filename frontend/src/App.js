@@ -1408,13 +1408,17 @@ function App() {
                         onClick={() => {
                           const csvContent = getSelectedProductsData().map(p => {
                             const company = companies.find(c => c.id === p.company_id);
-                            return `"${p.name}","${company?.name || 'Unknown'}","${p.list_price} ${p.currency}","₺ ${formatPrice(p.list_price_try)}"`;
+                            const listPrice = p.list_price_try || 0;
+                            const netPrice = listPrice * (1 - quoteDiscount / 100);
+                            return `"${p.name}","${company?.name || 'Unknown'}","₺ ${formatPrice(listPrice)}","₺ ${formatPrice(netPrice)}","%${quoteDiscount}"`;
                           }).join('\n');
-                          const blob = new Blob([`"Ürün Adı","Firma","Orijinal Fiyat","TL Fiyat"\n${csvContent}`], { type: 'text/csv' });
+                          const header = `"Ürün Adı","Firma","Liste Fiyatı","Net Fiyat","İndirim"\n`;
+                          const totalRow = `\n"TOPLAM","","₺ ${formatPrice(calculateQuoteTotals().totalListPrice)}","₺ ${formatPrice(calculateQuoteTotals().totalNetPrice)}","₺ ${formatPrice(calculateQuoteTotals().discountAmount)}"`;
+                          const blob = new Blob([header + csvContent + totalRow], { type: 'text/csv' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
                           a.href = url;
-                          a.download = 'secili_urunler.csv';
+                          a.download = `teklif_${new Date().toLocaleDateString('tr-TR').replace(/\./g, '_')}.csv`;
                           a.click();
                         }}
                       >
