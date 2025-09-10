@@ -257,7 +257,8 @@ class ColorBasedExcelService:
     def parse_colored_excel(file_content: bytes, company_name: str = "Unknown") -> List[Dict[str, Any]]:
         """Parse Excel file using color-based column detection"""
         try:
-            workbook = openpyxl.load_workbook(io.BytesIO(file_content))
+            # Load workbook with data_only=True to get formula results
+            workbook = openpyxl.load_workbook(io.BytesIO(file_content), data_only=True)
             all_products = []
             
             logger.info(f"Processing Excel with {len(workbook.sheetnames)} sheets: {workbook.sheetnames}")
