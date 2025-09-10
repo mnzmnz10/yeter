@@ -56,6 +56,8 @@ class Product(BaseModel):
     name: str
     company_id: str
     category_id: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
     list_price: Decimal
     discounted_price: Optional[Decimal] = None
     currency: str
