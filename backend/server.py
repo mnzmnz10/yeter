@@ -1294,15 +1294,17 @@ class PDFQuoteGenerator:
             return 'Helvetica'
     
     def setup_styles(self):
-        """PDF için özel stiller tanımla - Türkçe karakter desteği ile"""
+        """PDF için özel stiller tanımla - Yeni renk şeması ile"""
         
-        # Ana renk paleti - #25c7eb temalı
-        primary_color = colors.HexColor('#25c7eb')  # Ana turkuaz
-        secondary_color = colors.HexColor('#1ba3cc')  # Koyu turkuaz
-        accent_color = colors.HexColor('#85e8ff')    # Açık turkuaz
-        text_color = colors.HexColor('#2d3748')      # Koyu gri
+        # Yeni renk paleti
+        primary_color = colors.HexColor('#25c7eb')      # Tablo renkleri için
+        secondary_color = colors.HexColor('#1ba3cc')    # Eski renkler için
+        new_primary_color = colors.HexColor('#2F4B68')  # Ana başlıklar için YENİ
+        table_header_color = colors.HexColor('#A6C9EC') # Tablo başlık arka planı YENİ
+        accent_color = colors.HexColor('#85e8ff')       # Açık turkuaz
+        text_color = colors.HexColor('#2d3748')         # Koyu gri
         
-        # Başlık stili - Montserrat Bold kullan
+        # Başlık stili - Yeni renk (#2F4B68)
         self.title_style = ParagraphStyle(
             'CustomTitle',
             parent=self.styles['Heading1'],
@@ -1311,11 +1313,11 @@ class PDFQuoteGenerator:
             spaceAfter=25,
             spaceBefore=10,
             alignment=TA_CENTER,
-            textColor=primary_color,
+            textColor=new_primary_color,  # YENİ RENK
             leading=26
         )
         
-        # Alt başlık stili
+        # Alt başlık stili - Yeni renk (#2F4B68)
         self.subtitle_style = ParagraphStyle(
             'SubTitle',
             parent=self.styles['Heading2'],
@@ -1324,7 +1326,7 @@ class PDFQuoteGenerator:
             spaceAfter=15,
             spaceBefore=10,
             alignment=TA_LEFT,
-            textColor=secondary_color,
+            textColor=new_primary_color,  # YENİ RENK
             leading=18
         )
         
@@ -1374,16 +1376,16 @@ class PDFQuoteGenerator:
             leading=11
         )
         
-        # Fiyat vurgu stili
+        # Fiyat vurgu stili - Küçültülmüş ve yeni renk (#2F4B68)
         self.price_style = ParagraphStyle(
             'PriceHighlight',
             parent=self.styles['Normal'],
             fontName=self.get_font_name(is_bold=True),
-            fontSize=16,
+            fontSize=14,  # 16'dan 14'e küçültüldü
             alignment=TA_RIGHT,
-            textColor=primary_color,
+            textColor=new_primary_color,  # YENİ RENK
             spaceAfter=10,
-            leading=20
+            leading=18
         )
 
     def create_quote_pdf(self, quote_data: Dict) -> BytesIO:
