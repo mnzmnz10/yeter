@@ -1130,10 +1130,10 @@ async def create_quote(quote: QuoteCreate):
         
         for product in products:
             # Get company info
-            company = await db.companies.find_one({"_id": ObjectId(product["company_id"])})
+            company = await db.companies.find_one({"id": product["company_id"]})
             
             # Get quantity for this product
-            quantity = product_quantities.get(str(product["_id"]), 1)
+            quantity = product_quantities.get(product["id"], 1)
             
             list_price_try = float(product.get("list_price_try", 0))
             discounted_price_try = float(product.get("discounted_price_try", 0)) if product.get("discounted_price_try") else list_price_try
