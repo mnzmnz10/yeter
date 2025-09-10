@@ -1460,7 +1460,7 @@ class PDFQuoteGenerator:
         info_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f7fafc')),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, -1), 'Montserrat'),
+            ('FONTNAME', (0, 0), (-1, -1), self.get_font_name()),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
