@@ -482,8 +482,8 @@ function App() {
             <TabsTrigger value="upload">Excel Yükle</TabsTrigger>
           </TabsList>
 
-          {/* Products Tab */}
-          <TabsContent value="products" className="space-y-6">
+          {/* Companies Tab */}
+          <TabsContent value="companies" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Firma Yönetimi</CardTitle>
