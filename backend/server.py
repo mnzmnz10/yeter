@@ -761,12 +761,21 @@ async def upload_excel(company_id: str, file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Excel dosyası yüklenemedi: {str(e)}")
 
 @api_router.get("/products", response_model=List[Product])
-async def get_products(company_id: Optional[str] = None):
-    """Get all products, optionally filtered by company"""
+async def get_products(
+    company_id: Optional[str] = None,
+    category_id: Optional[str] = None,
+    search: Optional[str] = None
+):
+    """Get all products, optionally filtered by company, category, or search term"""
     try:
         query = {}
         if company_id:
             query["company_id"] = company_id
+        if category_id:
+            query["category_id"] = category_id
+        if search:
+            # Case-insensitive search in product name
+            query["name"] = {"$regex": search, "$options": "i"}
             
         products = await db.products.find(query).to_list(None)
         return [Product(**product) for product in products]
