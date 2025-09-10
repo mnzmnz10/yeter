@@ -341,6 +341,29 @@ function App() {
     return () => clearTimeout(delayedSearch);
   }, [searchQuery, selectedCategory]);
 
+  const toggleProductSelection = (productId) => {
+    const newSelected = new Set(selectedProducts);
+    if (newSelected.has(productId)) {
+      newSelected.delete(productId);
+    } else {
+      newSelected.add(productId);
+    }
+    setSelectedProducts(newSelected);
+  };
+
+  const clearSelection = () => {
+    setSelectedProducts(new Set());
+  };
+
+  const selectAllVisible = () => {
+    const visibleProductIds = products.map(p => p.id);
+    setSelectedProducts(new Set(visibleProductIds));
+  };
+
+  const getSelectedProductsData = () => {
+    return products.filter(p => selectedProducts.has(p.id));
+  };
+
   const resetNewProductForm = () => {
     setNewProductForm({
       name: '',
