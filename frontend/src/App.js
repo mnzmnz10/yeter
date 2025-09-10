@@ -81,12 +81,26 @@ function App() {
 
   const loadProducts = async () => {
     try {
-      const response = await axios.get(`${API}/products`);
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('search', searchQuery);
+      if (selectedCategory) params.append('category_id', selectedCategory);
+      
+      const response = await axios.get(`${API}/products?${params.toString()}`);
       setProducts(response.data);
       setStats(prev => ({ ...prev, totalProducts: response.data.length }));
     } catch (error) {
       console.error('Error loading products:', error);
       toast.error('Ürünler yüklenemedi');
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      toast.error('Kategoriler yüklenemedi');
     }
   };
 
