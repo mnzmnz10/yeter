@@ -1497,9 +1497,21 @@ function App() {
                     </div>
                   );
                 })}
-                <div className="flex justify-between items-center pt-2 border-t-2 border-slate-300 font-bold">
-                  <span>TOPLAM:</span>
-                  <span>₺ {formatPrice(getSelectedProductsData().reduce((sum, p) => sum + (p.discounted_price_try || p.list_price_try || 0), 0))}</span>
+                <div className="space-y-1 pt-2 border-t-2 border-slate-300">
+                  <div className="flex justify-between items-center text-sm text-slate-600">
+                    <span>Ara Toplam:</span>
+                    <span>₺ {formatPrice(calculateQuoteTotals().totalListPrice)}</span>
+                  </div>
+                  {quoteDiscount > 0 && (
+                    <div className="flex justify-between items-center text-sm text-red-600">
+                      <span>İndirim (%{quoteDiscount}):</span>
+                      <span>- ₺ {formatPrice(calculateQuoteTotals().discountAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center font-bold text-lg">
+                    <span>NET TOPLAM:</span>
+                    <span>₺ {formatPrice(calculateQuoteTotals().totalNetPrice)}</span>
+                  </div>
                 </div>
               </div>
             </div>
