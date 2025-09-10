@@ -193,13 +193,17 @@ class ExcelService:
             
             # Normalize column names
             df.columns = df.columns.str.lower().str.strip()
+            logger.info(f"Original columns: {list(df.columns)}")
             
             # Find and rename columns
             for col in df.columns:
                 for mapping_key, mapping_value in column_mapping.items():
                     if mapping_key in col:
                         df = df.rename(columns={col: mapping_value})
+                        logger.info(f"Renamed column '{col}' to '{mapping_value}'")
                         break
+            
+            logger.info(f"Final columns: {list(df.columns)}")
             
             # Ensure required columns exist
             required_columns = ['product_name', 'list_price', 'currency']
