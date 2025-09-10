@@ -1616,10 +1616,10 @@ class PDFQuoteGenerator:
             totals_content.append(Paragraph(discount_text, self.normal_style))
             totals_content.append(Spacer(1, 8))
         
-        # Net toplam - büyük ve vurgulanmış (önemli notlar rengi ile aynı)
+        # Net toplam - küçültülmüş ve yeni renk (#2F4B68)
         net_total = quote_data.get('total_net_price', 0)
-        net_total_color = colors.HexColor('#1ba3cc')  # Önemli notlar rengi ile aynı
-        net_total_text = f"<font size='18' color='{net_total_color}'><b>NET TOPLAM: ₺ {self._format_price_modern(net_total)}</b></font>"
+        net_total_color = colors.HexColor('#2F4B68')  # YENİ RENK
+        net_total_text = f"<font size='14' color='{net_total_color}'><b>NET TOPLAM: ₺ {self._format_price_modern(net_total)}</b></font>"
         totals_content.append(Paragraph(net_total_text, self.price_style))
         
         return totals_content
