@@ -809,6 +809,27 @@ function App() {
                             onChange={(e) => setNewProductForm({...newProductForm, discounted_price: e.target.value})}
                           />
                         </div>
+
+                        <div>
+                          <Label htmlFor="product-description">Açıklama (Opsiyonel)</Label>
+                          <Input
+                            id="product-description"
+                            placeholder="Ürün açıklaması"
+                            value={newProductForm.description}
+                            onChange={(e) => setNewProductForm({...newProductForm, description: e.target.value})}
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="product-image">Görsel URL (Opsiyonel)</Label>
+                          <Input
+                            id="product-image"
+                            type="url"
+                            placeholder="https://example.com/image.jpg"
+                            value={newProductForm.image_url}
+                            onChange={(e) => setNewProductForm({...newProductForm, image_url: e.target.value})}
+                          />
+                        </div>
                       </div>
                       <DialogFooter>
                         <Button 
