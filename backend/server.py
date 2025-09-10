@@ -1534,9 +1534,10 @@ class PDFQuoteGenerator:
         return info_table
     
     def _create_modern_products_table(self, products: List[Dict]):
-        """Modern tasarımda ürün tablosu oluştur"""
+        """Modern tasarımda ürün tablosu oluştur - Yeni renk şeması ile"""
         primary_color = colors.HexColor('#25c7eb')
         secondary_color = colors.HexColor('#1ba3cc')
+        table_header_color = colors.HexColor('#A6C9EC')  # YENİ TABLO BAŞLIK RENGİ
         accent_color = colors.HexColor('#f0f9ff')
         
         # Tablo başlıkları (Marka sütunu kaldırıldı)
@@ -1566,8 +1567,8 @@ class PDFQuoteGenerator:
         # Tablo oluştur (4 sütun)
         table = Table(data, colWidths=[8*cm, 2*cm, 3*cm, 3*cm])
         table.setStyle(TableStyle([
-            # Başlık stili
-            ('BACKGROUND', (0, 0), (-1, 0), primary_color),
+            # Başlık stili - YENİ RENK (#A6C9EC)
+            ('BACKGROUND', (0, 0), (-1, 0), table_header_color),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), self.get_font_name(is_bold=True)),
