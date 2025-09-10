@@ -1487,7 +1487,12 @@ function App() {
                         <span className="text-slate-500 ml-2">({company?.name})</span>
                       </div>
                       <div className="text-right">
-                        <div>₺ {formatPrice(product.discounted_price_try || product.list_price_try)}</div>
+                        <div className="space-y-1">
+                          <div className="text-slate-500 text-xs">Liste: ₺ {formatPrice(product.list_price_try)}</div>
+                          <div className="font-medium">
+                            ₺ {formatPrice((product.list_price_try || 0) * (1 - quoteDiscount / 100))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
