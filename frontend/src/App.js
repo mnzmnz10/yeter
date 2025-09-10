@@ -1112,11 +1112,11 @@ function App() {
                                       checked={categoryProducts.every(p => selectedProducts.has(p.id))}
                                       onChange={(e) => {
                                         if (e.target.checked) {
-                                          const newSelected = new Set(selectedProducts);
-                                          categoryProducts.forEach(p => newSelected.add(p.id));
+                                          const newSelected = new Map(selectedProducts);
+                                          categoryProducts.forEach(p => newSelected.set(p.id, 1));
                                           setSelectedProducts(newSelected);
                                         } else {
-                                          const newSelected = new Set(selectedProducts);
+                                          const newSelected = new Map(selectedProducts);
                                           categoryProducts.forEach(p => newSelected.delete(p.id));
                                           setSelectedProducts(newSelected);
                                         }
