@@ -31,6 +31,13 @@ function App() {
     totalProducts: 0,
     totalMatches: 0
   });
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    list_price: '',
+    discounted_price: '',
+    currency: ''
+  });
 
   // Load initial data
   useEffect(() => {
