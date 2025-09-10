@@ -222,8 +222,8 @@ class ColorBasedExcelService:
                     return 'YELLOW'
                 elif theme == 6:  # Theme color 6 genelde yeşil
                     return 'GREEN'
-                elif theme == 9:  # Theme color 9 - bu dosyada fiyat için kullanılıyor, yeşil kabul edelim
-                    return 'GREEN'
+                elif theme == 9:  # Theme color 9 - bu dosyada İNDİRİMLİ fiyat için kullanılıyor, turuncu!
+                    return 'ORANGE'
                 elif theme == 7:  # Theme color 7 genelde turuncu
                     return 'ORANGE'
                     
