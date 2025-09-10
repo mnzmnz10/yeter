@@ -177,6 +177,73 @@ function App() {
     }
   };
 
+  const startEditProduct = (product) => {
+    setEditingProduct(product.id);
+    setEditForm({
+      name: product.name,
+      list_price: product.list_price.toString(),
+      discounted_price: product.discounted_price ? product.discounted_price.toString() : '',
+      currency: product.currency
+    });
+  };
+
+  const cancelEditProduct = () => {
+    setEditingProduct(null);
+    setEditForm({
+      name: '',
+      list_price: '',
+      discounted_price: '',
+      currency: ''
+    });
+  };
+
+  const saveEditProduct = async () => {
+    if (!editingProduct) return;
+
+    try {
+      setLoading(true);
+      const updateData = {
+        name: editForm.name,
+        list_price: parseFloat(editForm.list_price),
+        currency: editForm.currency
+      };
+
+      if (editForm.discounted_price) {
+        updateData.discounted_price = parseFloat(editForm.discounted_price);
+      }
+
+      const response = await axios.patch(`${API}/products/${editingProduct}`, updateData);
+      
+      if (response.data.success) {
+        await loadProducts();
+        cancelEditProduct();
+        toast.success('Ürün başarıyla güncellendi');
+      }
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast.error('Ürün güncellenemedi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProduct = async (productId) => {
+    if (!window.confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`${API}/products/${productId}`);
+      if (response.data.success) {
+        await loadProducts();
+        toast.success('Ürün silindi');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Ürün silinemedi');
+    }
+  };
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('tr-TR', { 
       style: 'decimal', 
