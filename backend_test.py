@@ -637,6 +637,9 @@ class KaravanAPITester:
             # Test products management
             self.test_products_management()
             
+            # CRITICAL: Test NaN fix comprehensively
+            self.test_nan_fix_comprehensive()
+            
             # Test comparison endpoint
             self.test_comparison_endpoint()
             
