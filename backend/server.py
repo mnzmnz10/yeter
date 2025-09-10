@@ -89,7 +89,27 @@ class CategoryCreate(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = None
 
+class QuoteCreate(BaseModel):
+    name: str
+    customer_name: Optional[str] = None
+    customer_email: Optional[str] = None
+    discount_percentage: float = 0
+    products: List[str]  # Product IDs
+    notes: Optional[str] = None
 
+class QuoteResponse(BaseModel):
+    id: str
+    name: str
+    customer_name: Optional[str] = None
+    customer_email: Optional[str] = None
+    discount_percentage: float
+    total_list_price: float
+    total_discounted_price: float 
+    total_net_price: float
+    products: List[Dict[str, Any]]
+    notes: Optional[str] = None
+    created_at: str
+    status: str = "active"
 
 class ExchangeRate(BaseModel):
     currency: str
