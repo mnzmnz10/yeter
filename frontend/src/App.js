@@ -20,7 +20,7 @@ const API = `${BACKEND_URL}/api`;
 function App() {
   const [companies, setCompanies] = useState([]);
   const [products, setProducts] = useState([]);
-  const [comparisonData, setComparisonData] = useState([]);
+
   const [exchangeRates, setExchangeRates] = useState({});
   const [loading, setLoading] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState('');
