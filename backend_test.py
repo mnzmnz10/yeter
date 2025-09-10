@@ -195,56 +195,106 @@ class KaravanAPITester:
         
         return created_company_ids
 
-    def test_excel_upload(self, company_id):
+    def test_excel_upload(self, company_ids):
         """Test Excel file upload functionality"""
         print("\n🔍 Testing Excel Upload...")
         
-        if not company_id:
-            self.log_test("Excel Upload", False, "No company ID available for testing")
+        if not company_ids:
+            self.log_test("Excel Upload", False, "No company IDs available for testing")
             return False
         
-        # Create a sample Excel file in memory
-        try:
-            # Create sample data
-            sample_data = {
-                'Ürün Adı': ['Test Ürün 1', 'Test Ürün 2', 'Test Ürün 3'],
-                'Liste Fiyatı': [100.50, 250.75, 89.99],
-                'İndirimli Fiyat': [85.50, 200.00, None],
-                'Para Birimi': ['USD', 'EUR', 'TRY']
-            }
+        # Test actual Excel files
+        excel_files = [
+            ("/app/HAVENSİS_SOLAR.xlsx", "HAVENSİS SOLAR"),
+            ("/app/ELEKTROZİRVE.xlsx", "ELEKTROZİRVE")
+        ]
+        
+        upload_results = {}
+        
+        for file_path, company_name in excel_files:
+            if company_name not in company_ids:
+                self.log_test(f"Excel Upload for {company_name}", False, f"Company {company_name} not found in created companies")
+                continue
+                
+            company_id = company_ids[company_name]
             
-            df = pd.DataFrame(sample_data)
-            excel_buffer = BytesIO()
-            df.to_excel(excel_buffer, index=False)
-            excel_buffer.seek(0)
-            
-            # Upload the Excel file
-            files = {'file': ('test_products.xlsx', excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
-            
-            success, response = self.run_test(
-                "Upload Excel File",
-                "POST",
-                f"companies/{company_id}/upload-excel",
-                200,
-                files=files
-            )
-            
-            if success and response:
-                try:
-                    upload_result = response.json()
-                    if upload_result.get('success') and 'products_count' in upload_result:
-                        products_count = upload_result['products_count']
-                        self.log_test("Excel Upload Result", True, f"Uploaded {products_count} products")
-                        return True
-                    else:
-                        self.log_test("Excel Upload Result", False, "Invalid response format")
-                except Exception as e:
-                    self.log_test("Excel Upload Response", False, f"Error parsing: {e}")
-            
-            return success
-            
-        except Exception as e:
-            return self.log_test("Excel Upload", False, f"Error creating test file: {e}")
+            try:
+                # Read the actual Excel file
+                with open(file_path, 'rb') as f:
+                    file_content = f.read()
+                
+                files = {'file': (f'{company_name}.xlsx', file_content, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                
+                success, response = self.run_test(
+                    f"Upload Excel File for {company_name}",
+                    "POST",
+                    f"companies/{company_id}/upload-excel",
+                    200,
+                    files=files
+                )
+                
+                if success and response:
+                    try:
+                        upload_result = response.json()
+                        if upload_result.get('success') and 'products_count' in upload_result:
+                            products_count = upload_result['products_count']
+                            upload_results[company_name] = products_count
+                            self.log_test(f"Excel Upload Result for {company_name}", True, f"Uploaded {products_count} products")
+                        else:
+                            self.log_test(f"Excel Upload Result for {company_name}", False, "Invalid response format")
+                    except Exception as e:
+                        self.log_test(f"Excel Upload Response for {company_name}", False, f"Error parsing: {e}")
+                else:
+                    upload_results[company_name] = 0
+                    
+            except FileNotFoundError:
+                self.log_test(f"Excel File for {company_name}", False, f"File not found: {file_path}")
+            except Exception as e:
+                self.log_test(f"Excel Upload for {company_name}", False, f"Error: {e}")
+        
+        # Test with a sample Excel file as well
+        if "TEST" in company_ids:
+            try:
+                # Create sample data
+                sample_data = {
+                    'Ürün Adı': ['Test Ürün 1', 'Test Ürün 2', 'Test Ürün 3'],
+                    'Liste Fiyatı': [100.50, 250.75, 89.99],
+                    'İndirimli Fiyat': [85.50, 200.00, None],
+                    'Para Birimi': ['USD', 'EUR', 'TRY']
+                }
+                
+                df = pd.DataFrame(sample_data)
+                excel_buffer = BytesIO()
+                df.to_excel(excel_buffer, index=False)
+                excel_buffer.seek(0)
+                
+                # Upload the Excel file
+                files = {'file': ('test_products.xlsx', excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                
+                success, response = self.run_test(
+                    "Upload Sample Excel File",
+                    "POST",
+                    f"companies/{company_ids['TEST']}/upload-excel",
+                    200,
+                    files=files
+                )
+                
+                if success and response:
+                    try:
+                        upload_result = response.json()
+                        if upload_result.get('success') and 'products_count' in upload_result:
+                            products_count = upload_result['products_count']
+                            upload_results["TEST"] = products_count
+                            self.log_test("Sample Excel Upload Result", True, f"Uploaded {products_count} products")
+                        else:
+                            self.log_test("Sample Excel Upload Result", False, "Invalid response format")
+                    except Exception as e:
+                        self.log_test("Sample Excel Upload Response", False, f"Error parsing: {e}")
+                        
+            except Exception as e:
+                self.log_test("Sample Excel Upload", False, f"Error creating test file: {e}")
+        
+        return upload_results
 
     def test_products_management(self):
         """Test products endpoints"""
