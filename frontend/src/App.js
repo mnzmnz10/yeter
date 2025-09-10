@@ -54,6 +54,12 @@ function App() {
   const [loadedQuote, setLoadedQuote] = useState(null); // Yüklenen teklif bilgisi
   const [showDiscountedPrices, setShowDiscountedPrices] = useState(false); // İndirimli fiyat görünürlüğü - Varsayılan KAPALI
   const [showQuoteDiscountedPrices, setShowQuoteDiscountedPrices] = useState(false); // Teklif indirimli fiyat görünürlüğü - Varsayılan KAPALI
+  
+  // Kategori ürün atama için state'ler
+  const [showCategoryProductDialog, setShowCategoryProductDialog] = useState(false);
+  const [selectedCategoryForProducts, setSelectedCategoryForProducts] = useState(null);
+  const [uncategorizedProducts, setUncategorizedProducts] = useState([]);
+  const [selectedProductsForCategory, setSelectedProductsForCategory] = useState(new Set());
   const [quotes, setQuotes] = useState([]);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [quoteSearchTerm, setQuoteSearchTerm] = useState('');
