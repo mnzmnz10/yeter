@@ -415,11 +415,18 @@ class KaravanAPITester:
             self.test_exchange_rates()
             
             # Test company management
-            company_id = self.test_company_management()
+            company_ids = self.test_company_management()
             
-            # Test Excel upload (requires a company)
-            if company_id:
-                self.test_excel_upload(company_id)
+            # Test Excel upload (requires companies)
+            if company_ids:
+                upload_results = self.test_excel_upload(company_ids)
+                
+                # Print upload summary
+                print("\n📊 EXCEL UPLOAD SUMMARY:")
+                for company_name, product_count in upload_results.items():
+                    print(f"  {company_name}: {product_count} products uploaded")
+            else:
+                print("⚠️  No companies created, skipping Excel upload tests")
             
             # Test products management
             self.test_products_management()
