@@ -369,7 +369,7 @@ function App() {
   };
 
   const deleteCategory = async (categoryId) => {
-    if (!window.confirm('Bu kategoriyi silmek istediğinizden emin misiniz? Kategorideki ürünler kategorsiz kalacak.')) {
+    if (!window.confirm('Bu kategoriyi silmek istediğinizden emin misiniz? Kategorideki ürünler kategorisiz kalacak.')) {
       return;
     }
 
