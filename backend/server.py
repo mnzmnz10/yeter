@@ -1605,9 +1605,10 @@ class PDFQuoteGenerator:
         return table
     
     def _create_modern_totals_section(self, quote_data: Dict):
-        """Modern toplam hesaplama bölümü"""
+        """Modern toplam hesaplama bölümü - İşçilik maliyeti ile"""
         primary_color = colors.HexColor('#25c7eb')
         secondary_color = colors.HexColor('#1ba3cc')
+        new_primary_color = colors.HexColor('#2F4B68')
         
         totals_content = []
         
@@ -1618,9 +1619,16 @@ class PDFQuoteGenerator:
         # İndirim (eğer varsa)  
         discount_percentage = quote_data.get('discount_percentage', 0)
         if discount_percentage > 0:
-            discount_amount = quote_data.get('total_discounted_price', 0) - quote_data.get('total_net_price', 0)
+            discount_amount = quote_data.get('total_discounted_price', 0) - quote_data.get('total_net_price', 0) + quote_data.get('labor_cost', 0)
             discount_text = f"İndirim (%{discount_percentage}): <font color='#dc2626'>-₺ {self._format_price_modern(discount_amount)}</font>"
             totals_content.append(Paragraph(discount_text, self.normal_style))
+            totals_content.append(Spacer(1, 4))
+        
+        # İşçilik maliyeti (eğer varsa)
+        labor_cost = quote_data.get('labor_cost', 0)
+        if labor_cost > 0:
+            labor_text = f"İşçilik: <font color='#059669'>+₺ {self._format_price_modern(labor_cost)}</font>"
+            totals_content.append(Paragraph(labor_text, self.normal_style))
             totals_content.append(Spacer(1, 8))
         
         # Net toplam - küçültülmüş ve yeni renk (#2F4B68)
