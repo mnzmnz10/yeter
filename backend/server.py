@@ -1400,18 +1400,53 @@ class PDFQuoteGenerator:
         buffer.seek(0)
         return buffer
     
-    def _create_company_header(self):
-        """Firma bilgileri başlığı"""
+    def _create_modern_header(self):
+        """Modern firma bilgileri başlığı"""
+        primary_color = colors.HexColor('#25c7eb')
+        
         company_info = [
-            "<b>KARAVAN ELEKTRİK EKİPMANLARI</b>",
-            "Güneş Enerjisi Sistemleri ve Ekipmanları",
-            "Adres: İstanbul, Türkiye",
-            "Tel: +90 (212) 123 45 67",
-            "Email: info@karavan-elektrik.com"
+            "<b><font size='16' color='#25c7eb'>KARAVAN ELEKTRİK EKİPMANLARI</font></b>",
+            "<font size='11' color='#1ba3cc'><b>Güneş Enerjisi Sistemleri ve Ekipmanları</b></font>",
+            " ",
+            "<font size='10'>Adres: Hatip, Sarı Salkım 3.Sokak Mobilyacılar Sitesi No: B1, 59000 Çorlu/Tekirdağ</font>",
+            "<font size='10'>Telefon: 0505 813 77 65</font>",
+            "<font size='10'>E-posta: info@karavan-elektrik.com</font>"
         ]
         
         header_text = "<br/>".join(company_info)
         return Paragraph(header_text, self.company_style)
+    
+    def _create_quote_info_section(self, quote_data: Dict):
+        """Teklif bilgileri bölümü (tarih, geçerlilik vs.)"""
+        try:
+            created_date = datetime.fromisoformat(quote_data['created_at'].replace('Z', '+00:00'))
+            date_str = created_date.strftime('%d.%m.%Y')
+        except:
+            date_str = datetime.now().strftime('%d.%m.%Y')
+        
+        # Bilgi tablosu oluştur
+        info_data = [
+            [
+                Paragraph("<b>Başlangıç Tarihi:</b>", self.normal_style),
+                Paragraph(date_str, self.normal_style),
+                Paragraph("<b>Bitiş Tarihi:</b>", self.normal_style),
+                Paragraph(date_str, self.normal_style)
+            ]
+        ]
+        
+        info_table = Table(info_data, colWidths=[4*cm, 3*cm, 4*cm, 3*cm])
+        info_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f7fafc')),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Montserrat'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ]))
+        
+        return info_table
     
     def _create_products_table(self, products: List[Dict]):
         """Ürün tablosu oluştur"""
