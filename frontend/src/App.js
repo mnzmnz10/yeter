@@ -482,6 +482,99 @@ function App() {
             </Card>
           </TabsContent>
 
+          {/* Categories Tab */}
+          <TabsContent value="categories" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Kategori Yönetimi</CardTitle>
+                <CardDescription>Ürünlerinizi kategorilere ayırın ve düzenleyin</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input
+                      placeholder="Kategori adı"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                    />
+                    <Input
+                      placeholder="Açıklama (opsiyonel)"
+                      value={newCategoryDescription}
+                      onChange={(e) => setNewCategoryDescription(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        value={newCategoryColor}
+                        onChange={(e) => setNewCategoryColor(e.target.value)}
+                        className="w-16"
+                      />
+                      <Button onClick={createCategory} className="flex-1">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Kategori Ekle
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {categories.map((category) => (
+                    <Card key={category.id} className="border-slate-200">
+                      <CardHeader className="pb-3" style={{borderLeft: `4px solid ${category.color}`}}>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <div 
+                            className="w-4 h-4 rounded-full" 
+                            style={{backgroundColor: category.color}}
+                          ></div>
+                          {category.name}
+                        </CardTitle>
+                        {category.description && (
+                          <CardDescription>{category.description}</CardDescription>
+                        )}
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCategoryFilter(category.id)}
+                          >
+                            Ürünleri Göster
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteCategory(category.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Category Filter Info */}
+                {selectedCategory && (
+                  <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-emerald-800">
+                        Kategori filtresi aktif: <strong>{categories.find(c => c.id === selectedCategory)?.name}</strong>
+                      </span>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleCategoryFilter('')}
+                      >
+                        Filtreyi Kaldır
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Upload Tab */}
           <TabsContent value="upload" className="space-y-6">
             <Card>
