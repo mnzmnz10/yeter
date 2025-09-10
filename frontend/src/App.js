@@ -1598,6 +1598,66 @@ function App() {
                         <FileText className="w-4 h-4 mr-2" />
                         Resmi Teklif Oluştur
                       </Button>
+                      
+                      {/* İşçilik Maliyeti Eklendiyse Hızlı PDF İndirme */}
+                      {quoteLaborCost > 0 && (
+                        <Button 
+                          onClick={async () => {
+                            try {
+                              // Geçici teklif oluştur
+                              const selectedProductData = getSelectedProductsData().map(p => ({
+                                id: p.id,
+                                quantity: p.quantity || 1
+                              }));
+                              
+                              const tempQuoteData = {
+                                name: `Geçici Teklif - ${new Date().toLocaleDateString('tr-TR')}`,
+                                discount_percentage: parseFloat(quoteDiscount) || 0,
+                                labor_cost: parseFloat(quoteLaborCost) || 0,
+                                products: selectedProductData,
+                                notes: "İşçilik dahil geçici teklif"
+                              };
+                              
+                              const response = await fetch(`${API}/quotes`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(tempQuoteData)
+                              });
+                              
+                              if (!response.ok) {
+                                throw new Error('Teklif oluşturulamadı');
+                              }
+                              
+                              const savedQuote = await response.json();
+                              
+                              // PDF'i hemen indir
+                              const pdfUrl = `${BACKEND_URL}/api/quotes/${savedQuote.id}/pdf`;
+                              const link = document.createElement('a');
+                              link.href = pdfUrl;
+                              link.download = `${savedQuote.name}.pdf`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              
+                              toast.success('İşçilik dahil PDF indiriliyor...');
+                              
+                              // Teklifleri yenile
+                              await fetchQuotes();
+                              
+                            } catch (error) {
+                              console.error('PDF oluşturma hatası:', error);
+                              toast.error('PDF oluşturulamadı: ' + error.message);
+                            }
+                          }}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          İşçilik Dahil PDF İndir
+                        </Button>
+                      )}
+                      
                       <Button 
                         variant="outline" 
                         onClick={() => {
