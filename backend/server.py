@@ -1237,7 +1237,10 @@ class PDFQuoteGenerator:
         self.setup_styles()
     
     def setup_fonts(self):
-        """Montserrat fontlarını kaydet"""
+        """Montserrat fontlarını kaydet ve fallback mekanizması ile Türkçe karakter desteği sağla"""
+        self.montserrat_available = False
+        self.montserrat_bold_available = False
+        
         try:
             font_dir = Path(__file__).parent / 'fonts'
             
@@ -1245,22 +1248,35 @@ class PDFQuoteGenerator:
             montserrat_regular_path = font_dir / 'Montserrat-Regular.ttf'
             if montserrat_regular_path.exists():
                 pdfmetrics.registerFont(TTFont('Montserrat', str(montserrat_regular_path)))
+                self.montserrat_available = True
                 logger.info("Montserrat Regular font loaded successfully")
             else:
-                logger.warning("Montserrat Regular font not found, using Helvetica")
+                logger.warning("Montserrat Regular font not found")
             
             # Montserrat Bold font
             montserrat_bold_path = font_dir / 'Montserrat-Bold.ttf'
             if montserrat_bold_path.exists():
                 pdfmetrics.registerFont(TTFont('Montserrat-Bold', str(montserrat_bold_path)))
+                self.montserrat_bold_available = True
                 logger.info("Montserrat Bold font loaded successfully")
             else:
-                logger.warning("Montserrat Bold font not found, using Helvetica-Bold")
+                logger.warning("Montserrat Bold font not found")
                 
         except Exception as e:
             logger.error(f"Font loading error: {e}")
-            # Fallback to default fonts
-            pass
+            self.montserrat_available = False
+            self.montserrat_bold_available = False
+    
+    def get_font_name(self, is_bold=False):
+        """Uygun font adını döndür - Montserrat veya fallback"""
+        if is_bold and self.montserrat_bold_available:
+            return 'Montserrat-Bold'
+        elif not is_bold and self.montserrat_available:
+            return 'Montserrat'
+        elif is_bold:
+            return 'Helvetica-Bold'
+        else:
+            return 'Helvetica'
     
     def setup_styles(self):
         """PDF için özel stiller tanımla - Türkçe karakter desteği ile"""
