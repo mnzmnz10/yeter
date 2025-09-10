@@ -1376,22 +1376,23 @@ class PDFQuoteGenerator:
     
     def _create_totals_section(self, quote_data: Dict):
         """Toplam hesaplama bölümü"""
-        totals = []
+        totals_content = []
         
         # Ara toplam
-        totals.append(Paragraph(f"<b>Ara Toplam: ₺ {self._format_price(quote_data['total_discounted_price'])}</b>", 
+        totals_content.append(Paragraph(f"<b>Ara Toplam: ₺ {self._format_price(quote_data['total_discounted_price'])}</b>", 
                                self.normal_style))
         
-        # İndirim (eğer varsa)
+        # İndirim (eğer varsa)  
         if quote_data.get('discount_percentage', 0) > 0:
-            totals.append(Paragraph(f"İndirim (%{quote_data['discount_percentage']}): -₺ {self._format_price(quote_data['total_discounted_price'] - quote_data['total_net_price'])}", 
+            discount_amount = quote_data['total_discounted_price'] - quote_data['total_net_price']
+            totals_content.append(Paragraph(f"İndirim (%{quote_data['discount_percentage']}): -₺ {self._format_price(discount_amount)}", 
                                    self.normal_style))
         
         # Net toplam
-        totals.append(Paragraph(f"<b>NET TOPLAM: ₺ {self._format_price(quote_data['total_net_price'])}</b>", 
+        totals_content.append(Paragraph(f"<b>NET TOPLAM: ₺ {self._format_price(quote_data['total_net_price'])}</b>", 
                                self.title_style))
         
-        return totals
+        return totals_content
     
     def _create_footer(self):
         """Footer mesajı"""
