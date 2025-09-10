@@ -1094,6 +1094,121 @@ async def delete_product(product_id: str):
         logger.error(f"Error deleting product: {e}")
         raise HTTPException(status_code=500, detail="Ürün silinemedi")
 
+# ===== QUOTE ENDPOINTS =====
+
+@api_router.post("/quotes", response_model=QuoteResponse)
+async def create_quote(quote: QuoteCreate):
+    """Create a new quote"""
+    try:
+        # Validate products exist
+        products_cursor = db.products.find({"id": {"$in": quote.products}})
+        products = await products_cursor.to_list(length=None)
+        
+        if len(products) != len(quote.products):
+            raise HTTPException(status_code=400, detail="Some products not found")
+        
+        # Calculate totals
+        total_list_price = 0
+        total_discounted_price = 0
+        processed_products = []
+        
+        for product in products:
+            # Get company info
+            company = await db.companies.find_one({"id": product["company_id"]})
+            
+            list_price_try = float(product.get("list_price_try", 0))
+            discounted_price_try = float(product.get("discounted_price_try", 0)) if product.get("discounted_price_try") else list_price_try
+            
+            total_list_price += list_price_try
+            total_discounted_price += discounted_price_try
+            
+            processed_products.append({
+                "id": product["id"],
+                "name": product["name"],
+                "description": product.get("description"),
+                "company_name": company["name"] if company else "Unknown",
+                "list_price": product["list_price"],
+                "list_price_try": list_price_try,
+                "discounted_price": product.get("discounted_price"),
+                "discounted_price_try": discounted_price_try,
+                "currency": product["currency"]
+            })
+        
+        # Apply quote discount
+        quote_discount_amount = total_discounted_price * (quote.discount_percentage / 100)
+        total_net_price = total_discounted_price - quote_discount_amount
+        
+        # Create quote document
+        quote_doc = {
+            "id": str(uuid.uuid4()),
+            "name": quote.name,
+            "customer_name": quote.customer_name,
+            "customer_email": quote.customer_email,
+            "discount_percentage": quote.discount_percentage,
+            "total_list_price": total_list_price,
+            "total_discounted_price": total_discounted_price,
+            "total_net_price": total_net_price,
+            "products": processed_products,
+            "notes": quote.notes,
+            "created_at": datetime.utcnow().isoformat() + "Z",
+            "status": "active"
+        }
+        
+        result = await db.quotes.insert_one(quote_doc)
+        
+        logger.info(f"Quote created: {quote.name} with {len(products)} products")
+        return quote_doc
+        
+    except Exception as e:
+        logger.error(f"Error creating quote: {e}")
+        raise HTTPException(status_code=500, detail=f"Error creating quote: {str(e)}")
+
+@api_router.get("/quotes", response_model=List[QuoteResponse])
+async def get_quotes():
+    """Get all quotes"""
+    try:
+        quotes_cursor = db.quotes.find({"status": "active"}).sort("created_at", -1)
+        quotes = await quotes_cursor.to_list(length=None)
+        
+        return quotes
+        
+    except Exception as e:
+        logger.error(f"Error fetching quotes: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching quotes: {str(e)}")
+
+@api_router.get("/quotes/{quote_id}", response_model=QuoteResponse)
+async def get_quote(quote_id: str):
+    """Get specific quote by ID"""
+    try:
+        quote = await db.quotes.find_one({"id": quote_id})
+        
+        if not quote:
+            raise HTTPException(status_code=404, detail="Quote not found")
+        
+        return quote
+        
+    except Exception as e:
+        logger.error(f"Error fetching quote: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching quote: {str(e)}")
+
+@api_router.delete("/quotes/{quote_id}")
+async def delete_quote(quote_id: str):
+    """Delete a quote"""
+    try:
+        result = await db.quotes.update_one(
+            {"id": quote_id},
+            {"$set": {"status": "deleted"}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Quote not found")
+        
+        return {"success": True, "message": "Quote deleted successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error deleting quote: {e}")
+        raise HTTPException(status_code=500, detail=f"Error deleting quote: {str(e)}")
+
 # Category endpoints
 @api_router.post("/categories", response_model=Category)
 async def create_category(category: CategoryCreate):
