@@ -1389,11 +1389,11 @@ class PDFQuoteGenerator:
         story.append(Spacer(1, 25))
         
         # Toplam hesaplama bölümü
-        story.append(self._create_modern_totals_section(quote_data))
+        story.extend(self._create_modern_totals_section(quote_data))
         story.append(Spacer(1, 30))
         
         # Footer notları
-        story.append(self._create_modern_footer())
+        story.extend(self._create_modern_footer())
         
         # PDF oluştur
         doc.build(story)
