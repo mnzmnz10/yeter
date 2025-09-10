@@ -45,6 +45,15 @@ function App() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
+  const [showAddProductDialog, setShowAddProductDialog] = useState(false);
+  const [newProductForm, setNewProductForm] = useState({
+    name: '',
+    company_id: '',
+    category_id: '',
+    list_price: '',
+    discounted_price: '',
+    currency: 'USD'
+  });
 
   // Load initial data
   useEffect(() => {
