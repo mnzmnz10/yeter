@@ -427,8 +427,11 @@ class ColorBasedExcelService:
         import random
         products = []
         
-        # Start from the row after header
-        for row_idx in range(header_row + 1, sheet.max_row):
+        # Start row hesaplama: header varsa header_row + 1, yoksa 0
+        start_row = 0 if header_row == -1 else header_row + 1
+        
+        # Start from the appropriate row
+        for row_idx in range(start_row, sheet.max_row):
             try:
                 # Extract data based on column mapping
                 product_name = ""
