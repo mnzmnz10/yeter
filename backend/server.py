@@ -216,7 +216,7 @@ class ExcelService:
                         'name': str(row['product_name']).strip(),
                         'list_price': float(row['list_price']) if pd.notna(row['list_price']) else 0,
                         'currency': str(row['currency']).strip().upper(),
-                        'discounted_price': float(row['discounted_price']) if 'discounted_price' in row and pd.notna(row['discounted_price']) else None
+                        'discounted_price': float(row['discounted_price']) if 'discounted_price' in row and pd.notna(row['discounted_price']) and str(row['discounted_price']).strip() != '' else None
                     }
                     
                     # Skip empty rows
