@@ -351,8 +351,10 @@ class ColorBasedExcelService:
                 column_mapping['description'] = col_idx
             elif ('marka' in cell_text or 'firma' in cell_text) and column_mapping['company'] == -1:
                 column_mapping['company'] = col_idx
-            elif 'fiyat' in cell_text and column_mapping['price'] == -1:
-                column_mapping['price'] = col_idx
+            elif 'fiyat' in cell_text and 'liste' in cell_text and column_mapping['list_price'] == -1:
+                column_mapping['list_price'] = col_idx
+            elif ('indirim' in cell_text or 'özel' in cell_text) and 'fiyat' in cell_text and column_mapping['discounted_price'] == -1:
+                column_mapping['discounted_price'] = col_idx
         
         return column_mapping
     
