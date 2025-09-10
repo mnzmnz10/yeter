@@ -1111,11 +1111,15 @@ async def create_quote(quote: QuoteCreate):
     """Create a new quote"""
     try:
         # Validate products exist
-        products_cursor = db.products.find({"id": {"$in": quote.products}})
+        product_ids = [ObjectId(p["id"]) for p in quote.products]
+        products_cursor = db.products.find({"_id": {"$in": product_ids}})
         products = await products_cursor.to_list(length=None)
         
         if len(products) != len(quote.products):
             raise HTTPException(status_code=400, detail="Some products not found")
+        
+        # Create product-quantity mapping
+        product_quantities = {p["id"]: p.get("quantity", 1) for p in quote.products}
         
         # Calculate totals
         total_list_price = 0
@@ -1124,16 +1128,20 @@ async def create_quote(quote: QuoteCreate):
         
         for product in products:
             # Get company info
-            company = await db.companies.find_one({"id": product["company_id"]})
+            company = await db.companies.find_one({"_id": ObjectId(product["company_id"])})
+            
+            # Get quantity for this product
+            quantity = product_quantities.get(str(product["_id"]), 1)
             
             list_price_try = float(product.get("list_price_try", 0))
             discounted_price_try = float(product.get("discounted_price_try", 0)) if product.get("discounted_price_try") else list_price_try
             
-            total_list_price += list_price_try
-            total_discounted_price += discounted_price_try
+            # Calculate totals with quantity
+            total_list_price += list_price_try * quantity
+            total_discounted_price += discounted_price_try * quantity
             
             processed_products.append({
-                "id": product["id"],
+                "id": str(product["_id"]),
                 "name": product["name"],
                 "description": product.get("description"),
                 "company_name": company["name"] if company else "Unknown",
@@ -1141,7 +1149,8 @@ async def create_quote(quote: QuoteCreate):
                 "list_price_try": list_price_try,
                 "discounted_price": product.get("discounted_price"),
                 "discounted_price_try": discounted_price_try,
-                "currency": product["currency"]
+                "currency": product["currency"],
+                "quantity": quantity
             })
         
         # Apply quote discount
