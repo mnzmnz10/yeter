@@ -347,6 +347,27 @@ class ColorBasedExcelService:
         return -1
     
     @staticmethod
+    def detect_currency_from_header(cell_value: str) -> str:
+        """Detect currency from header cell text"""
+        if not cell_value:
+            return 'TRY'
+            
+        text = str(cell_value).upper()
+        
+        # Dolar kontrolü
+        if any(keyword in text for keyword in ['$', 'DOLAR', 'DOLLAR', 'USD']):
+            return 'USD'
+        # Euro kontrolü  
+        elif any(keyword in text for keyword in ['€', 'EURO', 'EUR']):
+            return 'EUR'
+        # TL kontrolü
+        elif any(keyword in text for keyword in ['₺', 'TL', 'TRY', 'TÜRK', 'LIRA']):
+            return 'TRY'
+        # Varsayılan TRY
+        else:
+            return 'TRY'
+
+    @staticmethod
     def _analyze_header_colors(sheet, header_row: int) -> Dict[str, int]:
         """Analyze header colors and map to column purposes - ONLY COLOR-BASED"""
         column_mapping = {
