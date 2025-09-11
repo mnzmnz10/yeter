@@ -2029,30 +2029,43 @@ function App() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setQuoteLaborCost(500)}
-                          >
-                            ₺500
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setQuoteLaborCost(1000)}
-                          >
-                            ₺1000
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setQuoteLaborCost(1500)}
-                          >
-                            ₺1500
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
                             onClick={() => setQuoteLaborCost(2000)}
                           >
                             ₺2000
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteLaborCost(5000)}
+                          >
+                            ₺5000
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteLaborCost(10000)}
+                          >
+                            ₺10000
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuoteLaborCost(20000)}
+                          >
+                            ₺20000
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              const currentTotal = calculateQuoteTotals().totalWithLaborAndDiscount;
+                              const roundedUp = roundUpToNextThousand(currentTotal);
+                              setQuoteLaborCost(quoteLaborCost + (roundedUp - currentTotal));
+                            }}
+                            className="bg-blue-100 text-blue-800 hover:bg-blue-200"
+                            title="Teklif tutarını yukarı yuvarlayarak işçilik maliyeti hesapla"
+                          >
+                            🔼 Üzerine Tamamla
                           </Button>
                         </div>
                       </div>
