@@ -102,6 +102,33 @@ class CategoryCreate(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = None
 
+# Upload History Models
+class UploadHistory(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    company_id: str
+    company_name: str
+    filename: str
+    upload_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    total_products: int
+    new_products: int
+    updated_products: int
+    currency_distribution: Dict[str, int]  # Currency -> count
+    price_changes: List[Dict[str, Any]] = []  # Price change details
+    status: str = "completed"  # completed, failed, processing
+
+class UploadHistoryResponse(BaseModel):
+    id: str
+    company_id: str
+    company_name: str
+    filename: str
+    upload_date: datetime
+    total_products: int
+    new_products: int
+    updated_products: int
+    currency_distribution: Dict[str, int]
+    price_changes: List[Dict[str, Any]]
+    status: str
+
 class QuoteCreate(BaseModel):
     name: str
     customer_name: Optional[str] = None
