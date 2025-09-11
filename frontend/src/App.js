@@ -71,6 +71,12 @@ function App() {
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [quoteSearchTerm, setQuoteSearchTerm] = useState('');
   const [filteredQuotes, setFilteredQuotes] = useState([]);
+  
+  // Upload History için state'ler
+  const [showUploadHistoryDialog, setShowUploadHistoryDialog] = useState(false);
+  const [selectedCompanyForHistory, setSelectedCompanyForHistory] = useState(null);
+  const [uploadHistory, setUploadHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const [newProductForm, setNewProductForm] = useState({
     name: '',
     company_id: '',
