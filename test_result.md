@@ -179,7 +179,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Automatic Exchange Rate System"
+    - "Quick Quote Creation Feature - Products to Quote directly"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
