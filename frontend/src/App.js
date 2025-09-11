@@ -64,6 +64,7 @@ function App() {
   // Ürünler sekmesinden teklif oluşturma için state'ler
   const [showQuickQuoteDialog, setShowQuickQuoteDialog] = useState(false);
   const [quickQuoteCustomerName, setQuickQuoteCustomerName] = useState('');
+  const [activeTab, setActiveTab] = useState('products');
   const [quotes, setQuotes] = useState([]);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [quoteSearchTerm, setQuoteSearchTerm] = useState('');
