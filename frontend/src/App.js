@@ -25,6 +25,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState('');
   const [newCompanyName, setNewCompanyName] = useState('');
+  const [uploadCompanyName, setUploadCompanyName] = useState(''); // Excel yükleme için manuel firma adı
+  const [useExistingCompany, setUseExistingCompany] = useState(true); // Mevcut firma mı yoksa yeni mi
   const [uploadFile, setUploadFile] = useState(null);
   const [stats, setStats] = useState({
     totalCompanies: 0,
