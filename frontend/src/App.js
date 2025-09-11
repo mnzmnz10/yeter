@@ -193,15 +193,34 @@ function App() {
 
 
 
-  const loadExchangeRates = async () => {
+  const loadExchangeRates = async (forceUpdate = false) => {
     try {
-      const response = await axios.get(`${API}/exchange-rates`);
-      if (response.data.success) {
-        setExchangeRates(response.data.rates);
+      let response;
+      
+      if (forceUpdate) {
+        // Force update from API
+        response = await axios.post(`${API}/exchange-rates/update`);
+        if (response.data.success) {
+          setExchangeRates(response.data.rates);
+          toast.success(response.data.message);
+          return true;
+        }
+      } else {
+        // Regular load
+        response = await axios.get(`${API}/exchange-rates`);
+        if (response.data.success) {
+          setExchangeRates(response.data.rates);
+          return true;
+        }
       }
     } catch (error) {
       console.error('Error loading exchange rates:', error);
-      toast.error('Döviz kurları yüklenemedi');
+      if (forceUpdate) {
+        toast.error('Döviz kurları güncellenemedi');
+      } else {
+        toast.error('Döviz kurları yüklenemedi');
+      }
+      return false;
     }
   };
 
