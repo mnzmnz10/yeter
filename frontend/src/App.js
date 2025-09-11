@@ -77,6 +77,12 @@ function App() {
   const [selectedCompanyForHistory, setSelectedCompanyForHistory] = useState(null);
   const [uploadHistory, setUploadHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  
+  // Para birimi değiştirme için state'ler
+  const [showCurrencyChangeDialog, setShowCurrencyChangeDialog] = useState(false);
+  const [selectedUploadForCurrency, setSelectedUploadForCurrency] = useState(null);
+  const [newCurrency, setNewCurrency] = useState('USD');
+  const [changingCurrency, setChangingCurrency] = useState(false);
   const [newProductForm, setNewProductForm] = useState({
     name: '',
     company_id: '',
