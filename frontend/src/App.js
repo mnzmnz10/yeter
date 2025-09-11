@@ -60,6 +60,10 @@ function App() {
   const [selectedCategoryForProducts, setSelectedCategoryForProducts] = useState(null);
   const [uncategorizedProducts, setUncategorizedProducts] = useState([]);
   const [selectedProductsForCategory, setSelectedProductsForCategory] = useState(new Set());
+  
+  // Ürünler sekmesinden teklif oluşturma için state'ler
+  const [showQuickQuoteDialog, setShowQuickQuoteDialog] = useState(false);
+  const [quickQuoteCustomerName, setQuickQuoteCustomerName] = useState('');
   const [quotes, setQuotes] = useState([]);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [quoteSearchTerm, setQuoteSearchTerm] = useState('');
