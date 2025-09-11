@@ -2447,6 +2447,24 @@ function App() {
                               </div>
                             </div>
                           )}
+
+                          {/* Para Birimi Değiştirme Butonu */}
+                          <div className="mt-4 pt-4 border-t border-slate-200">
+                            <div className="flex justify-between items-center">
+                              <div className="text-sm text-slate-600">
+                                Bu listedeki tüm ürünlerin para birimini değiştir
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openCurrencyChangeDialog(upload)}
+                                className="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 border-yellow-200"
+                              >
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                Para Birimini Değiştir
+                              </Button>
+                            </div>
+                          </div>
                         </CardContent>
                       </Card>
                     ))}
