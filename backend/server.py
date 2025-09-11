@@ -965,6 +965,25 @@ async def get_exchange_rates():
         logger.error(f"Error getting exchange rates: {e}")
         raise HTTPException(status_code=500, detail="Döviz kurları alınamadı")
 
+@api_router.post("/exchange-rates/update")
+async def update_exchange_rates():
+    """Force update exchange rates from API"""
+    try:
+        # Clear cache to force fresh API call
+        currency_service.rates_cache = {}
+        currency_service.last_update = None
+        
+        rates = await currency_service.get_exchange_rates()
+        return {
+            "success": True,
+            "message": "Döviz kurları başarıyla güncellendi",
+            "rates": {k: float(v) for k, v in rates.items()},
+            "updated_at": currency_service.last_update.isoformat() if currency_service.last_update else None
+        }
+    except Exception as e:
+        logger.error(f"Error updating exchange rates: {e}")
+        raise HTTPException(status_code=500, detail="Döviz kurları güncellenemedi")
+
 @api_router.post("/companies", response_model=Company)
 async def create_company(company: CompanyCreate):
     """Create a new company"""
