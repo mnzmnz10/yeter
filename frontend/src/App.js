@@ -499,9 +499,11 @@ function App() {
       // Kategorileri yeniden yükle
       await loadCategories();
       
-      // Otomatik olarak bir sonraki rengi seç
-      const nextColor = getNextCategoryColor();
-      setNewCategoryColor(nextColor);
+      // Delay ile next color seçimi (kategoriler state'i güncellenene kadar bekle)
+      setTimeout(() => {
+        const nextColor = getNextCategoryColor();
+        setNewCategoryColor(nextColor);
+      }, 200); // Biraz daha uzun delay
       
       toast.success('Kategori başarıyla oluşturuldu');
     } catch (error) {
