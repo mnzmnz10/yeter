@@ -661,6 +661,55 @@ function App() {
     setUploadHistory([]);
   };
 
+  // Para birimi değiştirme fonksiyonları
+  const openCurrencyChangeDialog = (upload) => {
+    setSelectedUploadForCurrency(upload);
+    setNewCurrency('USD'); // Default selection
+    setShowCurrencyChangeDialog(true);
+  };
+
+  const closeCurrencyChangeDialog = () => {
+    setShowCurrencyChangeDialog(false);
+    setSelectedUploadForCurrency(null);
+    setNewCurrency('USD');
+  };
+
+  const changeCurrency = async () => {
+    if (!selectedUploadForCurrency || !newCurrency) {
+      toast.error('Lütfen geçerli bir para birimi seçin');
+      return;
+    }
+
+    try {
+      setChangingCurrency(true);
+      
+      const response = await axios.post(
+        `${API}/upload-history/${selectedUploadForCurrency.id}/change-currency?new_currency=${newCurrency}`
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+        
+        // Upload geçmişini yenile
+        await fetchUploadHistory(selectedCompanyForHistory.id);
+        
+        // Ürünleri yenile (para birimi değişikliği nedeniyle)
+        await loadProducts();
+        
+        // Dialog'u kapat
+        closeCurrencyChangeDialog();
+      } else {
+        toast.error('Para birimi güncellenemedi');
+      }
+
+    } catch (error) {
+      console.error('Para birimi değiştirme hatası:', error);
+      toast.error(error.response?.data?.detail || 'Para birimi güncellenemedi');
+    } finally {
+      setChangingCurrency(false);
+    }
+  };
+
   const selectAllVisible = () => {
     const newSelected = new Map();
     products.forEach(p => newSelected.set(p.id, 1));
