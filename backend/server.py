@@ -230,6 +230,20 @@ class CurrencyService:
         rate = rates.get(from_currency.upper(), Decimal('1'))
         return amount * rate
 
+    async def convert_from_try(self, amount_try: Decimal, to_currency: str) -> Decimal:
+        """Convert amount from Turkish Lira to target currency"""
+        if to_currency.upper() == 'TRY':
+            return amount_try
+            
+        rates = await self.get_exchange_rates()
+        rate = rates.get(to_currency.upper(), Decimal('1'))
+        
+        # Since rates are TRY to other currency, we need to divide
+        if rate > 0:
+            return amount_try / rate
+        else:
+            return amount_try
+
 currency_service = CurrencyService()
 
 # Database helper function
