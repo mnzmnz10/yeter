@@ -1558,8 +1558,8 @@ class KaravanAPITester:
             # Test basic connectivity
             self.test_root_endpoint()
             
-            # Test exchange rates
-            self.test_exchange_rates()
+            # Test exchange rates comprehensively
+            self.test_exchange_rates_comprehensive()
             
             # Test company management
             company_ids = self.test_company_management()
