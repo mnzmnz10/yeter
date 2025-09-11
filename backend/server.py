@@ -2380,6 +2380,138 @@ async def get_all_upload_history():
         logger.error(f"Error getting all upload history: {e}")
         raise HTTPException(status_code=500, detail="Upload geçmişi getirilemedi")
 
+@api_router.post("/upload-history/{upload_id}/change-currency")
+async def change_upload_currency(upload_id: str, new_currency: str):
+    """Change currency for all products in a specific upload"""
+    try:
+        # Validate currency
+        valid_currencies = ['USD', 'EUR', 'TRY', 'GBP']
+        if new_currency not in valid_currencies:
+            raise HTTPException(status_code=400, detail=f"Geçersiz para birimi. Geçerli seçenekler: {', '.join(valid_currencies)}")
+        
+        # Get upload history
+        upload = await db.upload_history.find_one({"id": upload_id})
+        if not upload:
+            raise HTTPException(status_code=404, detail="Upload bulunamadı")
+        
+        # Get current exchange rates
+        await currency_service.get_exchange_rates()
+        
+        # Find all products uploaded in this batch
+        # We'll identify products by upload date range (within 5 minutes of upload)
+        upload_date = upload['upload_date']
+        start_time = upload_date - timedelta(minutes=5)
+        end_time = upload_date + timedelta(minutes=5)
+        
+        # Get products from this company within the time range
+        company_id = upload['company_id']
+        products_cursor = db.products.find({
+            "company_id": company_id,
+            "created_at": {"$gte": start_time, "$lte": end_time}
+        })
+        products = await products_cursor.to_list(None)
+        
+        if not products:
+            # Alternative method: get products by estimated count
+            # This is less precise but more reliable
+            company_products_cursor = db.products.find({"company_id": company_id}).sort("created_at", -1)
+            all_company_products = await company_products_cursor.to_list(None)
+            
+            # Take approximately the number of products that were in the upload
+            expected_count = upload.get('total_products', 0)
+            if expected_count > 0 and len(all_company_products) >= expected_count:
+                products = all_company_products[:expected_count]
+            else:
+                raise HTTPException(status_code=404, detail="Bu upload'a ait ürünler bulunamadı")
+        
+        updated_count = 0
+        price_changes = []
+        
+        # Update each product's currency
+        for product in products:
+            try:
+                old_currency = product.get('currency', 'TRY')
+                old_list_price = product.get('list_price', 0)
+                old_discounted_price = product.get('discounted_price')
+                
+                # Skip if already in target currency
+                if old_currency == new_currency:
+                    continue
+                
+                # Convert prices to new currency
+                if old_currency != new_currency:
+                    # Convert to TRY first, then to target currency
+                    old_list_price_try = await currency_service.convert_to_try(
+                        Decimal(str(old_list_price)), old_currency
+                    )
+                    
+                    new_list_price = await currency_service.convert_from_try(
+                        old_list_price_try, new_currency
+                    )
+                    
+                    new_discounted_price = None
+                    if old_discounted_price:
+                        old_discounted_price_try = await currency_service.convert_to_try(
+                            Decimal(str(old_discounted_price)), old_currency
+                        )
+                        new_discounted_price = await currency_service.convert_from_try(
+                            old_discounted_price_try, new_currency
+                        )
+                    
+                    # Update product in database
+                    update_data = {
+                        "currency": new_currency,
+                        "list_price": float(new_list_price),
+                        "updated_at": datetime.now(timezone.utc)
+                    }
+                    
+                    if new_discounted_price:
+                        update_data["discounted_price"] = float(new_discounted_price)
+                    
+                    await db.products.update_one(
+                        {"id": product['id']},
+                        {"$set": update_data}
+                    )
+                    
+                    updated_count += 1
+                    
+                    # Track price change
+                    price_changes.append({
+                        "product_name": product['name'],
+                        "old_currency": old_currency,
+                        "new_currency": new_currency,
+                        "old_price": float(old_list_price),
+                        "new_price": float(new_list_price)
+                    })
+                    
+            except Exception as e:
+                logger.warning(f"Error updating product {product.get('name', 'Unknown')}: {e}")
+                continue
+        
+        # Update upload history to reflect the currency change
+        await db.upload_history.update_one(
+            {"id": upload_id},
+            {
+                "$set": {
+                    "currency_changes": price_changes,
+                    "last_currency_update": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        return {
+            "success": True,
+            "message": f"{updated_count} ürünün para birimi {new_currency} olarak güncellendi",
+            "updated_count": updated_count,
+            "price_changes": price_changes[:10]  # Show first 10 changes
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error changing upload currency: {e}")
+        raise HTTPException(status_code=500, detail=f"Para birimi güncellenemedi: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
