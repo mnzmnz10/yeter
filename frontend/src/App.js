@@ -2284,6 +2284,122 @@ function App() {
             </Card>
           </TabsContent>
 
+            {/* Upload History Dialog */}
+            <Dialog open={showUploadHistoryDialog} onOpenChange={closeUploadHistoryDialog}>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {selectedCompanyForHistory?.name} - Upload Geçmişi
+                  </DialogTitle>
+                  <DialogDescription>
+                    Bu firmaya ait tüm Excel yükleme işlemleri ve detayları
+                  </DialogDescription>
+                </DialogHeader>
+                
+                {loadingHistory ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="w-6 h-6 animate-spin mr-2" />
+                    Yükleniyor...
+                  </div>
+                ) : uploadHistory.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500">
+                    Bu firma için henüz upload geçmişi bulunmuyor
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {uploadHistory.map((upload) => (
+                      <Card key={upload.id} className="border-slate-200">
+                        <CardHeader className="pb-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-base">{upload.filename}</CardTitle>
+                              <CardDescription>
+                                {new Date(upload.upload_date).toLocaleDateString('tr-TR', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </CardDescription>
+                            </div>
+                            <Badge variant={upload.status === 'completed' ? 'default' : 'destructive'}>
+                              {upload.status === 'completed' ? 'Tamamlandı' : 'Hata'}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-emerald-600">
+                                {upload.total_products}
+                              </div>
+                              <div className="text-sm text-slate-500">Toplam Ürün</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-blue-600">
+                                {upload.new_products}
+                              </div>
+                              <div className="text-sm text-slate-500">Yeni Ürün</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-orange-600">
+                                {upload.updated_products}
+                              </div>
+                              <div className="text-sm text-slate-500">Güncellenmiş</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-purple-600">
+                                {upload.price_changes?.length || 0}
+                              </div>
+                              <div className="text-sm text-slate-500">Fiyat Değişikliği</div>
+                            </div>
+                          </div>
+
+                          {/* Para Birimi Dağılımı */}
+                          {upload.currency_distribution && Object.keys(upload.currency_distribution).length > 0 && (
+                            <div className="mb-4">
+                              <h4 className="text-sm font-medium mb-2">Para Birimi Dağılımı:</h4>
+                              <div className="flex gap-2 flex-wrap">
+                                {Object.entries(upload.currency_distribution).map(([currency, count]) => (
+                                  <Badge key={currency} variant="outline">
+                                    {currency}: {count} ürün
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Fiyat Değişiklikleri */}
+                          {upload.price_changes && upload.price_changes.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium mb-2">Fiyat Değişiklikleri:</h4>
+                              <div className="max-h-32 overflow-y-auto space-y-1">
+                                {upload.price_changes.slice(0, 5).map((change, index) => (
+                                  <div key={index} className="text-sm p-2 bg-slate-50 rounded">
+                                    <span className="font-medium">{change.product_name}</span>
+                                    <span className={`ml-2 ${change.change_type === 'increase' ? 'text-red-600' : 'text-green-600'}`}>
+                                      {change.old_price} → {change.new_price} {change.currency}
+                                      ({change.change_type === 'increase' ? '+' : ''}{change.change_percent}%)
+                                    </span>
+                                  </div>
+                                ))}
+                                {upload.price_changes.length > 5 && (
+                                  <div className="text-xs text-slate-500 text-center">
+                                    ve {upload.price_changes.length - 5} değişiklik daha...
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+
         </Tabs>
       </div>
 
