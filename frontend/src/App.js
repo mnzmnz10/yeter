@@ -771,6 +771,44 @@ function App() {
     }).filter(Boolean);
   };
 
+  // Üzerine tamamla fonksiyonu - tutarı yukarı yuvarlar
+  const roundUpToNextThousand = (amount) => {
+    if (amount <= 0) return 0;
+    
+    // 7200 → 10000, 64632 → 70000 gibi
+    const digits = amount.toString().length;
+    const firstDigit = parseInt(amount.toString()[0]);
+    
+    let roundedValue;
+    if (digits === 1) {
+      // 1-9 → 10
+      roundedValue = 10;
+    } else if (digits === 2) {
+      // 10-99 → 100
+      roundedValue = 100;
+    } else if (digits === 3) {
+      // 100-999 → 1000
+      roundedValue = 1000;
+    } else if (digits === 4) {
+      // 1000-9999 → 10000
+      roundedValue = 10000;
+    } else if (digits === 5) {
+      // 10000-99999 → 100000
+      roundedValue = 100000;
+    } else {
+      // Daha büyük sayılar için genel kural
+      const powerOf10 = Math.pow(10, digits);
+      roundedValue = (firstDigit + 1) * (powerOf10 / 10);
+      
+      // Eğer ilk rakam 9 ise, bir basamak yukarı çık
+      if (firstDigit === 9) {
+        roundedValue = powerOf10;
+      }
+    }
+    
+    return roundedValue;
+  };
+
   const calculateQuoteTotals = () => {
     const selectedProductsData = getSelectedProductsData();
     
