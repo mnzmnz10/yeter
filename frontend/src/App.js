@@ -84,9 +84,9 @@ function App() {
   useEffect(() => {
     loadInitialData();
     
-    // Döviz kurlarını her 30 dakikada bir güncelle
+    // Döviz kurlarını her 30 dakikada bir sessizce güncelle
     const exchangeRateInterval = setInterval(() => {
-      loadExchangeRates(false); // Sessiz güncelleme, toast yok
+      loadExchangeRates(false, false); // Sessiz güncelleme, toast yok
     }, 30 * 60 * 1000); // 30 dakika
 
     // Cleanup function
