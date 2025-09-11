@@ -2441,7 +2441,7 @@ async def change_upload_currency(upload_id: str, new_currency: str):
         updated_count = 0
         price_changes = []
         
-        # Update each product's currency
+        # Update each product's currency (PRESERVE PRICE VALUES, ONLY CHANGE CURRENCY LABEL)
         for product in products:
             try:
                 old_currency = product.get('currency', 'TRY')
@@ -2452,35 +2452,35 @@ async def change_upload_currency(upload_id: str, new_currency: str):
                 if old_currency == new_currency:
                     continue
                 
-                # Convert prices to new currency
-                if old_currency != new_currency:
-                    # Convert to TRY first, then to target currency
-                    old_list_price_try = await currency_service.convert_to_try(
-                        Decimal(str(old_list_price)), old_currency
+                ## IMPORTANT: Keep the same price values, only change currency label
+                ## This is for cases where Excel had correct prices but wrong currency was detected
+                
+                # Keep the same numeric values, just change the currency
+                new_list_price = old_list_price  # Same value!
+                new_discounted_price = old_discounted_price  # Same value!
+                
+                # Recalculate TRY prices based on new currency (for internal calculations)
+                new_list_price_try = await currency_service.convert_to_try(
+                    Decimal(str(new_list_price)), new_currency
+                )
+                
+                new_discounted_price_try = None
+                if new_discounted_price:
+                    new_discounted_price_try = await currency_service.convert_to_try(
+                        Decimal(str(new_discounted_price)), new_currency
                     )
-                    
-                    new_list_price = await currency_service.convert_from_try(
-                        old_list_price_try, new_currency
-                    )
-                    
-                    new_discounted_price = None
-                    if old_discounted_price:
-                        old_discounted_price_try = await currency_service.convert_to_try(
-                            Decimal(str(old_discounted_price)), old_currency
-                        )
-                        new_discounted_price = await currency_service.convert_from_try(
-                            old_discounted_price_try, new_currency
-                        )
-                    
-                    # Update product in database
-                    update_data = {
-                        "currency": new_currency,
-                        "list_price": float(new_list_price),
-                        "updated_at": datetime.now(timezone.utc)
-                    }
-                    
-                    if new_discounted_price:
-                        update_data["discounted_price"] = float(new_discounted_price)
+                
+                # Update product in database
+                update_data = {
+                    "currency": new_currency,
+                    "list_price": float(new_list_price),  # Same numeric value
+                    "list_price_try": float(new_list_price_try),  # Recalculated for TRY
+                    "updated_at": datetime.now(timezone.utc)
+                }
+                
+                if new_discounted_price:
+                    update_data["discounted_price"] = float(new_discounted_price)  # Same numeric value
+                    update_data["discounted_price_try"] = float(new_discounted_price_try)  # Recalculated for TRY
                     
                     await db.products.update_one(
                         {"id": product['id']},
