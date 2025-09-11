@@ -2228,6 +2228,84 @@ function App() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Hızlı Teklif Oluşturma Dialog'u */}
+      <Dialog open={showQuickQuoteDialog} onOpenChange={setShowQuickQuoteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-600" />
+              Hızlı Teklif Oluştur
+            </DialogTitle>
+            <DialogDescription>
+              {selectedProducts.size} seçili ürün için teklif oluşturuluyor
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="space-y-4">
+              {/* Müşteri Adı */}
+              <div>
+                <Label htmlFor="customer-name">Müşteri Adı *</Label>
+                <Input
+                  id="customer-name"
+                  placeholder="Örn: Mehmet Yılmaz"
+                  value={quickQuoteCustomerName}
+                  onChange={(e) => setQuickQuoteCustomerName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && quickQuoteCustomerName.trim()) {
+                      createQuickQuote();
+                    }
+                  }}
+                  className="mt-1"
+                  autoFocus
+                />
+              </div>
+
+              {/* Seçili Ürün Özeti */}
+              <div className="bg-slate-50 rounded-lg p-3">
+                <div className="text-sm font-medium text-slate-700 mb-2">Seçili Ürün Özeti:</div>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {getSelectedProductsData().slice(0, 3).map((product, index) => (
+                    <div key={product.id} className="text-xs text-slate-600 flex justify-between">
+                      <span className="truncate">{product.name}</span>
+                      <span>₺{formatPrice(product.list_price_try || 0)}</span>
+                    </div>
+                  ))}
+                  {selectedProducts.size > 3 && (
+                    <div className="text-xs text-slate-500 italic">
+                      ... ve {selectedProducts.size - 3} ürün daha
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2 pt-2 border-t text-sm font-medium">
+                  Toplam: ₺{formatPrice(calculateQuoteTotals().totalListPrice)}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowQuickQuoteDialog(false);
+                setQuickQuoteCustomerName('');
+              }}
+            >
+              İptal
+            </Button>
+            <Button 
+              onClick={createQuickQuote}
+              disabled={!quickQuoteCustomerName.trim()}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Teklif Oluştur
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
