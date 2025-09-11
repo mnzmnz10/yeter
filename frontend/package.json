@@ -57,6 +57,7 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
+    "build:analyze": "craco build && npx webpack-bundle-analyzer build/static/js/*.js",
     "test": "craco test"
   },
   "browserslist": {
