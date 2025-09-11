@@ -162,8 +162,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Improved PDF generation with Turkish character support and Montserrat font"
-    - "Frontend support for PDF download with new design"
+    - "Quick Quote Creation Feature - Products to Quote directly"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
