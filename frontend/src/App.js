@@ -914,14 +914,25 @@ function App() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="pt-0">
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => deleteCompany(company.id)}
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Sil
-                        </Button>
+                        <div className="flex gap-2 flex-wrap">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openUploadHistoryDialog(company)}
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-700"
+                          >
+                            <Archive className="w-4 h-4 mr-2" />
+                            Geçmiş
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteCompany(company.id)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Sil
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
