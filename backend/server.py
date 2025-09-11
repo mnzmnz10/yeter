@@ -1983,7 +1983,7 @@ async def assign_product_to_category(product_id: str, category_id: str = None):
 
 @api_router.post("/companies/{company_id}/upload-excel")
 async def upload_excel(company_id: str, file: UploadFile = File(...)):
-    """Upload Excel file for a company"""
+    """Upload Excel file for a company with smart update system"""
     try:
         # Verify company exists
         company = await db.companies.find_one({"id": company_id})
@@ -2014,12 +2014,23 @@ async def upload_excel(company_id: str, file: UploadFile = File(...)):
         # Get current exchange rates
         await currency_service.get_exchange_rates()
         
-        # Process and save products
+        # Initialize counters and tracking
+        new_products = 0
+        updated_products = 0
+        price_changes = []
+        currency_distribution = {}
         created_products = []
+        
+        # Get existing products for this company for comparison
+        existing_products_cursor = db.products.find({"company_id": company_id})
+        existing_products = {product['name']: product async for product in existing_products_cursor}
+        
+        # Process and save products with smart update
         for product_data in products_data:
             try:
                 # Handle company management for color-based parsing
                 target_company_id = company_id
+                target_company_name = company['name']
                 
                 # If product has a different company name (from color-based parsing)
                 if (product_data.get('company_name') and 
@@ -2030,6 +2041,7 @@ async def upload_excel(company_id: str, file: UploadFile = File(...)):
                     existing_company = await db.companies.find_one({"name": product_data['company_name']})
                     if existing_company:
                         target_company_id = existing_company['id']
+                        target_company_name = existing_company['name']
                     else:
                         # Create new company
                         new_company_dict = {
@@ -2039,6 +2051,7 @@ async def upload_excel(company_id: str, file: UploadFile = File(...)):
                         }
                         await db.companies.insert_one(new_company_dict)
                         target_company_id = new_company_dict['id']
+                        target_company_name = new_company_dict['name']
                         logger.info(f"Created new company: {product_data['company_name']}")
                 
                 # Convert prices to TRY
@@ -2054,31 +2067,117 @@ async def upload_excel(company_id: str, file: UploadFile = File(...)):
                         product_data['currency']
                     )
                 
-                product_dict = {
-                    "id": str(uuid.uuid4()),
-                    "name": product_data['name'],
-                    "company_id": target_company_id,
-                    "description": product_data.get('description'),
-                    "image_url": None,  # Will be added later if needed
-                    "list_price": product_data['list_price'],
-                    "discounted_price": product_data.get('discounted_price'),
-                    "currency": product_data['currency'],
-                    "list_price_try": float(list_price_try),
-                    "discounted_price_try": float(discounted_price_try) if discounted_price_try else None,
-                    "created_at": datetime.now(timezone.utc)
-                }
+                # Count currency distribution
+                currency = product_data['currency']
+                currency_distribution[currency] = currency_distribution.get(currency, 0) + 1
                 
-                await db.products.insert_one(product_dict)
-                created_products.append(Product(**product_dict))
+                # Check if product already exists (by name and company)
+                product_name = product_data['name']
+                if product_name in existing_products:
+                    # Product exists - update it
+                    existing_product = existing_products[product_name]
+                    old_list_price = float(existing_product.get('list_price', 0))
+                    new_list_price = float(product_data['list_price'])
+                    
+                    # Calculate price change
+                    if old_list_price != new_list_price:
+                        price_change_amount = new_list_price - old_list_price
+                        price_change_percent = ((new_list_price - old_list_price) / old_list_price * 100) if old_list_price > 0 else 0
+                        
+                        price_changes.append({
+                            "product_name": product_name,
+                            "old_price": old_list_price,
+                            "new_price": new_list_price,
+                            "change_amount": price_change_amount,
+                            "change_percent": round(price_change_percent, 2),
+                            "currency": currency,
+                            "change_type": "increase" if price_change_amount > 0 else "decrease"
+                        })
+                    
+                    # Update existing product
+                    update_data = {
+                        "list_price": product_data['list_price'],
+                        "discounted_price": product_data.get('discounted_price'),
+                        "currency": product_data['currency'],
+                        "list_price_try": float(list_price_try),
+                        "discounted_price_try": float(discounted_price_try) if discounted_price_try else None,
+                        "updated_at": datetime.now(timezone.utc)
+                    }
+                    
+                    await db.products.update_one(
+                        {"id": existing_product['id']},
+                        {"$set": update_data}
+                    )
+                    updated_products += 1
+                    
+                else:
+                    # New product - create it
+                    product_dict = {
+                        "id": str(uuid.uuid4()),
+                        "name": product_data['name'],
+                        "company_id": target_company_id,
+                        "description": product_data.get('description'),
+                        "image_url": None,
+                        "list_price": product_data['list_price'],
+                        "discounted_price": product_data.get('discounted_price'),
+                        "currency": product_data['currency'],
+                        "list_price_try": float(list_price_try),
+                        "discounted_price_try": float(discounted_price_try) if discounted_price_try else None,
+                        "created_at": datetime.now(timezone.utc)
+                    }
+                    
+                    await db.products.insert_one(product_dict)
+                    created_products.append(Product(**product_dict))
+                    new_products += 1
                 
             except Exception as e:
                 logger.warning(f"Error processing product {product_data.get('name', 'Unknown')}: {e}")
                 continue
         
+        # Create upload history record
+        upload_history = {
+            "id": str(uuid.uuid4()),
+            "company_id": company_id,
+            "company_name": company['name'],
+            "filename": file.filename,
+            "upload_date": datetime.now(timezone.utc),
+            "total_products": len(products_data),
+            "new_products": new_products,
+            "updated_products": updated_products,
+            "currency_distribution": currency_distribution,
+            "price_changes": price_changes,
+            "status": "completed"
+        }
+        
+        await db.upload_history.insert_one(upload_history)
+        
+        # Create detailed response message
+        messages = []
+        if new_products > 0:
+            messages.append(f"{new_products} yeni ürün eklendi")
+        if updated_products > 0:
+            messages.append(f"{updated_products} ürün güncellendi")
+        if price_changes:
+            price_increases = len([c for c in price_changes if c['change_type'] == 'increase'])
+            price_decreases = len([c for c in price_changes if c['change_type'] == 'decrease'])
+            if price_increases > 0:
+                messages.append(f"{price_increases} ürünün fiyatı zamlandı")
+            if price_decreases > 0:
+                messages.append(f"{price_decreases} ürünün fiyatı ucuzladı")
+        
+        message = ". ".join(messages) if messages else "Liste başarıyla yüklendi"
+        
         return {
             "success": True,
-            "message": f"{len(created_products)} ürün başarıyla yüklendi",
-            "products_count": len(created_products)
+            "message": message,
+            "upload_id": upload_history["id"],
+            "summary": {
+                "total_products": len(products_data),
+                "new_products": new_products,
+                "updated_products": updated_products,
+                "price_changes": len(price_changes),
+                "currency_distribution": currency_distribution
+            }
         }
         
     except HTTPException:
