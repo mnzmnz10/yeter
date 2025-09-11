@@ -241,6 +241,13 @@ function App() {
     try {
       const response = await axios.get(`${API}/categories`);
       setCategories(response.data);
+      
+      // Kategoriler yüklendikten sonra, bir sonraki rengi otomatik seç
+      setTimeout(() => {
+        const nextColor = getNextCategoryColor();
+        setNewCategoryColor(nextColor);
+      }, 100); // Küçük delay ile state güncellenene kadar bekle
+      
     } catch (error) {
       console.error('Error loading categories:', error);
       toast.error('Kategoriler yüklenemedi');
