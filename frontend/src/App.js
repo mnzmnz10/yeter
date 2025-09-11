@@ -492,6 +492,60 @@ function App() {
     }
   };
 
+  // Ürünler sekmesinden hızlı teklif oluştur
+  const createQuickQuote = async () => {
+    try {
+      if (!quickQuoteCustomerName.trim()) {
+        toast.error('Lütfen müşteri adını girin');
+        return;
+      }
+
+      const selectedProductData = getSelectedProductsData().map(p => ({
+        id: p.id,
+        quantity: p.quantity || 1
+      }));
+
+      const quoteData = {
+        name: `${quickQuoteCustomerName} - ${new Date().toLocaleDateString('tr-TR')}`,
+        customer_name: quickQuoteCustomerName.trim(),
+        discount_percentage: 0,
+        labor_cost: 0,
+        products: selectedProductData,
+        notes: `${selectedProductData.length} ürün ile oluşturulan teklif`
+      };
+
+      const response = await fetch(`${API}/quotes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quoteData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Teklif oluşturulamadı');
+      }
+
+      const savedQuote = await response.json();
+
+      // Teklifleri yeniden yükle
+      await fetchQuotes();
+
+      // Dialog'u kapat ve formu temizle
+      setShowQuickQuoteDialog(false);
+      setQuickQuoteCustomerName('');
+      
+      // Seçimi temizle
+      clearSelection();
+
+      toast.success(`"${savedQuote.name}" teklifi başarıyla oluşturuldu!`);
+
+    } catch (error) {
+      console.error('Hızlı teklif oluşturma hatası:', error);
+      toast.error('Teklif oluşturulamadı: ' + error.message);
+    }
+  };
+
   const selectAllVisible = () => {
     const newSelected = new Map();
     products.forEach(p => newSelected.set(p.id, 1));
