@@ -1015,21 +1015,68 @@ function App() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  {/* Firma Seçim Modu */}
                   <div>
-                    <Label htmlFor="company-select">Firma Seçin</Label>
-                    <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Firma seçin" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {companies.map((company) => (
-                          <SelectItem key={company.id} value={company.id}>
-                            {company.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label>Firma Seçimi</Label>
+                    <div className="flex gap-4 mt-2">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="companyMode"
+                          checked={useExistingCompany}
+                          onChange={() => setUseExistingCompany(true)}
+                          className="text-emerald-600"
+                        />
+                        <span>Mevcut Firma</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="companyMode"
+                          checked={!useExistingCompany}
+                          onChange={() => setUseExistingCompany(false)}
+                          className="text-emerald-600"
+                        />
+                        <span>Yeni Firma</span>
+                      </label>
+                    </div>
                   </div>
+
+                  {/* Mevcut Firma Seçimi */}
+                  {useExistingCompany && (
+                    <div>
+                      <Label htmlFor="company-select">Mevcut Firmalardan Seçin</Label>
+                      <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Firma seçin..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {companies.map((company) => (
+                            <SelectItem key={company.id} value={company.id}>
+                              {company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* Yeni Firma Adı Girişi */}
+                  {!useExistingCompany && (
+                    <div>
+                      <Label htmlFor="new-company-name">Yeni Firma Adı</Label>
+                      <Input
+                        id="new-company-name"
+                        placeholder="Firma adını girin..."
+                        value={uploadCompanyName}
+                        onChange={(e) => setUploadCompanyName(e.target.value)}
+                        className="w-full"
+                      />
+                      <p className="text-sm text-slate-500 mt-1">
+                        Bu firma otomatik olarak oluşturulacak ve ürünler bu firmaya atanacak
+                      </p>
+                    </div>
+                  )}
 
                   <div>
                     <Label htmlFor="file-upload">Excel Dosyası</Label>
@@ -1043,7 +1090,7 @@ function App() {
 
                   <Button 
                     onClick={uploadExcelFile} 
-                    disabled={loading || !selectedCompany || !uploadFile}
+                    disabled={loading || (!selectedCompany && useExistingCompany) || (!uploadCompanyName.trim() && !useExistingCompany) || !uploadFile}
                     className="w-full"
                   >
                     <Upload className="w-4 h-4 mr-2" />
