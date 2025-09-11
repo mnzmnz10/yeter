@@ -485,10 +485,17 @@ function App() {
         description: newCategoryDescription,
         color: newCategoryColor
       });
+      
       setNewCategoryName('');
       setNewCategoryDescription('');
-      setNewCategoryColor('#3B82F6');
+      
+      // Kategorileri yeniden yükle
       await loadCategories();
+      
+      // Otomatik olarak bir sonraki rengi seç
+      const nextColor = getNextCategoryColor();
+      setNewCategoryColor(nextColor);
+      
       toast.success('Kategori başarıyla oluşturuldu');
     } catch (error) {
       console.error('Error creating category:', error);
