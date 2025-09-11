@@ -283,13 +283,18 @@ function App() {
   const refreshPrices = async () => {
     try {
       setLoading(true);
-      const response = await axios.post(`${API}/refresh-prices`);
-      await loadProducts();
-      await loadExchangeRates();
-      toast.success(response.data.message);
+      
+      // Döviz kurlarını güncelle
+      const exchangeSuccess = await loadExchangeRates(true);
+      
+      if (exchangeSuccess) {
+        // Ürünleri de yeniden yükle (güncel kurlarla fiyat hesaplaması için)
+        await loadProducts();
+        toast.success('Döviz kurları başarıyla güncellendi!');
+      }
     } catch (error) {
-      console.error('Error refreshing prices:', error);
-      toast.error('Fiyatlar güncellenemedi');
+      console.error('Error refreshing exchange rates:', error);
+      toast.error('Döviz kurları güncellenemedi');
     } finally {
       setLoading(false);
     }
