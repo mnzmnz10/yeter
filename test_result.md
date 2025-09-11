@@ -152,11 +152,11 @@ frontend:
 
   - task: "Quick Quote Creation Feature - Products to Quote directly"
     implemented: true
-    working: true
+    working: "NA"
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "main"
@@ -167,6 +167,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE UI TESTING COMPLETED SUCCESSFULLY - ALL CRITICAL FUNCTIONALITY VERIFIED: ✅ Products tab loads correctly with 443 products available, ✅ Product selection mechanism working perfectly (checkboxes functional, quantity inputs working), ✅ 'Teklif Oluştur' button appears/disappears correctly based on product selection, ✅ Customer name dialog opens properly with correct UI elements (title: 'Hızlı Teklif Oluştur', customer input field with placeholder 'Örn: Mehmet Yılmaz', selected products summary showing 3 products with total ₺18.913,595), ✅ Customer name input validation working (accepts 'Test Müşteri'), ✅ Quote submission successful - dialog closes after submit, ✅ Automatic navigation to Quotes tab working (data-state=active confirmed), ✅ Product selection cleared after quote creation (0 products selected), ✅ 'Teklif Oluştur' button properly hidden when no products selected, ✅ New quote created and visible in quotes list ('Test Müşteri - 11.09.2025' with 3 products). COMPLETE END-TO-END WORKFLOW VERIFIED: Products selection → Dialog opening → Customer name entry → Quote creation → Tab navigation → Selection cleanup. Feature is fully functional and production-ready."
+      - working: "NA"
+        agent: "main"
+        comment: "UPDATED QUOTE NAME FORMAT: Removed date from quote names. Previously quotes were created with format 'Customer Name - DD.MM.YYYY', now they should be created with just 'Customer Name'. Updated createQuickQuote function to use only quickQuoteCustomerName.trim() for both name and customer_name fields without appending date. This change needs testing to verify quote names no longer include date suffix."
 
 metadata:
   created_by: "main_agent"
