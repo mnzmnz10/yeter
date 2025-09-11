@@ -94,6 +94,38 @@ function App() {
     currency: 'USD'
   });
 
+  // Kategori renk paleti sistemi
+  const categoryColorPalette = [
+    '#3B82F6', // Mavi
+    '#10B981', // Yeşil
+    '#F59E0B', // Turuncu
+    '#EF4444', // Kırmızı
+    '#8B5CF6', // Mor
+    '#06B6D4', // Cyan
+    '#84CC16', // Lime
+    '#F97316', // Orange
+    '#EC4899', // Pink
+    '#6366F1', // Indigo
+    '#14B8A6', // Teal
+    '#F43F5E', // Rose
+    '#A855F7', // Violet
+    '#22D3EE', // Sky
+    '#65A30D'  // Green-600
+  ];
+
+  // Bir sonraki rengi otomatik seç
+  const getNextCategoryColor = () => {
+    const usedColors = categories.map(cat => cat.color).filter(Boolean);
+    const availableColors = categoryColorPalette.filter(color => !usedColors.includes(color));
+    
+    // Eğer tüm renkler kullanıldıysa, en baştan başla
+    if (availableColors.length === 0) {
+      return categoryColorPalette[0];
+    }
+    
+    return availableColors[0];
+  };
+
   // Load initial data
   useEffect(() => {
     loadInitialData();
