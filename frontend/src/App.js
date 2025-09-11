@@ -270,22 +270,54 @@ function App() {
   };
 
   const uploadExcelFile = async () => {
-    if (!selectedCompany || !uploadFile) {
-      toast.error('Firma seçin ve dosya yükleyin');
+    let companyId = null;
+    let companyName = '';
+
+    // Mevcut firma seçildiyse
+    if (useExistingCompany) {
+      if (!selectedCompany) {
+        toast.error('Lütfen bir firma seçin');
+        return;
+      }
+      companyId = selectedCompany;
+    } else {
+      // Yeni firma adı girildiyse
+      if (!uploadCompanyName.trim()) {
+        toast.error('Lütfen firma adını girin');
+        return;
+      }
+      companyName = uploadCompanyName.trim();
+    }
+
+    if (!uploadFile) {
+      toast.error('Lütfen bir dosya seçin');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', uploadFile);
-
     try {
       setLoading(true);
-      const response = await axios.post(`${API}/companies/${selectedCompany}/upload-excel`, formData, {
+
+      // Eğer yeni firma adı girildiyse, önce firmayı oluştur
+      if (!useExistingCompany) {
+        const companyResponse = await axios.post(`${API}/companies`, { name: companyName });
+        companyId = companyResponse.data.id;
+        toast.success(`"${companyName}" firması oluşturuldu`);
+        // Firma listesini güncelle
+        await loadCompanies();
+      }
+
+      // Excel dosyasını yükle
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+
+      const response = await axios.post(`${API}/companies/${companyId}/upload-excel`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
+      // Form alanlarını temizle
       setUploadFile(null);
       setSelectedCompany('');
+      setUploadCompanyName('');
       await loadProducts();
       toast.success(response.data.message);
     } catch (error) {
