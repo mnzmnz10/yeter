@@ -2339,6 +2339,80 @@ function App() {
             </Card>
           </TabsContent>
 
+            {/* Para Birimi Değiştirme Dialog */}
+            <Dialog open={showCurrencyChangeDialog} onOpenChange={closeCurrencyChangeDialog}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Para Birimini Değiştir</DialogTitle>
+                  <DialogDescription>
+                    {selectedUploadForCurrency?.filename} dosyasındaki tüm ürünlerin para birimini değiştirin
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="py-4 space-y-4">
+                  {selectedUploadForCurrency && (
+                    <div className="p-4 bg-slate-50 rounded-lg">
+                      <div className="text-sm font-medium mb-2">Mevcut Para Birimi Dağılımı:</div>
+                      <div className="flex gap-2 flex-wrap">
+                        {Object.entries(selectedUploadForCurrency.currency_distribution || {}).map(([currency, count]) => (
+                          <Badge key={currency} variant="outline">
+                            {currency}: {count} ürün
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <Label htmlFor="new-currency">Yeni Para Birimi</Label>
+                    <Select value={newCurrency} onValueChange={setNewCurrency}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Para birimi seçin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD - Amerikan Doları</SelectItem>
+                        <SelectItem value="EUR">EUR - Euro</SelectItem>
+                        <SelectItem value="TRY">TRY - Türk Lirası</SelectItem>
+                        <SelectItem value="GBP">GBP - İngiliz Sterlini</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
+                      <div className="text-sm text-amber-700">
+                        <strong>Uyarı:</strong> Bu işlem geri alınamaz! Tüm ürünlerin fiyatları güncel döviz kurlarına göre dönüştürülecek.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={closeCurrencyChangeDialog}>
+                    İptal
+                  </Button>
+                  <Button 
+                    onClick={changeCurrency} 
+                    disabled={changingCurrency || !newCurrency}
+                    className="bg-yellow-600 hover:bg-yellow-700"
+                  >
+                    {changingCurrency ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Değiştiriliyor...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Para Birimini Değiştir
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             {/* Upload History Dialog */}
             <Dialog open={showUploadHistoryDialog} onOpenChange={closeUploadHistoryDialog}>
               <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
