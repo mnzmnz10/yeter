@@ -545,7 +545,7 @@ function App() {
       }));
 
       const quoteData = {
-        name: `${quickQuoteCustomerName} - ${new Date().toLocaleDateString('tr-TR')}`,
+        name: quickQuoteCustomerName.trim(),
         customer_name: quickQuoteCustomerName.trim(),
         discount_percentage: 0,
         labor_cost: 0,
