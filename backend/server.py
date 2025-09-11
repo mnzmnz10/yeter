@@ -2330,6 +2330,56 @@ async def refresh_prices():
         logger.error(f"Error refreshing prices: {e}")
         raise HTTPException(status_code=500, detail="Fiyatlar güncellenemedi")
 
+# Upload History Endpoints
+@api_router.get("/companies/{company_id}/upload-history", response_model=List[UploadHistoryResponse])
+async def get_company_upload_history(company_id: str):
+    """Get upload history for a specific company"""
+    try:
+        # Verify company exists
+        company = await db.companies.find_one({"id": company_id})
+        if not company:
+            raise HTTPException(status_code=404, detail="Firma bulunamadı")
+        
+        # Get upload history for this company, sorted by date (newest first)
+        upload_history = await db.upload_history.find(
+            {"company_id": company_id}
+        ).sort("upload_date", -1).to_list(None)
+        
+        return [UploadHistoryResponse(**history) for history in upload_history]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting upload history: {e}")
+        raise HTTPException(status_code=500, detail="Upload geçmişi getirilemedi")
+
+@api_router.get("/upload-history/{upload_id}", response_model=UploadHistoryResponse)
+async def get_upload_details(upload_id: str):
+    """Get detailed information about a specific upload"""
+    try:
+        upload = await db.upload_history.find_one({"id": upload_id})
+        if not upload:
+            raise HTTPException(status_code=404, detail="Upload bulunamadı")
+        
+        return UploadHistoryResponse(**upload)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting upload details: {e}")
+        raise HTTPException(status_code=500, detail="Upload detayları getirilemedi")
+
+@api_router.get("/upload-history", response_model=List[UploadHistoryResponse])
+async def get_all_upload_history():
+    """Get all upload history across all companies"""
+    try:
+        upload_history = await db.upload_history.find().sort("upload_date", -1).to_list(None)
+        return [UploadHistoryResponse(**history) for history in upload_history]
+        
+    except Exception as e:
+        logger.error(f"Error getting all upload history: {e}")
+        raise HTTPException(status_code=500, detail="Upload geçmişi getirilemedi")
+
 # Include the router in the main app
 app.include_router(api_router)
 
