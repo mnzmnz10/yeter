@@ -2515,9 +2515,9 @@ async def change_upload_currency(upload_id: str, new_currency: str):
         
         return {
             "success": True,
-            "message": f"{updated_count} ürünün para birimi {new_currency} olarak güncellendi",
+            "message": f"{updated_count} ürünün para birimi {new_currency} olarak güncellendi (fiyat değerleri aynı kaldı)",
             "updated_count": updated_count,
-            "price_changes": price_changes[:10]  # Show first 10 changes
+            "currency_changes": price_changes[:10]  # Show first 10 changes
         }
         
     except HTTPException:
