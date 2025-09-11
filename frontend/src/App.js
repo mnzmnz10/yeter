@@ -691,7 +691,7 @@ function App() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-800 mb-2">
-            Karavan Elektrik Ekipmanları
+            Çorlu Karavan
           </h1>
           <p className="text-lg text-slate-600">Fiyat Karşılaştırma Sistemi</p>
         </div>
