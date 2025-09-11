@@ -693,7 +693,7 @@ function App() {
           <h1 className="text-4xl font-bold text-slate-800 mb-2">
             Çorlu Karavan
           </h1>
-          <p className="text-lg text-slate-600">Fiyat Karşılaştırma Sistemi</p>
+          <p className="text-lg text-slate-600">Fiyat Takip Sistemi</p>
         </div>
 
         {/* Stats Cards */}
