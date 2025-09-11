@@ -690,10 +690,22 @@ function App() {
       <div className="container mx-auto p-6 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-800 mb-2">
-            Çorlu Karavan
-          </h1>
-          <p className="text-lg text-slate-600">Fiyat Takip Sistemi</p>
+          <div className="flex items-center gap-4 mb-2">
+            <img 
+              src="/logo.png" 
+              alt="Çorlu Karavan Logo" 
+              className="w-16 h-16 object-contain"
+            />
+            <div className="flex-1">
+              <h1 className="text-4xl font-bold text-slate-800">
+                Çorlu Karavan
+              </h1>
+              <div className="flex items-center gap-3">
+                <p className="text-lg text-slate-600">Fiyat Takip Sistemi</p>
+                <span className="text-xs text-slate-400 font-light">made by Mehmet Necdet</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
