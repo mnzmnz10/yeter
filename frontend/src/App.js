@@ -203,7 +203,7 @@ function App() {
 
 
 
-  const loadExchangeRates = async (forceUpdate = false) => {
+  const loadExchangeRates = async (forceUpdate = false, showToast = true) => {
     try {
       let response;
       
@@ -212,7 +212,9 @@ function App() {
         response = await axios.post(`${API}/exchange-rates/update`);
         if (response.data.success) {
           setExchangeRates(response.data.rates);
-          toast.success(response.data.message);
+          if (showToast) {
+            toast.success(response.data.message);
+          }
           return true;
         }
       } else {
@@ -225,10 +227,12 @@ function App() {
       }
     } catch (error) {
       console.error('Error loading exchange rates:', error);
-      if (forceUpdate) {
-        toast.error('Döviz kurları güncellenemedi');
-      } else {
-        toast.error('Döviz kurları yüklenemedi');
+      if (showToast) {
+        if (forceUpdate) {
+          toast.error('Döviz kurları güncellenemedi');
+        } else {
+          toast.error('Döviz kurları yüklenemedi');
+        }
       }
       return false;
     }
