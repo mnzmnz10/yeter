@@ -2489,13 +2489,13 @@ async def change_upload_currency(upload_id: str, new_currency: str):
                     
                     updated_count += 1
                     
-                    # Track price change
+                    # Track currency change (prices stay the same, only currency label changes)
                     price_changes.append({
                         "product_name": product['name'],
                         "old_currency": old_currency,
                         "new_currency": new_currency,
-                        "old_price": float(old_list_price),
-                        "new_price": float(new_list_price)
+                        "price_value": float(old_list_price),  # Same value in both currencies
+                        "change_type": "currency_label_only"
                     })
                     
             except Exception as e:
