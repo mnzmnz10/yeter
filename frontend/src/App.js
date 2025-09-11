@@ -539,6 +539,9 @@ function App() {
       // Seçimi temizle
       clearSelection();
 
+      // Teklifler sekmesine geç
+      setActiveTab('quotes');
+
       toast.success(`"${savedQuote.name}" teklifi başarıyla oluşturuldu!`);
 
     } catch (error) {
