@@ -628,6 +628,33 @@ function App() {
     }
   };
 
+  // Upload History fonksiyonları
+  const fetchUploadHistory = async (companyId) => {
+    try {
+      setLoadingHistory(true);
+      const response = await axios.get(`${API}/companies/${companyId}/upload-history`);
+      setUploadHistory(response.data);
+    } catch (error) {
+      console.error('Upload geçmişi yüklenirken hata:', error);
+      toast.error('Upload geçmişi yüklenemedi');
+      setUploadHistory([]);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const openUploadHistoryDialog = async (company) => {
+    setSelectedCompanyForHistory(company);
+    setShowUploadHistoryDialog(true);
+    await fetchUploadHistory(company.id);
+  };
+
+  const closeUploadHistoryDialog = () => {
+    setShowUploadHistoryDialog(false);
+    setSelectedCompanyForHistory(null);
+    setUploadHistory([]);
+  };
+
   const selectAllVisible = () => {
     const newSelected = new Map();
     products.forEach(p => newSelected.set(p.id, 1));
