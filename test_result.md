@@ -174,6 +174,18 @@ frontend:
         agent: "testing"
         comment: "COMPREHENSIVE QUOTE NAME WITHOUT DATE TESTING COMPLETED SUCCESSFULLY: ✅ Frontend correctly sends quote name without date - verified POST request data: {'name':'Tarihsiz Test Müşteri','customer_name':'Tarihsiz Test Müşteri'} with no date appended, ✅ Backend correctly processes and stores quote name without date modification, ✅ Quote creation workflow working perfectly - products selection → dialog opening → customer name entry → quote submission → automatic navigation to quotes tab, ✅ CRITICAL TEST PASSED: Quote name appears exactly as 'Tarihsiz Test Müşteri' without any date suffix in the quotes list, ✅ Date field (11.09.2025) appears separately as creation date, not as part of quote name, ✅ All other functionality intact - product selection, quantity handling, price calculations, tab navigation. The date removal feature is working correctly - quotes now use only the customer name without date appending."
 
+  - task: "Excel Upload Manual Company Name Feature"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "EXCEL UPLOAD ENHANCEMENT IMPLEMENTED: Added manual company name input functionality to Excel upload section. Users can now choose between two options: 1) 'Mevcut Firma' - Select from existing companies dropdown (original functionality), 2) 'Yeni Firma' - Enter new company name manually. Features implemented: Radio button selection for mode switching, conditional UI rendering, automatic company creation when new name is entered, proper validation for both options, error handling and user feedback, form state management with new states (uploadCompanyName, useExistingCompany). When user selects 'Yeni Firma', system automatically creates the company via POST /api/companies and then uploads Excel to the newly created company. UI tested successfully with smooth transitions between modes."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
