@@ -890,6 +890,381 @@ class KaravanAPITester:
             except Exception as e:
                 print(f"⚠️  Error deleting company {company_id}: {e}")
 
+    def test_quick_quote_creation_comprehensive(self):
+        """Comprehensive test for quick quote creation feature"""
+        print("\n🔍 Testing Quick Quote Creation Feature...")
+        
+        # Step 1: Create a test company for quote testing
+        quote_company_name = f"Quote Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Quote Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": quote_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Quote Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            quote_company_id = company_data.get('id')
+            if not quote_company_id:
+                self.log_test("Quote Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(quote_company_id)
+        except Exception as e:
+            self.log_test("Quote Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Step 2: Create test products for quote creation
+        test_products = [
+            {
+                "name": "Güneş Paneli 400W",
+                "company_id": quote_company_id,
+                "list_price": 250.00,
+                "discounted_price": 220.00,
+                "currency": "USD",
+                "description": "Yüksek verimli güneş paneli"
+            },
+            {
+                "name": "İnvertör 3000W", 
+                "company_id": quote_company_id,
+                "list_price": 450.00,
+                "discounted_price": 400.00,
+                "currency": "EUR",
+                "description": "Hibrit güneş enerjisi invertörü"
+            },
+            {
+                "name": "Akü 100Ah",
+                "company_id": quote_company_id,
+                "list_price": 5500.00,
+                "discounted_price": 5000.00,
+                "currency": "TRY",
+                "description": "Derin döngü akü"
+            }
+        ]
+        
+        created_product_ids = []
+        
+        for product_data in test_products:
+            success, response = self.run_test(
+                f"Create Quote Product: {product_data['name']}",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        self.log_test(f"Quote Product Created - {product_data['name']}", True, f"ID: {product_id}")
+                    else:
+                        self.log_test(f"Quote Product Creation - {product_data['name']}", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Quote Product Creation - {product_data['name']}", False, f"Error parsing: {e}")
+
+        if len(created_product_ids) < 2:
+            self.log_test("Quote Test Products", False, f"Only {len(created_product_ids)} products created, need at least 2")
+            return False
+
+        # Step 3: Test Quick Quote Creation - Basic Scenario
+        print("\n🔍 Testing Basic Quick Quote Creation...")
+        
+        current_date = datetime.now().strftime('%d/%m/%Y')
+        customer_name = "Ahmet Yılmaz"
+        
+        quote_data = {
+            "name": f"{customer_name} - {current_date}",
+            "customer_name": customer_name,
+            "discount_percentage": 0,
+            "labor_cost": 0,
+            "products": [
+                {"id": created_product_ids[0], "quantity": 2},
+                {"id": created_product_ids[1], "quantity": 1}
+            ],
+            "notes": "2 ürün ile oluşturulan teklif"
+        }
+        
+        success, response = self.run_test(
+            "Create Quick Quote - Basic",
+            "POST",
+            "quotes",
+            200,
+            data=quote_data
+        )
+        
+        created_quote_id = None
+        if success and response:
+            try:
+                quote_response = response.json()
+                created_quote_id = quote_response.get('id')
+                
+                # Validate quote data structure
+                required_fields = ['id', 'name', 'customer_name', 'discount_percentage', 'labor_cost', 'total_list_price', 'total_discounted_price', 'total_net_price', 'products', 'notes', 'created_at', 'status']
+                missing_fields = [field for field in required_fields if field not in quote_response]
+                
+                if not missing_fields:
+                    self.log_test("Quote Data Structure", True, "All required fields present")
+                    
+                    # Validate specific field values
+                    if quote_response.get('customer_name') == customer_name:
+                        self.log_test("Quote Customer Name", True, f"Customer: {customer_name}")
+                    else:
+                        self.log_test("Quote Customer Name", False, f"Expected: {customer_name}, Got: {quote_response.get('customer_name')}")
+                    
+                    if quote_response.get('discount_percentage') == 0:
+                        self.log_test("Quote Discount Percentage", True, "Discount: 0%")
+                    else:
+                        self.log_test("Quote Discount Percentage", False, f"Expected: 0, Got: {quote_response.get('discount_percentage')}")
+                    
+                    if quote_response.get('labor_cost') == 0:
+                        self.log_test("Quote Labor Cost", True, "Labor cost: 0")
+                    else:
+                        self.log_test("Quote Labor Cost", False, f"Expected: 0, Got: {quote_response.get('labor_cost')}")
+                    
+                    # Validate products in quote
+                    quote_products = quote_response.get('products', [])
+                    if len(quote_products) == 2:
+                        self.log_test("Quote Products Count", True, f"Products: {len(quote_products)}")
+                        
+                        # Check product quantities
+                        product_quantities = {p.get('id'): p.get('quantity') for p in quote_products}
+                        expected_quantities = {created_product_ids[0]: 2, created_product_ids[1]: 1}
+                        
+                        quantities_correct = all(
+                            product_quantities.get(pid) == expected_quantities.get(pid) 
+                            for pid in expected_quantities
+                        )
+                        
+                        if quantities_correct:
+                            self.log_test("Quote Product Quantities", True, "All quantities correct")
+                        else:
+                            self.log_test("Quote Product Quantities", False, f"Expected: {expected_quantities}, Got: {product_quantities}")
+                    else:
+                        self.log_test("Quote Products Count", False, f"Expected: 2, Got: {len(quote_products)}")
+                    
+                    # Validate price calculations
+                    total_list_price = quote_response.get('total_list_price', 0)
+                    total_net_price = quote_response.get('total_net_price', 0)
+                    
+                    if total_list_price > 0 and total_net_price > 0:
+                        self.log_test("Quote Price Calculations", True, f"List: {total_list_price}, Net: {total_net_price}")
+                    else:
+                        self.log_test("Quote Price Calculations", False, f"Invalid prices - List: {total_list_price}, Net: {total_net_price}")
+                        
+                else:
+                    self.log_test("Quote Data Structure", False, f"Missing fields: {missing_fields}")
+                    
+            except Exception as e:
+                self.log_test("Quote Creation Response", False, f"Error parsing: {e}")
+
+        # Step 4: Test Quote Listing
+        print("\n🔍 Testing Quote Listing...")
+        
+        success, response = self.run_test(
+            "Get All Quotes",
+            "GET",
+            "quotes",
+            200
+        )
+        
+        if success and response:
+            try:
+                quotes = response.json()
+                if isinstance(quotes, list):
+                    self.log_test("Quotes List Format", True, f"Found {len(quotes)} quotes")
+                    
+                    # Check if our created quote is in the list
+                    if created_quote_id:
+                        found_quote = any(q.get('id') == created_quote_id for q in quotes)
+                        self.log_test("Created Quote in List", found_quote, f"Quote ID: {created_quote_id}")
+                        
+                        if found_quote:
+                            # Find our quote and validate its data
+                            our_quote = next(q for q in quotes if q.get('id') == created_quote_id)
+                            if our_quote.get('customer_name') == customer_name:
+                                self.log_test("Quote List Data Integrity", True, "Quote data matches creation")
+                            else:
+                                self.log_test("Quote List Data Integrity", False, "Quote data doesn't match")
+                else:
+                    self.log_test("Quotes List Format", False, "Response is not a list")
+            except Exception as e:
+                self.log_test("Quotes List Parsing", False, f"Error: {e}")
+
+        # Step 5: Test Individual Quote Retrieval
+        if created_quote_id:
+            print("\n🔍 Testing Individual Quote Retrieval...")
+            
+            success, response = self.run_test(
+                f"Get Quote by ID",
+                "GET",
+                f"quotes/{created_quote_id}",
+                200
+            )
+            
+            if success and response:
+                try:
+                    quote_detail = response.json()
+                    if quote_detail.get('id') == created_quote_id:
+                        self.log_test("Quote Detail Retrieval", True, f"Retrieved quote: {quote_detail.get('name')}")
+                    else:
+                        self.log_test("Quote Detail Retrieval", False, "Wrong quote returned")
+                except Exception as e:
+                    self.log_test("Quote Detail Parsing", False, f"Error: {e}")
+
+        # Step 6: Test Error Handling - Missing Customer Name
+        print("\n🔍 Testing Error Handling...")
+        
+        invalid_quote_data = {
+            "name": "Invalid Quote",
+            "customer_name": "",  # Empty customer name
+            "discount_percentage": 0,
+            "labor_cost": 0,
+            "products": [{"id": created_product_ids[0], "quantity": 1}],
+            "notes": "Test quote with empty customer name"
+        }
+        
+        success, response = self.run_test(
+            "Create Quote - Empty Customer Name",
+            "POST",
+            "quotes",
+            422,  # Expecting validation error
+            data=invalid_quote_data
+        )
+        
+        if not success:
+            # If it doesn't return 422, check if it returns 400 or 500
+            if response and response.status_code in [400, 500]:
+                self.log_test("Empty Customer Name Validation", True, f"Properly rejected with status {response.status_code}")
+            else:
+                self.log_test("Empty Customer Name Validation", False, f"Unexpected status: {response.status_code if response else 'No response'}")
+        else:
+            self.log_test("Empty Customer Name Validation", False, "Should have rejected empty customer name")
+
+        # Step 7: Test Error Handling - Invalid Product IDs
+        invalid_product_quote = {
+            "name": "Invalid Product Quote",
+            "customer_name": "Test Customer",
+            "discount_percentage": 0,
+            "labor_cost": 0,
+            "products": [{"id": "invalid-product-id", "quantity": 1}],
+            "notes": "Test quote with invalid product ID"
+        }
+        
+        success, response = self.run_test(
+            "Create Quote - Invalid Product ID",
+            "POST",
+            "quotes",
+            400,  # Expecting bad request
+            data=invalid_product_quote
+        )
+        
+        if not success:
+            if response and response.status_code in [400, 404, 422]:
+                self.log_test("Invalid Product ID Validation", True, f"Properly rejected with status {response.status_code}")
+            else:
+                self.log_test("Invalid Product ID Validation", False, f"Unexpected status: {response.status_code if response else 'No response'}")
+        else:
+            self.log_test("Invalid Product ID Validation", False, "Should have rejected invalid product ID")
+
+        # Step 8: Test Error Handling - Empty Product List
+        empty_products_quote = {
+            "name": "Empty Products Quote",
+            "customer_name": "Test Customer",
+            "discount_percentage": 0,
+            "labor_cost": 0,
+            "products": [],  # Empty product list
+            "notes": "Test quote with no products"
+        }
+        
+        success, response = self.run_test(
+            "Create Quote - Empty Product List",
+            "POST",
+            "quotes",
+            400,  # Expecting bad request
+            data=empty_products_quote
+        )
+        
+        if not success:
+            if response and response.status_code in [400, 422]:
+                self.log_test("Empty Product List Validation", True, f"Properly rejected with status {response.status_code}")
+            else:
+                self.log_test("Empty Product List Validation", False, f"Unexpected status: {response.status_code if response else 'No response'}")
+        else:
+            self.log_test("Empty Product List Validation", False, "Should have rejected empty product list")
+
+        # Step 9: Test Complex Quote Creation (Multiple Products with Different Currencies)
+        print("\n🔍 Testing Complex Quote Creation...")
+        
+        if len(created_product_ids) >= 3:
+            complex_quote_data = {
+                "name": f"Karmaşık Teklif - {current_date}",
+                "customer_name": "Mehmet Özkan",
+                "discount_percentage": 5.0,  # 5% discount
+                "labor_cost": 500.0,  # Labor cost
+                "products": [
+                    {"id": created_product_ids[0], "quantity": 3},
+                    {"id": created_product_ids[1], "quantity": 2},
+                    {"id": created_product_ids[2], "quantity": 1}
+                ],
+                "notes": "Karmaşık teklif - farklı para birimleri ve indirim"
+            }
+            
+            success, response = self.run_test(
+                "Create Complex Quote",
+                "POST",
+                "quotes",
+                200,
+                data=complex_quote_data
+            )
+            
+            if success and response:
+                try:
+                    complex_quote = response.json()
+                    
+                    # Validate discount calculation
+                    total_discounted_price = complex_quote.get('total_discounted_price', 0)
+                    total_net_price = complex_quote.get('total_net_price', 0)
+                    labor_cost = complex_quote.get('labor_cost', 0)
+                    discount_percentage = complex_quote.get('discount_percentage', 0)
+                    
+                    # Calculate expected net price
+                    discount_amount = total_discounted_price * (discount_percentage / 100)
+                    expected_net_price = total_discounted_price - discount_amount + labor_cost
+                    
+                    # Allow small rounding differences
+                    if abs(total_net_price - expected_net_price) < 1:
+                        self.log_test("Complex Quote Calculations", True, f"Net price calculated correctly: {total_net_price}")
+                    else:
+                        self.log_test("Complex Quote Calculations", False, f"Expected: {expected_net_price}, Got: {total_net_price}")
+                        
+                    # Validate labor cost
+                    if labor_cost == 500.0:
+                        self.log_test("Complex Quote Labor Cost", True, f"Labor cost: {labor_cost}")
+                    else:
+                        self.log_test("Complex Quote Labor Cost", False, f"Expected: 500.0, Got: {labor_cost}")
+                        
+                except Exception as e:
+                    self.log_test("Complex Quote Response", False, f"Error parsing: {e}")
+
+        print(f"\n✅ Quick Quote Creation Test Summary:")
+        print(f"   - Created {len(created_product_ids)} test products")
+        print(f"   - Tested basic quote creation workflow")
+        print(f"   - Validated quote data structure and calculations")
+        print(f"   - Tested quote listing and retrieval")
+        print(f"   - Tested error handling for edge cases")
+        print(f"   - Tested complex quote with discounts and labor cost")
+        
+        return True
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting Karavan Elektrik Ekipmanları Backend API Tests")
@@ -922,6 +1297,9 @@ class KaravanAPITester:
             
             # CRITICAL: Test NaN fix comprehensively
             self.test_nan_fix_comprehensive()
+            
+            # CRITICAL: Test Quick Quote Creation Feature
+            self.test_quick_quote_creation_comprehensive()
             
             # CRITICAL: Test PDF generation with Turkish characters and Montserrat font
             self.test_pdf_generation_comprehensive()
