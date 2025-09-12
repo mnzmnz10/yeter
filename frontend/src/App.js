@@ -424,7 +424,7 @@ function App() {
       
       if (exchangeSuccess) {
         // Ürünleri de yeniden yükle (güncel kurlarla fiyat hesaplaması için)
-        await loadProducts();
+        await loadProducts(1, true);
         toast.success('Döviz kurları başarıyla güncellendi!');
       }
     } catch (error) {
