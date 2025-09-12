@@ -904,12 +904,13 @@ function App() {
   const formatPrice = (price) => {
     // Handle NaN, null, undefined cases
     if (isNaN(price) || price === null || price === undefined) {
-      return '0,00';
+      return '0';
     }
     return new Intl.NumberFormat('tr-TR', { 
       style: 'decimal', 
-      minimumFractionDigits: 2 
-    }).format(price);
+      minimumFractionDigits: 0,  // Ondalık kısım gösterme
+      maximumFractionDigits: 0   // Maksimum ondalık da 0
+    }).format(Math.round(price));  // Yuvarlayarak tam sayı yap
   };
 
   const getCurrencySymbol = (currency) => {
