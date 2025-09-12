@@ -988,16 +988,18 @@ function App() {
     }).format(Number(rate));
   };
 
-  // Mobile device detection - improved
+  // Mobile device detection - improved for Android
   const isMobileDevice = () => {
     const userAgent = navigator.userAgent.toLowerCase();
-    const mobileKeywords = ['android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 'iemobile', 'opera mini', 'mobile'];
-    return mobileKeywords.some(keyword => userAgent.includes(keyword)) || 
-           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           window.innerWidth <= 768;
+    const isAndroid = userAgent.includes('android');
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+    const isMobileWidth = window.innerWidth <= 768;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    return isAndroid || isIOS || isMobileWidth || isTouchDevice;
   };
 
-  // WhatsApp share with PDF download - improved
+  // WhatsApp share with PDF download - improved for mobile and no message content
   const shareViaWhatsAppWithPDF = async (quoteName, quoteId) => {
     try {
       // 1. PDF'i otomatik indir
@@ -1009,55 +1011,80 @@ function App() {
       link.click();
       document.body.removeChild(link);
 
-      // 2. WhatsApp mesajını hazırla
-      const message = `Merhaba! "${quoteName}" teklifinin PDF dosyasını paylaşıyorum. PDF dosyası cihazınıza indirildi, lütfen WhatsApp'ta dosya ekleme butonunu kullanarak paylaşın.`;
-      const encodedMessage = encodeURIComponent(message);
-      
-      // 3. WhatsApp URL'ini oluştur
-      let whatsappUrl;
+      // 2. WhatsApp URL'ini oluştur - MESAJ İÇERİĞİ YOK
       const isMobile = isMobileDevice();
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isAndroid = userAgent.includes('android');
+      
+      let whatsappUrl;
       
       if (isMobile) {
-        // Mobile: WhatsApp app'i aç
-        whatsappUrl = `whatsapp://send?text=${encodedMessage}`;
+        if (isAndroid) {
+          // Android için intent URL de deneyelim
+          whatsappUrl = 'whatsapp://send';
+        } else {
+          // iOS için
+          whatsappUrl = 'whatsapp://send';
+        }
         toast.success('PDF indirildi! WhatsApp uygulaması açılıyor...');
       } else {
-        // Desktop: WhatsApp Web'i aç
-        whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+        // Desktop: WhatsApp Web - boş konuşma
+        whatsappUrl = 'https://web.whatsapp.com/send';
         toast.success('PDF indirildi! WhatsApp Web açılıyor...');
       }
 
-      // 4. WhatsApp'ı aç - improved approach
+      // 3. WhatsApp'ı aç - sadece yeni sekme, fallback yok
       setTimeout(() => {
-        // Popup blocker bypass için kullanıcı interaction'ı koruyoruz
-        const newWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-        
-        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-          // Popup blocked - fallback
-          console.warn('Popup blocked, trying alternative method');
-          
-          if (isMobile) {
-            // Mobile fallback: Location change
-            try {
-              window.location.href = whatsappUrl;
-            } catch (e) {
-              // Son çare: user'a talimat ver
-              navigator.clipboard?.writeText(message).then(() => {
-                toast.error('WhatsApp açılamadı. Mesaj panoya kopyalandı, WhatsApp\'ı manuel açıp yapıştırın.');
-              }).catch(() => {
-                toast.error('WhatsApp açılamadı. Lütfen WhatsApp\'ı manuel açın.');
-              });
-            }
-          } else {
-            // Desktop fallback: Direct navigation
-            try {
-              window.location.href = whatsappUrl;
-            } catch (e) {
-              toast.error('WhatsApp Web açılamadı. Lütfen manuel olarak web.whatsapp.com adresini ziyaret edin.');
-            }
+        if (isMobile && isAndroid) {
+          // Android için özel işlem
+          try {
+            // Önce WhatsApp app protokolünü dene
+            const androidLink = document.createElement('a');
+            androidLink.href = 'whatsapp://send';
+            androidLink.target = '_blank';
+            androidLink.rel = 'noopener noreferrer';
+            document.body.appendChild(androidLink);
+            androidLink.click();
+            document.body.removeChild(androidLink);
+            
+            // Eğer bu çalışmazsa intent kullan
+            setTimeout(() => {
+              try {
+                window.open('intent://send/#Intent;scheme=whatsapp;package=com.whatsapp;end', '_blank');
+              } catch (e) {
+                // Son çare: Google Play Store
+                window.open('https://play.google.com/store/apps/details?id=com.whatsapp', '_blank');
+                toast.error('WhatsApp uygulaması bulunamadı. Play Store\'dan yükleyebilirsiniz.');
+              }
+            }, 1000);
+            
+          } catch (error) {
+            console.error('Android WhatsApp açma hatası:', error);
+            window.open('https://play.google.com/store/apps/details?id=com.whatsapp', '_blank');
           }
+        } else {
+          // iOS ve Desktop için standart yöntem
+          const newWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer,width=800,height=600');
+          
+          // Popup block kontrolü
+          setTimeout(() => {
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+              // Yeni sekme açmaya çalış - mevcut sekmeyi değiştirme
+              try {
+                const link = document.createElement('a');
+                link.href = whatsappUrl;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              } catch (e) {
+                toast.error('WhatsApp açılamadı. Lütfen popup blocker\'ı devre dışı bırakın.');
+              }
+            }
+          }, 100);
         }
-      }, 1500); // Biraz daha uzun bekleme
+      }, 1500);
 
     } catch (error) {
       console.error('WhatsApp PDF paylaşım hatası:', error);
