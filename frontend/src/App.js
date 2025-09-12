@@ -2526,7 +2526,7 @@ function App() {
                                       const productIds = new Map();
                                       const productData = new Map();
                                       quote.products.forEach(p => {
-                                        productIds.set(p.id, 1);
+                                        productIds.set(p.id, p.quantity || 1); // Gerçek quantity'yi kullan
                                         productData.set(p.id, p); // Ürün bilgisini de kaydet
                                       });
                                       setSelectedProducts(productIds);
