@@ -2796,6 +2796,24 @@ function App() {
           </DialogHeader>
           
           <div className="py-4">
+            {/* Arama Çubuğu */}
+            <div className="mb-4">
+              <div className="relative">
+                <Input
+                  placeholder="Ürün ara... (tüm ürünler arasında)"
+                  value={categoryDialogSearchQuery}
+                  onChange={(e) => setCategoryDialogSearchQuery(e.target.value)}
+                  className="pr-10"
+                />
+                {loadingCategoryProducts && (
+                  <RefreshCw className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-slate-400" />
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                {allProductsForCategory.length} toplam ürün • {uncategorizedProducts.length} kategorisiz ürün
+              </p>
+            </div>
+            
             {uncategorizedProducts.length === 0 ? (
               <div className="text-center py-8 text-slate-500">
                 <Package className="w-12 h-12 mx-auto mb-4 text-slate-400" />
