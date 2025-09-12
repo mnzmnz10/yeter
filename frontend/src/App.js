@@ -1222,8 +1222,8 @@ function App() {
             >
               <div className="flex items-center gap-1 sm:gap-2">
                 <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="hidden xs:inline sm:inline">Firmalar</span>
-                <span className="xs:hidden sm:hidden">Firma</span>
+                <span className="hidden sm:inline">Firmalar</span>
+                <span className="sm:hidden">Firma</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
