@@ -864,10 +864,10 @@ function App() {
 
   const getSelectedProductsData = useCallback(() => {
     return Array.from(selectedProducts.entries()).map(([productId, quantity]) => {
-      const product = products.find(p => p.id === productId);
+      const product = selectedProductsData.get(productId);
       return product ? { ...product, quantity } : null;
     }).filter(Boolean);
-  }, [selectedProducts, products]);
+  }, [selectedProducts, selectedProductsData]);
 
   const calculateQuoteTotals = useMemo(() => {
     const selectedProductsData = getSelectedProductsData();
