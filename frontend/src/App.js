@@ -2367,34 +2367,17 @@ function App() {
                                       setLoadedQuote(quote);
                                       setQuoteName(quote.name);
                                       
-                                      // Kısa delay sonra üzerine tamamla yap
-                                      setTimeout(() => {
-                                        const currentTotal = quote.total_net_price || 0;
-                                        if (currentTotal <= 0) {
-                                          toast.error('Geçerli bir teklif tutarı bulunamadı');
-                                          return;
-                                        }
-                                        
-                                        const roundedUp = roundUpToNextThousand(currentTotal);
-                                        const difference = roundedUp - currentTotal;
-                                        
-                                        if (difference > 0) {
-                                          setQuoteLaborCost((quote.labor_cost || 0) + difference);
-                                          toast.success(`"${quote.name}" teklifi ₺${Math.round(roundedUp).toLocaleString('tr-TR')} 'e tamamlandı (₺${Math.round(difference).toLocaleString('tr-TR')} işçilik eklendi)`);
-                                        } else {
-                                          toast.info(`"${quote.name}" teklif tutarı zaten yuvarlak bir sayı`);
-                                        }
-                                      }, 100);
+                                      toast.success(`"${quote.name}" teklifi yüklendi`);
                                       
                                     } catch (error) {
-                                      console.error('Üzerine tamamla hatası:', error);
-                                      toast.error('Üzerine tamamla işlemi başarısız oldu');
+                                      console.error('Teklif yükleme hatası:', error);
+                                      toast.error('Teklif yükleme işlemi başarısız oldu');
                                     }
                                   }}
-                                  className="bg-blue-100 text-blue-800 hover:bg-blue-200"
-                                  title={`₺${formatPrice(quote.total_net_price)} tutarını yuvarlamak için üzerine tamamla`}
+                                  className="bg-green-100 text-green-800 hover:bg-green-200"
+                                  title={`"${quote.name}" teklifini düzenleme için yükle`}
                                 >
-                                  🔼 Tamamla
+                                  📝 Yükle
                                 </Button>
                                 <Button
                                   variant="default"
