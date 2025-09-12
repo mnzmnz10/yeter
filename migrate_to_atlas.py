@@ -17,10 +17,15 @@ LOCAL_URI = "mongodb://localhost:27017"
 DATABASE_NAME = "karavan_db"
 
 # Atlas MongoDB (YENİ - Atlas connection string'inizi buraya girin)
-ATLAS_URI = input("Atlas Connection String'inizi girin: ").strip()
+# ATLAS_URI değişkenini aşağıdaki gibi doldurun:
+# mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
+
+ATLAS_URI = ""  # BURAYA ATLAS CONNECTION STRING'İNİZİ GİRİN
 
 if not ATLAS_URI:
-    print("❌ Hata: Atlas connection string boş olamaz!")
+    print("❌ Hata: ATLAS_URI değişkenini script içinde doldurmanız gerekiyor!")
+    print("📝 Lütfen migrate_to_atlas.py dosyasını editleyip ATLAS_URI değişkenine connection string'inizi yazın")
+    print("💡 Örnek: ATLAS_URI = 'mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority'")
     exit(1)
 
 try:
