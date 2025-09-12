@@ -322,7 +322,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Improved WhatsApp Share with PDF Download Feature"
+    - "MongoDB Atlas Integration and Migration"
   stuck_tasks:
     - "Quote Editing Functionality - Update Instead of Duplicate Creation"
   test_all: false
