@@ -507,7 +507,7 @@ function App() {
     try {
       const response = await axios.delete(`${API}/products/${productId}`);
       if (response.data.success) {
-        await loadProducts();
+        await loadProducts(1, true);
         toast.success('Ürün silindi');
       }
     } catch (error) {
