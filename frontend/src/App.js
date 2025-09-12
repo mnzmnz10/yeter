@@ -2043,7 +2043,7 @@ function App() {
                                           )}
                                         </TableCell>
                                       )}
-                                      <TableCell>
+                                      <TableCell className="w-24">
                                         {isEditing ? (
                                           <Select 
                                             value={editForm.currency} 
