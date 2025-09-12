@@ -50,6 +50,7 @@ function App() {
   const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
   const [showAddProductDialog, setShowAddProductDialog] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState(new Map()); // Map<productId, quantity>
+  const [selectedProductsData, setSelectedProductsData] = useState(new Map()); // Map<productId, productData>
   const [quoteName, setQuoteName] = useState('');
   const [quoteDiscount, setQuoteDiscount] = useState(0);
   const [quoteLaborCost, setQuoteLaborCost] = useState(0); // İşçilik maliyeti state'i
