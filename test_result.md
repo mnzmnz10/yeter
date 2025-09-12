@@ -260,6 +260,21 @@ frontend:
         agent: "main"
         comment: "EXCEL UPLOAD ENHANCEMENT IMPLEMENTED: Added manual company name input functionality to Excel upload section. Users can now choose between two options: 1) 'Mevcut Firma' - Select from existing companies dropdown (original functionality), 2) 'Yeni Firma' - Enter new company name manually. Features implemented: Radio button selection for mode switching, conditional UI rendering, automatic company creation when new name is entered, proper validation for both options, error handling and user feedback, form state management with new states (uploadCompanyName, useExistingCompany). When user selects 'Yeni Firma', system automatically creates the company via POST /api/companies and then uploads Excel to the newly created company. UI tested successfully with smooth transitions between modes."
 
+  - task: "Product Selection Persistence Across Search Filters"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "PRODUCT SELECTION PERSISTENCE FIX IMPLEMENTED: Fixed critical issue where selected products would disappear when user changed search terms. Previously when user searched for 'akü', selected products, then searched for 'panel', the akü products would disappear from selection. The fix involved adding selectedProductsData state (Map<productId, productData>) to store complete product information separately from the filtered products list. This ensures selected products persist across different searches and filters. The toggleProductSelection function now maintains both selectedProducts (for quantities) and selectedProductsData (for complete product info) maps, preventing selection loss during search operations."
+      - working: true
+        agent: "testing"
+        comment: "PRODUCT SELECTION PERSISTENCE TESTING COMPLETED SUCCESSFULLY: ✅ CRITICAL TEST PASSED - Product selection now persists correctly across different search terms, ✅ Test Scenario Verified: Searched for 'akü' → selected 1 product → searched for 'panel' → selected 1 product → cleared search → both products remained selected (2 ürün seçili), ✅ selectedProductsData state working correctly - stores complete product information separately from filtered products list, ✅ toggleProductSelection function properly maintains both selectedProducts and selectedProductsData maps, ✅ 'Teklif Oluştur' button remains visible throughout search changes, ✅ Quote dialog shows correct selected products summary: '100 Ah Apex Jel Akü (₺14.050) + 100W Black Esnek Paneli (₺17.769) = Total: ₺31.818', ✅ Selection persistence verified across multiple search terms including 'akü', 'panel', 'solar', 'güneş', ✅ Final verification: 2 checkboxes remain checked across all products after clearing search. The fix successfully resolves the product selection disappearing issue - users can now search for different products, select them, and all selections persist regardless of search filter changes."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
