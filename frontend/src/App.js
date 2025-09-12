@@ -2115,7 +2115,7 @@ function App() {
                                 
                                 if (difference > 0) {
                                   setQuoteLaborCost(quoteLaborCost + difference);
-                                  toast.success(`Teklif ₺${roundedUp.toLocaleString('tr-TR')} 'e tamamlandı (₺${difference.toLocaleString('tr-TR')} işçilik eklendi)`);
+                                  toast.success(`Teklif ₺${Math.round(roundedUp).toLocaleString('tr-TR')} 'e tamamlandı (₺${Math.round(difference).toLocaleString('tr-TR')} işçilik eklendi)`);
                                 } else {
                                   toast.info('Teklif tutarı zaten yuvarlak bir sayı');
                                 }
