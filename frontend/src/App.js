@@ -2410,26 +2410,7 @@ function App() {
                         <Button
                           variant="outline"
                           onClick={() => {
-                            try {
-                              // PDF URL'ini oluştur
-                              const pdfUrl = `${window.location.origin}${API}/quotes/${loadedQuote.id}/pdf`;
-                              
-                              // WhatsApp share URL'ini oluştur
-                              const whatsappUrl = generateWhatsAppShareUrl(loadedQuote.name, pdfUrl);
-                              
-                              // WhatsApp'ı aç
-                              window.open(whatsappUrl, '_blank');
-                              
-                              // Kullanıcıya bilgi ver
-                              if (isMobileDevice()) {
-                                toast.success('WhatsApp uygulaması açılıyor...');
-                              } else {
-                                toast.success('WhatsApp Web açılıyor...');
-                              }
-                            } catch (error) {
-                              console.error('WhatsApp paylaşım hatası:', error);
-                              toast.error('WhatsApp paylaşımı başarısız oldu');
-                            }
+                            shareViaWhatsAppWithPDF(loadedQuote.name, loadedQuote.id);
                           }}
                           className="bg-green-500 text-white hover:bg-green-600 flex-1"
                           title="Teklifi WhatsApp ile paylaş"
