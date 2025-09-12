@@ -2498,8 +2498,13 @@ function App() {
                                     try {
                                       // Teklifi önce yükle
                                       const productIds = new Map();
-                                      quote.products.forEach(p => productIds.set(p.id, 1));
+                                      const productData = new Map();
+                                      quote.products.forEach(p => {
+                                        productIds.set(p.id, 1);
+                                        productData.set(p.id, p); // Ürün bilgisini de kaydet
+                                      });
                                       setSelectedProducts(productIds);
+                                      setSelectedProductsData(productData);
                                       setQuoteDiscount(quote.discount_percentage);
                                       setQuoteLaborCost(quote.labor_cost || 0);
                                       setLoadedQuote(quote);
