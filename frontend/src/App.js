@@ -780,38 +780,41 @@ function App() {
     const numAmount = Number(amount);
     if (numAmount <= 0) return 0;
     
-    // 7200 → 10000, 64632 → 70000 gibi
-    const digits = numAmount.toString().length;
-    const firstDigit = parseInt(numAmount.toString()[0]);
+    // Örnekler: 7200 → 10000, 64632 → 70000, 1234 → 2000
     
-    let roundedValue;
-    if (digits === 1) {
-      // 1-9 → 10
-      roundedValue = 10;
-    } else if (digits === 2) {
-      // 10-99 → 100
-      roundedValue = 100;
-    } else if (digits === 3) {
+    if (numAmount < 1000) {
       // 100-999 → 1000
-      roundedValue = 1000;
-    } else if (digits === 4) {
+      return 1000;
+    } else if (numAmount < 10000) {
       // 1000-9999 → 10000
-      roundedValue = 10000;
-    } else if (digits === 5) {
+      return 10000;
+    } else if (numAmount < 100000) {
       // 10000-99999 → 100000
-      roundedValue = 100000;
+      return 100000;
+    } else if (numAmount < 1000000) {
+      // 100000-999999 → 1000000
+      return 1000000;
     } else {
-      // Daha büyük sayılar için genel kural
-      const powerOf10 = Math.pow(10, digits);
-      roundedValue = (firstDigit + 1) * (powerOf10 / 10);
+      // Daha büyük sayılar için daha akıllı yuvarlama
+      const str = numAmount.toString();
+      const firstDigit = parseInt(str[0]);
+      const digits = str.length;
       
-      // Eğer ilk rakam 9 ise, bir basamak yukarı çık
-      if (firstDigit === 9) {
-        roundedValue = powerOf10;
+      // İlk 2 basamağı al, sonrasını sıfırla
+      const first2Digits = parseInt(str.substring(0, 2));
+      const powerOf10 = Math.pow(10, digits - 2);
+      
+      // 17768595 → İlk 2 basamak: 17 → 20, sonrası: 20000000
+      const roundedFirst2 = Math.ceil(first2Digits / 10) * 10;
+      
+      // Çok büyük fark yaratmasın diye sınırla
+      if (roundedFirst2 * powerOf10 - numAmount > numAmount * 0.5) {
+        // %50'den fazla artış olacaksa, daha küçük yuvarlama yap
+        return Math.ceil(numAmount / 1000000) * 1000000;
       }
+      
+      return roundedFirst2 * powerOf10;
     }
-    
-    return roundedValue;
   };
 
   const calculateQuoteTotals = () => {
