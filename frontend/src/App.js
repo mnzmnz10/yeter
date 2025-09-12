@@ -2536,6 +2536,9 @@ function App() {
                                       setLoadedQuote(quote);
                                       setQuoteName(quote.name);
                                       
+                                      // Quotes sekmesine geç ki düzenleme arayüzü görünsün
+                                      setActiveTab('quotes');
+                                      
                                       toast.success(`"${quote.name}" teklifi düzenleme için yüklendi`);
                                       
                                       // Düzenleme arayüzü Teklifler sekmesinin üst kısmında - sayfa otomatik scroll edecek
