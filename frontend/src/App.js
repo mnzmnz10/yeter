@@ -887,6 +887,17 @@ function App() {
       toast.error('Favori durumu güncellenemedi');
     }
   };
+  const [favoriteProducts, setFavoriteProducts] = useState([]);
+  
+  const loadFavoriteProducts = async () => {
+    try {
+      const response = await axios.get(`${API}/products/favorites`);
+      setFavoriteProducts(response.data);
+    } catch (error) {
+      console.error('Error loading favorite products:', error);
+      toast.error('Favori ürünler yüklenemedi');
+    }
+  };
 
   const calculateQuoteTotals = useMemo(() => {
     const selectedProductsData = getSelectedProductsData();
