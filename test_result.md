@@ -310,7 +310,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Quote Editing Functionality - Update Instead of Duplicate Creation"
+    - "WhatsApp Share Functionality in Quote Editing Interface"
   stuck_tasks:
     - "Quote Editing Functionality - Update Instead of Duplicate Creation"
   test_all: false
