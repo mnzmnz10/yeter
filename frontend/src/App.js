@@ -2101,9 +2101,28 @@ function App() {
                             variant="secondary"
                             size="sm"
                             onClick={() => {
-                              const currentTotal = calculateQuoteTotals().totalWithLaborAndDiscount;
-                              const roundedUp = roundUpToNextThousand(currentTotal);
-                              setQuoteLaborCost(quoteLaborCost + (roundedUp - currentTotal));
+                              try {
+                                const quoteTotals = calculateQuoteTotals();
+                                const currentTotal = quoteTotals?.totalWithLaborAndDiscount || 0;
+                                
+                                if (currentTotal <= 0) {
+                                  toast.error('Geçerli bir teklif tutarı bulunamadı');
+                                  return;
+                                }
+                                
+                                const roundedUp = roundUpToNextThousand(currentTotal);
+                                const difference = roundedUp - currentTotal;
+                                
+                                if (difference > 0) {
+                                  setQuoteLaborCost(quoteLaborCost + difference);
+                                  toast.success(`Teklif ₺${roundedUp.toLocaleString('tr-TR')} 'e tamamlandı (₺${difference.toLocaleString('tr-TR')} işçilik eklendi)`);
+                                } else {
+                                  toast.info('Teklif tutarı zaten yuvarlak bir sayı');
+                                }
+                              } catch (error) {
+                                console.error('Üzerine tamamla hatası:', error);
+                                toast.error('Üzerine tamamla işlemi başarısız oldu');
+                              }
                             }}
                             className="bg-blue-100 text-blue-800 hover:bg-blue-200"
                             title="Teklif tutarını yukarı yuvarlayarak işçilik maliyeti hesapla"
