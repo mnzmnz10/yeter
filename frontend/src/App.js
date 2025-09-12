@@ -1863,7 +1863,7 @@ function App() {
 
                           {/* Products Table for this category */}
                           <div className="overflow-x-auto">
-                            <Table>
+                            <Table className="table-fixed w-full">
                               <TableHeader>
                                 <TableRow>
                                   <TableHead className="w-12">
