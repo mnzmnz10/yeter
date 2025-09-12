@@ -2031,8 +2031,6 @@ async def assign_product_to_category(product_id: str, category_id: str = None):
         logger.error(f"Error assigning product to category: {e}")
         raise HTTPException(status_code=500, detail="Ürün kategoriye atanamadı")
 
-@api_router.post("/companies/{company_id}/upload-excel")
-async def upload_excel(company_id: str, file: UploadFile = File(...)):
 @api_router.post("/products/{product_id}/toggle-favorite")
 async def toggle_product_favorite(product_id: str):
     """Toggle a product's favorite status"""
@@ -2063,6 +2061,10 @@ async def toggle_product_favorite(product_id: str):
         
     except HTTPException:
         raise
+    except Exception as e:
+        logger.error(f"Error toggling product favorite: {e}")
+        raise HTTPException(status_code=500, detail="Favori durumu güncellenemedi")
+
 @api_router.get("/products/favorites", response_model=List[Product])
 async def get_favorite_products():
     """Get all favorite products"""
@@ -2072,9 +2074,9 @@ async def get_favorite_products():
     except Exception as e:
         logger.error(f"Error getting favorite products: {e}")
         raise HTTPException(status_code=500, detail="Favori ürünler getirilemedi")
-    except Exception as e:
-        logger.error(f"Error toggling product favorite: {e}")
-        raise HTTPException(status_code=500, detail="Favori durumu güncellenemedi")
+
+@api_router.post("/companies/{company_id}/upload-excel")  
+async def upload_excel(company_id: str, file: UploadFile = File(...)):
     """Upload Excel file for a company with smart update system"""
     try:
         # Verify company exists
