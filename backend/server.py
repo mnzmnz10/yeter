@@ -152,6 +152,41 @@ class UploadHistory(BaseModel):
     price_changes: List[Dict[str, Any]] = []  # Price change details
     status: str = "completed"  # completed, failed, processing
 
+# Package Models
+class Package(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    sale_price: Decimal
+    image_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PackageCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    sale_price: Decimal
+    image_url: Optional[str] = None
+
+class PackageProduct(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    package_id: str
+    product_id: str
+    quantity: int = 1
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PackageProductCreate(BaseModel):
+    product_id: str
+    quantity: int = 1
+
+class PackageWithProducts(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    sale_price: Decimal
+    image_url: Optional[str] = None
+    created_at: datetime
+    products: List[Dict[str, Any]] = []
+    total_discounted_price: Optional[Decimal] = None
 class UploadHistoryResponse(BaseModel):
     id: str
     company_id: str
