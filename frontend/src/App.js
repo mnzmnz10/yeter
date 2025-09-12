@@ -152,7 +152,7 @@ function App() {
     try {
       await Promise.all([
         loadCompanies(),
-        loadProducts(),
+        loadProducts(1, true),
         loadCategories(),
         loadExchangeRates(),
         fetchQuotes()
