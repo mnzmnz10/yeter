@@ -1930,7 +1930,7 @@ function App() {
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-semibold text-blue-900">
-                          Seçili Ürünler ({selectedProducts.size} çeşit, {calculateQuoteTotals().totalQuantity} adet)
+                          Seçili Ürünler ({selectedProducts.size} çeşit, {calculateQuoteTotals.totalQuantity} adet)
                         </h4>
                         {/* Teklif İndirimli Fiyat Toggle Butonu */}
                         <Button
