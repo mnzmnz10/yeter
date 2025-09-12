@@ -2398,6 +2398,7 @@ async def create_product(product: ProductCreate):
             "currency": product.currency.upper(),
             "list_price_try": float(list_price_try),
             "discounted_price_try": float(discounted_price_try) if discounted_price_try else None,
+            "is_favorite": product.is_favorite,  # Include is_favorite field
             "created_at": datetime.now(timezone.utc)
         }
         
