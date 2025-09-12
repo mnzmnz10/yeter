@@ -2255,16 +2255,26 @@ function App() {
                           try {
                             let quoteId = null;
                             
-                            // Eğer mevcut bir teklif yüklenmişse onu güncelle
-                            if (loadedQuote && loadedQuote.id && (quoteLaborCost > 0 || quoteDiscount > 0)) {
+                            // Eğer mevcut bir teklif yüklenmişse ve isim değişmemişse onu güncelle
+                            if (loadedQuote && loadedQuote.id && 
+                                (loadedQuote.name === quoteName || quoteName === '')) {
+                              
+                              const selectedProductData = getSelectedProductsData().map(p => ({
+                                id: p.id,
+                                quantity: p.quantity || 1
+                              }));
+                              
                               const updateResponse = await fetch(`${API}/quotes/${loadedQuote.id}`, {
                                 method: 'PUT',
                                 headers: {
                                   'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({
+                                  name: loadedQuote.name, // İsmi aynı tut
                                   labor_cost: parseFloat(quoteLaborCost) || 0,
-                                  discount_percentage: parseFloat(quoteDiscount) || 0
+                                  discount_percentage: parseFloat(quoteDiscount) || 0,
+                                  products: selectedProductData,
+                                  notes: quoteLaborCost > 0 ? `İşçilik maliyeti: ₺${formatPrice(quoteLaborCost)}` : null
                                 })
                               });
                               
@@ -2275,16 +2285,19 @@ function App() {
                               const updatedQuote = await updateResponse.json();
                               quoteId = updatedQuote.id;
                               
+                              // Teklifler listesini yenile
+                              await fetchQuotes();
+                              
                               toast.success(`"${loadedQuote.name}" teklifi güncellendi!`);
                             } else {
-                              // Yeni teklif oluştur
+                              // Yeni teklif oluştur veya farklı isimle kaydet
                               const selectedProductData = getSelectedProductsData().map(p => ({
                                 id: p.id,
                                 quantity: p.quantity || 1
                               }));
                               
                               const newQuoteData = {
-                                name: loadedQuote?.name || quoteName || `Teklif - ${new Date().toLocaleDateString('tr-TR')}`,
+                                name: quoteName || `Teklif - ${new Date().toLocaleDateString('tr-TR')}`,
                                 discount_percentage: parseFloat(quoteDiscount) || 0,
                                 labor_cost: parseFloat(quoteLaborCost) || 0,
                                 products: selectedProductData,
@@ -2305,6 +2318,9 @@ function App() {
                               
                               const savedQuote = await createResponse.json();
                               quoteId = savedQuote.id;
+                              
+                              // Teklifler listesini yenile
+                              await fetchQuotes();
                               
                               toast.success('Teklif başarıyla oluşturuldu!');
                             }
