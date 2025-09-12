@@ -1197,8 +1197,8 @@ function App() {
             >
               <div className="flex items-center gap-1 sm:gap-2">
                 <Package className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="hidden xs:inline sm:inline">Ürünler</span>
-                <span className="xs:hidden sm:hidden">Ürün</span>
+                <span className="hidden sm:inline">Ürünler</span>
+                <span className="sm:hidden">Ürün</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
