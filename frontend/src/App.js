@@ -2158,7 +2158,7 @@ function App() {
                         {quoteLaborCost > 0 && (
                           <div className="text-center">
                             <div className="text-2xl font-bold text-green-600">
-                              + ₺ {formatPrice(calculateQuoteTotals().laborCost)}
+                              + ₺ {formatPrice(calculateQuoteTotals.laborCost)}
                             </div>
                             <div className="text-sm text-green-500">İşçilik</div>
                           </div>
