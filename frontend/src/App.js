@@ -556,7 +556,7 @@ function App() {
     try {
       await axios.delete(`${API}/categories/${categoryId}`);
       await loadCategories();
-      await loadProducts(); // Refresh products to show updated category info
+      await loadProducts(1, true); // Refresh products to show updated category info
       toast.success('Kategori silindi');
     } catch (error) {
       console.error('Error deleting category:', error);
