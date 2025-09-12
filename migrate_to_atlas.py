@@ -38,8 +38,8 @@ try:
     local_client.admin.command('ping')
     print("✅ Local MongoDB bağlantısı başarılı")
     
-    # Atlas bağlantı
-    atlas_client = MongoClient(ATLAS_URI)
+    # Atlas bağlantı - SSL sertifika bypass ile
+    atlas_client = MongoClient(ATLAS_URI, tlsAllowInvalidCertificates=True)
     atlas_db = atlas_client[DATABASE_NAME]
     atlas_client.admin.command('ping')
     print("✅ MongoDB Atlas bağlantısı başarılı")
