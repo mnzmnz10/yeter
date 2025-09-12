@@ -631,6 +631,7 @@ function App() {
 
   const clearSelection = () => {
     setSelectedProducts(new Map());
+    setSelectedProductsData(new Map());
     setQuoteDiscount(0);
     setQuoteLaborCost(0); // İşçilik maliyetini de temizle
     setLoadedQuote(null); // Yüklenen teklifi de temizle
