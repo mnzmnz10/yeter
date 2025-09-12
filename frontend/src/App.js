@@ -988,6 +988,25 @@ function App() {
     }).format(Number(rate));
   };
 
+  // Mobile device detection
+  const isMobileDevice = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
+  // WhatsApp share URL generator
+  const generateWhatsAppShareUrl = (quoteName, pdfUrl) => {
+    const message = `Merhaba! "${quoteName}" teklifinin PDF'ini paylaşıyorum. PDF dosyasını görüntülemek için: ${pdfUrl}`;
+    const encodedMessage = encodeURIComponent(message);
+    
+    if (isMobileDevice()) {
+      // Mobile device - WhatsApp app açılacak
+      return `whatsapp://send?text=${encodedMessage}`;
+    } else {
+      // Desktop - WhatsApp Web açılacak
+      return `https://web.whatsapp.com/send?text=${encodedMessage}`;
+    }
+  };
+
   const getCurrencySymbol = (currency) => {
     const symbols = {
       'TRY': '₺',
