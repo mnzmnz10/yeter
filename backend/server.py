@@ -83,6 +83,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add GZip compression for better performance
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
