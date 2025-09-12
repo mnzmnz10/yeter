@@ -295,9 +295,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Category Dialog Functionality and Product Loading"
-    - "Performance Optimization for Large Datasets"
-  stuck_tasks: []
+    - "Quote Editing Functionality - Update Instead of Duplicate Creation"
+  stuck_tasks:
+    - "Quote Editing Functionality - Update Instead of Duplicate Creation"
   test_all: false
   test_priority: "high_first"
 
