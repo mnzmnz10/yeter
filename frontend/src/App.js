@@ -615,6 +615,32 @@ function App() {
     return products.filter(product => !product.category_id || product.category_id === 'none');
   };
 
+  // Kategori dialog'u için tüm ürünleri yükle (pagination olmadan)
+  const loadAllProductsForCategory = async (searchQuery = '') => {
+    try {
+      setLoadingCategoryProducts(true);
+      
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('search', searchQuery);
+      params.append('skip_pagination', 'true'); // Backend'de pagination'ı atla
+      
+      const response = await axios.get(`${API}/products?${params.toString()}`);
+      const allProducts = response.data;
+      
+      // Kategorisi olmayan ürünleri filtrele
+      const uncategorized = allProducts.filter(product => !product.category_id || product.category_id === 'none');
+      
+      setAllProductsForCategory(allProducts);
+      setUncategorizedProducts(uncategorized);
+      
+    } catch (error) {
+      console.error('Error loading products for category:', error);
+      toast.error('Ürünler yüklenemedi');
+    } finally {
+      setLoadingCategoryProducts(false);
+    }
+  };
+
   // Kategori ürün atama dialog'unu aç
   const openCategoryProductDialog = (category) => {
     setSelectedCategoryForProducts(category);
