@@ -647,7 +647,7 @@ function App() {
       console.log('Güncelleme sonuçları:', results);
       
       // Ürünleri yeniden yükle
-      await loadProducts();
+      await loadProducts(1, true);
       
       // Dialog'u kapat
       setShowCategoryProductDialog(false);
