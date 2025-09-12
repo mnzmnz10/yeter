@@ -2165,7 +2165,7 @@ function App() {
                         )}
                         <div className="text-center">
                           <div className="text-2xl font-bold text-emerald-800">
-                            ₺ {formatPrice(calculateQuoteTotals().totalNetPrice)}
+                            ₺ {formatPrice(calculateQuoteTotals.totalNetPrice)}
                           </div>
                           <div className="text-sm text-emerald-600">Net Toplam</div>
                         </div>
