@@ -2470,28 +2470,6 @@ function App() {
                               </div>
                               <div className="flex gap-2">
                                 <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    // Teklifin ürünlerini seç
-                                    const productIds = new Map();
-                                    const productData = new Map();
-                                    quote.products.forEach(p => {
-                                      productIds.set(p.id, 1);
-                                      productData.set(p.id, p); // Ürün bilgisini de kaydet
-                                    });
-                                    setSelectedProducts(productIds);
-                                    setSelectedProductsData(productData);
-                                    setQuoteDiscount(quote.discount_percentage);
-                                    setQuoteLaborCost(quote.labor_cost || 0); // İşçilik maliyetini de yükle
-                                    setLoadedQuote(quote); // Yüklenen teklifi kaydet
-                                    setQuoteName(quote.name); // Teklif adını da yükle
-                                    toast.success(`"${quote.name}" teklifi yüklendi ${quote.labor_cost > 0 ? `(₺${formatPrice(quote.labor_cost)} işçilik dahil)` : ''}`);
-                                  }}
-                                >
-                                  Yükle
-                                </Button>
-                                <Button
                                   variant="secondary"
                                   size="sm"
                                   onClick={() => {
