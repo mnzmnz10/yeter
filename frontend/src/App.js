@@ -600,18 +600,33 @@ function App() {
 
   const toggleProductSelection = (productId, quantity = 1) => {
     const newSelected = new Map(selectedProducts);
+    const newSelectedData = new Map(selectedProductsData);
+    
+    // Ürün bilgisini bul - önce products içinde, yoksa allProductsForCategory içinde ara
+    let product = products.find(p => p.id === productId);
+    if (!product) {
+      product = allProductsForCategory.find(p => p.id === productId);
+    }
+    
     if (newSelected.has(productId)) {
       if (quantity === 0) {
         newSelected.delete(productId);
+        newSelectedData.delete(productId);
       } else {
         newSelected.set(productId, quantity);
+        if (product) {
+          newSelectedData.set(productId, product);
+        }
       }
     } else {
-      if (quantity > 0) {
+      if (quantity > 0 && product) {
         newSelected.set(productId, quantity);
+        newSelectedData.set(productId, product);
       }
     }
+    
     setSelectedProducts(newSelected);
+    setSelectedProductsData(newSelectedData);
   };
 
   const clearSelection = () => {
