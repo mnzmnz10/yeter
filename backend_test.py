@@ -2115,6 +2115,9 @@ class KaravanAPITester:
             # Test price refresh
             self.test_refresh_prices()
             
+            # CRITICAL: Test Category Dialog Functionality
+            self.test_category_dialog_functionality()
+            
         finally:
             # Always cleanup
             self.cleanup()
