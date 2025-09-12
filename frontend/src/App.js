@@ -1207,8 +1207,8 @@ function App() {
             >
               <div className="flex items-center gap-1 sm:gap-2">
                 <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="hidden xs:inline sm:inline">Teklifler</span>
-                <span className="xs:hidden sm:hidden">Teklif</span>
+                <span className="hidden sm:inline">Teklifler</span>
+                <span className="sm:hidden">Teklif</span>
                 {selectedProducts.size > 0 && (
                   <Badge variant="secondary" className="ml-1 bg-white text-purple-700">
                     {selectedProducts.size}
