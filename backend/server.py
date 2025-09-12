@@ -2103,6 +2103,167 @@ async def toggle_product_favorite(product_id: str):
 @api_router.get("/products/favorites", response_model=List[Product])
 async def get_favorite_products():
     """Get all favorite products"""
+# Package endpoints
+@api_router.post("/packages", response_model=Package)
+async def create_package(package: PackageCreate):
+    """Create a new package"""
+    try:
+        package_data = package.dict()
+        package_data["id"] = str(uuid.uuid4())
+        package_data["created_at"] = datetime.now(timezone.utc)
+        
+        result = await db.packages.insert_one(package_data)
+        if result.inserted_id:
+            created_package = await db.packages.find_one({"id": package_data["id"]})
+            return Package(**created_package)
+        else:
+            raise HTTPException(status_code=500, detail="Paket oluşturulamadı")
+    except Exception as e:
+        logger.error(f"Error creating package: {e}")
+        raise HTTPException(status_code=500, detail="Paket oluşturulamadı")
+
+@api_router.get("/packages", response_model=List[Package])
+async def get_packages():
+    """Get all packages"""
+    try:
+        packages = await db.packages.find({}).sort("created_at", -1).to_list(None)
+        return [Package(**package) for package in packages]
+    except Exception as e:
+        logger.error(f"Error getting packages: {e}")
+        raise HTTPException(status_code=500, detail="Paketler getirilemedi")
+
+@api_router.get("/packages/{package_id}", response_model=PackageWithProducts)
+async def get_package_with_products(package_id: str):
+    """Get package with its products"""
+    try:
+        # Get package
+        package = await db.packages.find_one({"id": package_id})
+        if not package:
+            raise HTTPException(status_code=404, detail="Paket bulunamadı")
+        
+        # Get package products
+        package_products = await db.package_products.find({"package_id": package_id}).to_list(None)
+        
+        # Get product details and calculate totals
+        products = []
+        total_discounted_price = Decimal('0')
+        
+        for pp in package_products:
+            product = await db.products.find_one({"id": pp["product_id"]})
+            if product:
+                product_data = {
+                    "id": product["id"],
+                    "name": product["name"],
+                    "list_price": product.get("list_price", 0),
+                    "discounted_price": product.get("discounted_price"),
+                    "list_price_try": product.get("list_price_try", 0),
+                    "discounted_price_try": product.get("discounted_price_try"),
+                    "currency": product.get("currency", "USD"),
+                    "quantity": pp["quantity"],
+                    "company_id": product.get("company_id")
+                }
+                products.append(product_data)
+                
+                # Calculate discounted price total
+                if product.get("discounted_price_try"):
+                    total_discounted_price += Decimal(str(product["discounted_price_try"])) * pp["quantity"]
+                else:
+                    total_discounted_price += Decimal(str(product.get("list_price_try", 0))) * pp["quantity"]
+        
+        return PackageWithProducts(
+            id=package["id"],
+            name=package["name"],
+            description=package.get("description"),
+            sale_price=package["sale_price"],
+            image_url=package.get("image_url"),
+            created_at=package["created_at"],
+            products=products,
+            total_discounted_price=total_discounted_price
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting package with products: {e}")
+        raise HTTPException(status_code=500, detail="Paket detayları getirilemedi")
+
+@api_router.put("/packages/{package_id}", response_model=Package)
+async def update_package(package_id: str, package: PackageCreate):
+    """Update a package"""
+    try:
+        update_data = package.dict(exclude_unset=True)
+        result = await db.packages.update_one(
+            {"id": package_id},
+            {"$set": update_data}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Paket bulunamadı")
+        
+        updated_package = await db.packages.find_one({"id": package_id})
+        return Package(**updated_package)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating package: {e}")
+        raise HTTPException(status_code=500, detail="Paket güncellenemedi")
+
+@api_router.delete("/packages/{package_id}")
+async def delete_package(package_id: str):
+    """Delete a package and its products"""
+    try:
+        # Delete package products first
+        await db.package_products.delete_many({"package_id": package_id})
+        
+        # Delete package
+        result = await db.packages.delete_one({"id": package_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Paket bulunamadı")
+        
+        return {"success": True, "message": "Paket başarıyla silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting package: {e}")
+        raise HTTPException(status_code=500, detail="Paket silinemedi")
+
+@api_router.post("/packages/{package_id}/products")
+async def add_products_to_package(package_id: str, products: List[PackageProductCreate]):
+    """Add products to a package"""
+    try:
+        # Check if package exists
+        package = await db.packages.find_one({"id": package_id})
+        if not package:
+            raise HTTPException(status_code=404, detail="Paket bulunamadı")
+        
+        # Remove existing products
+        await db.package_products.delete_many({"package_id": package_id})
+        
+        # Add new products
+        package_products = []
+        for product in products:
+            # Verify product exists
+            existing_product = await db.products.find_one({"id": product.product_id})
+            if not existing_product:
+                continue
+                
+            package_product = {
+                "id": str(uuid.uuid4()),
+                "package_id": package_id,
+                "product_id": product.product_id,
+                "quantity": product.quantity,
+                "created_at": datetime.now(timezone.utc)
+            }
+            package_products.append(package_product)
+        
+        if package_products:
+            await db.package_products.insert_many(package_products)
+        
+        return {"success": True, "message": f"{len(package_products)} ürün pakete eklendi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error adding products to package: {e}")
+        raise HTTPException(status_code=500, detail="Ürünler pakete eklenemedi")
     try:
         products = await db.products.find({"is_favorite": True}).sort("name", 1).to_list(None)
         return [Product(**product) for product in products]
