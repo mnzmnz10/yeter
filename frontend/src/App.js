@@ -405,7 +405,7 @@ function App() {
       setUploadFile(null);
       setSelectedCompany('');
       setUploadCompanyName('');
-      await loadProducts();
+      await loadProducts(1, true);
       toast.success(response.data.message);
     } catch (error) {
       console.error('Error uploading file:', error);
