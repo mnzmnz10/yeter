@@ -2525,7 +2525,7 @@ function App() {
                                       console.log('🔍 Quote loading started:', quote.name);
                                       console.log('🔍 Quote products:', quote.products);
                                       
-                                      // Teklifi önce yükle
+                                      // Teklifi önce yükle - YENİ Map instance'ları oluştur
                                       const productIds = new Map();
                                       const productData = new Map();
                                       quote.products.forEach(p => {
@@ -2537,14 +2537,15 @@ function App() {
                                       console.log('🔍 ProductIds Map:', productIds);
                                       console.log('🔍 ProductData Map:', productData);
                                       
-                                      setSelectedProducts(productIds);
-                                      setSelectedProductsData(productData);
+                                      // State'leri tamamen yeni Map'lerle güncelle (React re-render için)
+                                      setSelectedProducts(new Map(productIds));
+                                      setSelectedProductsData(new Map(productData));
                                       setQuoteDiscount(quote.discount_percentage);
                                       setQuoteLaborCost(quote.labor_cost || 0);
-                                      setLoadedQuote(quote);
+                                      setLoadedQuote({...quote}); // Yeni object reference
                                       setQuoteName(quote.name);
                                       
-                                      console.log('🔍 States updated, switching to quotes tab');
+                                      console.log('🔍 States updated with new Map instances, switching to quotes tab');
                                       
                                       // Quotes sekmesine geç ki düzenleme arayüzü görünsün
                                       setActiveTab('quotes');
