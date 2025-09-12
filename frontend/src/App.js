@@ -2151,7 +2151,7 @@ function App() {
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-red-600">
-                            - ₺ {formatPrice(calculateQuoteTotals().discountAmount)}
+                            - ₺ {formatPrice(calculateQuoteTotals.discountAmount)}
                           </div>
                           <div className="text-sm text-red-500">İndirim ({quoteDiscount}%)</div>
                         </div>
