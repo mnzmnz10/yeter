@@ -247,8 +247,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Remove Üzerine Tamamla Feature"
-    - "Exchange Rate Display Enhancement"
+    - "Category Dialog Functionality and Product Loading"
+    - "Performance Optimization for Large Datasets"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
