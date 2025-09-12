@@ -576,7 +576,7 @@ function App() {
   React.useEffect(() => {
     const delayedSearch = setTimeout(() => {
       loadProducts(1, true); // Reset to page 1 when searching/filtering
-    }, 300); // Debounce search
+    }, 500); // Increased debounce to 500ms for better performance
 
     return () => clearTimeout(delayedSearch);
   }, [searchQuery, selectedCategory]);
