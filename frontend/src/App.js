@@ -94,6 +94,12 @@ function App() {
     currency: 'USD'
   });
 
+  // Pagination ve performance için state'ler
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [productsPerPage] = useState(50); // Sayfa başına ürün sayısı
+  const [loadingProducts, setLoadingProducts] = useState(false);
+
   // Kategori renk paleti sistemi
   const categoryColorPalette = [
     '#3B82F6', // Mavi
