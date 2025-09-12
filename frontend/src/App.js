@@ -842,6 +842,7 @@ function App() {
       discountAmount: isNaN(discountAmount) ? 0 : discountAmount,
       laborCost: isNaN(laborCost) ? 0 : laborCost,
       totalNetPrice: isNaN(totalNetPrice) ? 0 : totalNetPrice,
+      totalWithLaborAndDiscount: isNaN(totalNetPrice) ? 0 : totalNetPrice, // Üzerine tamamla için alias
       productCount: selectedProductsData.length,
       totalQuantity: totalQuantity
     };
