@@ -988,12 +988,16 @@ function App() {
     }).format(Number(rate));
   };
 
-  // Mobile device detection
+  // Mobile device detection - improved
   const isMobileDevice = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const userAgent = navigator.userAgent.toLowerCase();
+    const mobileKeywords = ['android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 'iemobile', 'opera mini', 'mobile'];
+    return mobileKeywords.some(keyword => userAgent.includes(keyword)) || 
+           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           window.innerWidth <= 768;
   };
 
-  // WhatsApp share with PDF download
+  // WhatsApp share with PDF download - improved
   const shareViaWhatsAppWithPDF = async (quoteName, quoteId) => {
     try {
       // 1. PDF'i otomatik indir
@@ -1005,22 +1009,55 @@ function App() {
       link.click();
       document.body.removeChild(link);
 
-      // 2. Kısa bir bekleme sonrası WhatsApp'ı aç
+      // 2. WhatsApp mesajını hazırla
+      const message = `Merhaba! "${quoteName}" teklifinin PDF dosyasını paylaşıyorum. PDF dosyası cihazınıza indirildi, lütfen WhatsApp'ta dosya ekleme butonunu kullanarak paylaşın.`;
+      const encodedMessage = encodeURIComponent(message);
+      
+      // 3. WhatsApp URL'ini oluştur
+      let whatsappUrl;
+      const isMobile = isMobileDevice();
+      
+      if (isMobile) {
+        // Mobile: WhatsApp app'i aç
+        whatsappUrl = `whatsapp://send?text=${encodedMessage}`;
+        toast.success('PDF indirildi! WhatsApp uygulaması açılıyor...');
+      } else {
+        // Desktop: WhatsApp Web'i aç
+        whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+        toast.success('PDF indirildi! WhatsApp Web açılıyor...');
+      }
+
+      // 4. WhatsApp'ı aç - improved approach
       setTimeout(() => {
-        const message = `Merhaba! "${quoteName}" teklifinin PDF dosyasını paylaşıyorum. PDF dosyası cihazınıza indirildi, lütfen WhatsApp'ta dosya ekleme butonunu kullanarak paylaşın.`;
-        const encodedMessage = encodeURIComponent(message);
+        // Popup blocker bypass için kullanıcı interaction'ı koruyoruz
+        const newWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
         
-        let whatsappUrl;
-        if (isMobileDevice()) {
-          whatsappUrl = `whatsapp://send?text=${encodedMessage}`;
-          toast.success('PDF indirildi! WhatsApp uygulaması açılıyor - dosyayı manuel olarak ekleyin.');
-        } else {
-          whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
-          toast.success('PDF indirildi! WhatsApp Web açılıyor - dosyayı manuel olarak ekleyin.');
+        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+          // Popup blocked - fallback
+          console.warn('Popup blocked, trying alternative method');
+          
+          if (isMobile) {
+            // Mobile fallback: Location change
+            try {
+              window.location.href = whatsappUrl;
+            } catch (e) {
+              // Son çare: user'a talimat ver
+              navigator.clipboard?.writeText(message).then(() => {
+                toast.error('WhatsApp açılamadı. Mesaj panoya kopyalandı, WhatsApp\'ı manuel açıp yapıştırın.');
+              }).catch(() => {
+                toast.error('WhatsApp açılamadı. Lütfen WhatsApp\'ı manuel açın.');
+              });
+            }
+          } else {
+            // Desktop fallback: Direct navigation
+            try {
+              window.location.href = whatsappUrl;
+            } catch (e) {
+              toast.error('WhatsApp Web açılamadı. Lütfen manuel olarak web.whatsapp.com adresini ziyaret edin.');
+            }
+          }
         }
-        
-        window.open(whatsappUrl, '_blank');
-      }, 1000); // 1 saniye bekle ki PDF indirme başlasın
+      }, 1500); // Biraz daha uzun bekleme
 
     } catch (error) {
       console.error('WhatsApp PDF paylaşım hatası:', error);
