@@ -956,7 +956,7 @@ function App() {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-emerald-700">USD/TRY:</span>
                   <span className="text-lg font-bold text-emerald-900">
-                    {exchangeRates.USD ? formatPrice(exchangeRates.USD) : '---'}
+                    {exchangeRates.USD ? formatExchangeRate(exchangeRates.USD) : '---'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
