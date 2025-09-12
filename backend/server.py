@@ -38,8 +38,37 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Create database indexes for better performance
+async def create_indexes():
+    """Create database indexes for optimal performance with large datasets"""
+    try:
+        # Products collection indexes
+        await db.products.create_index("name")  # For name search
+        await db.products.create_index("company_id")  # For company filtering
+        await db.products.create_index("category_id")  # For category filtering 
+        await db.products.create_index([("name", "text"), ("description", "text")])  # For text search
+        
+        # Companies collection indexes
+        await db.companies.create_index("name")
+        
+        # Categories collection indexes
+        await db.categories.create_index("name")
+        
+        # Quotes collection indexes
+        await db.quotes.create_index("customer_name")
+        await db.quotes.create_index("created_at")
+        
+        logger.info("Database indexes created successfully")
+    except Exception as e:
+        logger.error(f"Error creating indexes: {e}")
+
 # Create the main app
 app = FastAPI(title="Karavan Elektrik Ekipmanları Fiyat Karşılaştırma API")
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database indexes on startup"""
+    await create_indexes()
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
