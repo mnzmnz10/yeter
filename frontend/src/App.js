@@ -2522,13 +2522,21 @@ function App() {
                                   size="sm"
                                   onClick={() => {
                                     try {
+                                      console.log('🔍 Quote loading started:', quote.name);
+                                      console.log('🔍 Quote products:', quote.products);
+                                      
                                       // Teklifi önce yükle
                                       const productIds = new Map();
                                       const productData = new Map();
                                       quote.products.forEach(p => {
+                                        console.log('🔍 Loading product:', p.id, 'quantity:', p.quantity);
                                         productIds.set(p.id, p.quantity || 1); // Gerçek quantity'yi kullan
                                         productData.set(p.id, p); // Ürün bilgisini de kaydet
                                       });
+                                      
+                                      console.log('🔍 ProductIds Map:', productIds);
+                                      console.log('🔍 ProductData Map:', productData);
+                                      
                                       setSelectedProducts(productIds);
                                       setSelectedProductsData(productData);
                                       setQuoteDiscount(quote.discount_percentage);
@@ -2536,9 +2544,12 @@ function App() {
                                       setLoadedQuote(quote);
                                       setQuoteName(quote.name);
                                       
+                                      console.log('🔍 States updated, switching to quotes tab');
+                                      
                                       // Quotes sekmesine geç ki düzenleme arayüzü görünsün
                                       setActiveTab('quotes');
                                       
+                                      console.log('🔍 Quote loading completed successfully');
                                       toast.success(`"${quote.name}" teklifi düzenleme için yüklendi`);
                                       
                                     } catch (error) {
