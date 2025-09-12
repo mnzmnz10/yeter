@@ -191,7 +191,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Quick Quote Creation Feature - Products to Quote directly"
+    - "Remove Üzerine Tamamla Feature"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
