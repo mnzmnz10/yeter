@@ -778,7 +778,7 @@ function App() {
         await fetchUploadHistory(selectedCompanyForHistory.id);
         
         // Ürünleri yenile (para birimi değişikliği nedeniyle)
-        await loadProducts();
+        await loadProducts(1, true);
         
         // Dialog'u kapat
         closeCurrencyChangeDialog();
