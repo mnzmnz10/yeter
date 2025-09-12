@@ -2155,14 +2155,17 @@ function App() {
                             }}
                             className="w-32"
                           />
-                          {/* Yeşil Tik Butonu */}
+                          {/* Yeşil Tik Butonu - İşçilik Tutarını Temizle */}
                           {quoteLaborCost > 0 && (
                             <Button
                               size="sm"
                               onClick={() => {
-                                toast.success(`₺${formatPrice(quoteLaborCost)} işçilik maliyeti eklendi!`);
+                                const previousAmount = quoteLaborCost;
+                                setQuoteLaborCost(0);
+                                toast.success(`₺${formatPrice(previousAmount)} işçilik maliyeti kaldırıldı!`);
                               }}
                               className="bg-green-600 hover:bg-green-700 px-2"
+                              title="İşçilik tutarını temizle"
                             >
                               <Check className="w-4 h-4" />
                             </Button>
