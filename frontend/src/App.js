@@ -575,7 +575,7 @@ function App() {
   // Search and category filter effects
   React.useEffect(() => {
     const delayedSearch = setTimeout(() => {
-      loadProducts();
+      loadProducts(1, true); // Reset to page 1 when searching/filtering
     }, 300); // Debounce search
 
     return () => clearTimeout(delayedSearch);
