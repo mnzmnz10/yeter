@@ -2512,8 +2512,8 @@ class KaravanAPITester:
             return 1
 
 def main():
-    """Main test runner - Focus on Quote Functionality After Rounding Removal"""
-    print("🚀 Starting Karavan Backend API Tests - Focus: Quote Functionality After Rounding Removal")
+    """Main test runner - Focus on Quote Creation Debug"""
+    print("🚀 Starting Karavan Backend API Tests - DEBUGGING QUOTE CREATION WITH 0 PRODUCTS ISSUE")
     print("=" * 80)
     
     tester = KaravanAPITester()
@@ -2522,16 +2522,13 @@ def main():
         # Test 1: Root endpoint
         tester.test_root_endpoint()
         
-        # Test 2: Quote functionality after rounding removal (main focus)
-        tester.test_quote_functionality_after_rounding_removal()
+        # Test 2: MAIN FOCUS - Debug quote creation workflow
+        tester.test_quote_creation_debug()
         
-        # Test 3: Exchange rates (to ensure currency conversion still works)
+        # Test 3: Exchange rates (to ensure currency conversion works)
         tester.test_exchange_rates_comprehensive()
         
-        # Test 4: PDF generation comprehensive test
-        tester.test_pdf_generation_comprehensive()
-        
-        # Test 5: Quick quote creation (to ensure frontend integration works)
+        # Test 4: Quick quote creation (existing functionality)
         tester.test_quick_quote_creation_comprehensive()
         
     except KeyboardInterrupt:
@@ -2544,7 +2541,7 @@ def main():
         
         # Final summary
         print("\n" + "=" * 80)
-        print("🏁 FINAL TEST SUMMARY")
+        print("🏁 FINAL TEST SUMMARY - QUOTE CREATION DEBUG")
         print("=" * 80)
         print(f"Total Tests Run: {tester.tests_run}")
         print(f"Tests Passed: {tester.tests_passed}")
@@ -2552,10 +2549,10 @@ def main():
         print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%" if tester.tests_run > 0 else "No tests run")
         
         if tester.tests_passed == tester.tests_run:
-            print("🎉 ALL TESTS PASSED! Quote functionality works correctly after rounding removal.")
+            print("🎉 ALL TESTS PASSED! Quote creation is working correctly.")
             return 0
         else:
-            print("⚠️  Some tests failed. Please review the results above.")
+            print("⚠️  QUOTE CREATION ISSUES IDENTIFIED. Review the debug results above.")
             return 1
 
 if __name__ == "__main__":
