@@ -1887,14 +1887,14 @@ function App() {
                                       <span className="text-xs">Seç / Adet</span>
                                     </div>
                                   </TableHead>
-                                  <TableHead>Ürün</TableHead>
-                                  <TableHead>Firma</TableHead>
-                                  <TableHead>Liste Fiyatı</TableHead>
-                                  {showDiscountedPrices && <TableHead>İndirimli Fiyat</TableHead>}
-                                  <TableHead>Para Birimi</TableHead>
-                                  <TableHead>TL Fiyat</TableHead>
-                                  {showDiscountedPrices && <TableHead>TL İndirimli</TableHead>}
-                                  <TableHead>İşlemler</TableHead>
+                                  <TableHead className="w-80">Ürün</TableHead>
+                                  <TableHead className="w-32">Firma</TableHead>
+                                  <TableHead className="w-28">Liste Fiyatı</TableHead>
+                                  {showDiscountedPrices && <TableHead className="w-28">İndirimli Fiyat</TableHead>}
+                                  <TableHead className="w-24">Para Birimi</TableHead>
+                                  <TableHead className="w-28">TL Fiyat</TableHead>
+                                  {showDiscountedPrices && <TableHead className="w-28">TL İndirimli</TableHead>}
+                                  <TableHead className="w-24">İşlemler</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
