@@ -2175,7 +2175,7 @@ function App() {
                         <div className="mt-4 p-3 bg-white rounded border border-emerald-300">
                           <div className="text-sm text-emerald-700">
                             {quoteDiscount > 0 && (
-                              <div><strong>İndirim:</strong> Liste fiyatı üzerinden %{quoteDiscount} indirim uygulandı. Tasarruf: <strong>₺ {formatPrice(calculateQuoteTotals().discountAmount)}</strong></div>
+                              <div><strong>İndirim:</strong> Liste fiyatı üzerinden %{quoteDiscount} indirim uygulandı. Tasarruf: <strong>₺ {formatPrice(calculateQuoteTotals.discountAmount)}</strong></div>
                             )}
                             {quoteLaborCost > 0 && (
                               <div><strong>İşçilik:</strong> Ek işçilik maliyeti eklendi. Tutar: <strong>₺ {formatPrice(calculateQuoteTotals().laborCost)}</strong></div>
