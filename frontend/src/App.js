@@ -586,6 +586,17 @@ function App() {
     return () => clearTimeout(delayedSearch);
   }, [searchQuery, selectedCategory]);
 
+  // Category dialog search effect
+  React.useEffect(() => {
+    if (showCategoryProductDialog) {
+      const delayedSearch = setTimeout(() => {
+        loadAllProductsForCategory(categoryDialogSearchQuery);
+      }, 300);
+
+      return () => clearTimeout(delayedSearch);
+    }
+  }, [categoryDialogSearchQuery, showCategoryProductDialog]);
+
   const toggleProductSelection = (productId, quantity = 1) => {
     const newSelected = new Map(selectedProducts);
     if (newSelected.has(productId)) {
