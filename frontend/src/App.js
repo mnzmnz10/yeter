@@ -1232,8 +1232,8 @@ function App() {
             >
               <div className="flex items-center gap-1 sm:gap-2">
                 <Tags className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="hidden xs:inline sm:inline">Kategoriler</span>
-                <span className="xs:hidden sm:hidden">Ktgr</span>
+                <span className="hidden sm:inline">Kategoriler</span>
+                <span className="sm:hidden">Ktgr</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
