@@ -2052,6 +2052,26 @@ class KaravanAPITester:
         
         return True
 
+    def cleanup_test_data(self):
+        """Clean up created test data"""
+        print("\n🧹 Cleaning up test data...")
+        
+        # Delete created companies (this will also delete their products)
+        for company_id in self.created_companies:
+            try:
+                success, response = self.run_test(
+                    f"Delete Company {company_id}",
+                    "DELETE",
+                    f"companies/{company_id}",
+                    200
+                )
+                if success:
+                    print(f"✅ Deleted company {company_id}")
+                else:
+                    print(f"⚠️ Failed to delete company {company_id}")
+            except Exception as e:
+                print(f"⚠️ Error deleting company {company_id}: {e}")
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
