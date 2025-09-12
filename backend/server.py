@@ -2200,6 +2200,32 @@ async def upload_excel(company_id: str, file: UploadFile = File(...)):
         logger.error(f"Error uploading Excel file: {e}")
         raise HTTPException(status_code=500, detail=f"Excel dosyası yüklenemedi: {str(e)}")
 
+@api_router.get("/products/count")
+async def get_products_count(
+    company_id: Optional[str] = None,
+    category_id: Optional[str] = None,
+    search: Optional[str] = None
+):
+    """Get total count of products with optional filters"""
+    try:
+        query = {}
+        if company_id:
+            query["company_id"] = company_id
+        if category_id:
+            query["category_id"] = category_id
+        if search:
+            # Case-insensitive search in product name and description
+            query["$or"] = [
+                {"name": {"$regex": search, "$options": "i"}},
+                {"description": {"$regex": search, "$options": "i"}}
+            ]
+            
+        count = await db.products.count_documents(query)
+        return {"count": count}
+    except Exception as e:
+        logger.error(f"Error getting products count: {e}")
+        raise HTTPException(status_code=500, detail="Ürün sayısı getirilemedi")
+
 @api_router.get("/products", response_model=List[Product])
 async def get_products(
     company_id: Optional[str] = None,
