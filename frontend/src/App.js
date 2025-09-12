@@ -2009,10 +2009,10 @@ function App() {
                                           </div>
                                         )}
                                       </TableCell>
-                                      <TableCell>
-                                        <Badge variant="outline">{company?.name || 'Unknown'}</Badge>
+                                      <TableCell className="w-32">
+                                        <Badge variant="outline" className="truncate" title={company?.name || 'Unknown'}>{company?.name || 'Unknown'}</Badge>
                                       </TableCell>
-                                      <TableCell>
+                                      <TableCell className="w-28">
                                         {isEditing ? (
                                           <Input
                                             type="number"
