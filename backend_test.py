@@ -2849,6 +2849,9 @@ class KaravanAPITester:
         print("=" * 80)
         
         try:
+            # PRIORITY TEST: MongoDB Atlas Integration (as requested in review)
+            self.test_mongodb_atlas_integration()
+            
             # Test basic connectivity
             self.test_root_endpoint()
             
