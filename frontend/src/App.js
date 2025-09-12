@@ -2538,8 +2538,13 @@ function App() {
                                       
                                       toast.success(`"${quote.name}" teklifi düzenleme için yüklendi`);
                                       
-                                      // Kullanıcıyı düzenleme arayüzüne yönlendir
-                                      // Products sekmesine değil, doğrudan quotes sekmesinde kalıp düzenleme arayüzünü göster
+                                      // Düzenleme arayüzü Teklifler sekmesinin üst kısmında - sayfa otomatik scroll edecek
+                                      setTimeout(() => {
+                                        const quotesSection = document.querySelector('[value="quotes"]');
+                                        if (quotesSection) {
+                                          quotesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }
+                                      }, 100);
                                       
                                     } catch (error) {
                                       console.error('Teklif yükleme hatası:', error);
