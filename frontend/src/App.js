@@ -1238,7 +1238,7 @@ function App() {
             </TabsTrigger>
             <TabsTrigger 
               value="upload"
-              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=data]shadow-lg hover:bg-indigo-100 text-indigo-700 rounded-lg"
+              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-indigo-100 text-indigo-700 rounded-lg"
             >
               <div className="flex items-center gap-1 sm:gap-2">
                 <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
