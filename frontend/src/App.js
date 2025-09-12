@@ -2536,7 +2536,10 @@ function App() {
                                       setLoadedQuote(quote);
                                       setQuoteName(quote.name);
                                       
-                                      toast.success(`"${quote.name}" teklifi yüklendi`);
+                                      toast.success(`"${quote.name}" teklifi düzenleme için yüklendi`);
+                                      
+                                      // Kullanıcıyı düzenleme arayüzüne yönlendir
+                                      // Products sekmesine değil, doğrudan quotes sekmesinde kalıp düzenleme arayüzünü göster
                                       
                                     } catch (error) {
                                       console.error('Teklif yükleme hatası:', error);
