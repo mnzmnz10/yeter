@@ -2599,6 +2599,44 @@ async def change_upload_currency(upload_id: str, new_currency: str):
         logger.error(f"Error changing upload currency: {e}")
         raise HTTPException(status_code=500, detail=f"Para birimi güncellenemedi: {str(e)}")
 
+# Static file serving for MongoDB Atlas migration files
+@app.get("/downloads")
+async def downloads_page():
+    """Serve the downloads index page"""
+    try:
+        with open("/app/downloads/index.html", "r", encoding="utf-8") as f:
+            content = f.read()
+        return StreamingResponse(
+            io.StringIO(content),
+            media_type="text/html; charset=utf-8"
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Downloads page not found")
+
+@app.get("/downloads/{filename}")
+async def download_file(filename: str):
+    """Serve JSON files for download"""
+    file_path = f"/app/downloads/{filename}"
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail=f"File {filename} not found")
+    
+    if not filename.endswith('.json'):
+        raise HTTPException(status_code=400, detail="Only JSON files are allowed for download")
+    
+    return FileResponse(
+        file_path,
+        media_type="application/json",
+        filename=filename,
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+# Mount static files directory for any other files
+try:
+    app.mount("/downloads", StaticFiles(directory="/app/downloads"), name="downloads")
+except Exception as e:
+    logger.warning(f"Could not mount static files: {e}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
