@@ -874,6 +874,18 @@ function App() {
     }).format(Math.round(price));  // Yuvarlayarak tam sayı yap
   };
 
+  const formatExchangeRate = (rate) => {
+    // Handle NaN, null, undefined cases
+    if (isNaN(rate) || rate === null || rate === undefined) {
+      return '0.00';
+    }
+    return new Intl.NumberFormat('tr-TR', { 
+      style: 'decimal', 
+      minimumFractionDigits: 2,  // En az 2 ondalık göster
+      maximumFractionDigits: 2   // En fazla 2 ondalık göster
+    }).format(Number(rate));
+  };
+
   const getCurrencySymbol = (currency) => {
     const symbols = {
       'TRY': '₺',
