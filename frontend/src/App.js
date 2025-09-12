@@ -2426,6 +2426,49 @@ function App() {
                                   Yükle
                                 </Button>
                                 <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => {
+                                    try {
+                                      // Teklifi önce yükle
+                                      const productIds = new Map();
+                                      quote.products.forEach(p => productIds.set(p.id, 1));
+                                      setSelectedProducts(productIds);
+                                      setQuoteDiscount(quote.discount_percentage);
+                                      setQuoteLaborCost(quote.labor_cost || 0);
+                                      setLoadedQuote(quote);
+                                      setQuoteName(quote.name);
+                                      
+                                      // Kısa delay sonra üzerine tamamla yap
+                                      setTimeout(() => {
+                                        const currentTotal = quote.total_net_price || 0;
+                                        if (currentTotal <= 0) {
+                                          toast.error('Geçerli bir teklif tutarı bulunamadı');
+                                          return;
+                                        }
+                                        
+                                        const roundedUp = roundUpToNextThousand(currentTotal);
+                                        const difference = roundedUp - currentTotal;
+                                        
+                                        if (difference > 0) {
+                                          setQuoteLaborCost((quote.labor_cost || 0) + difference);
+                                          toast.success(`"${quote.name}" teklifi ₺${Math.round(roundedUp).toLocaleString('tr-TR')} 'e tamamlandı (₺${Math.round(difference).toLocaleString('tr-TR')} işçilik eklendi)`);
+                                        } else {
+                                          toast.info(`"${quote.name}" teklif tutarı zaten yuvarlak bir sayı`);
+                                        }
+                                      }, 100);
+                                      
+                                    } catch (error) {
+                                      console.error('Üzerine tamamla hatası:', error);
+                                      toast.error('Üzerine tamamla işlemi başarısız oldu');
+                                    }
+                                  }}
+                                  className="bg-blue-100 text-blue-800 hover:bg-blue-200"
+                                  title={`₺${formatPrice(quote.total_net_price)} tutarını yuvarlamak için üzerine tamamla`}
+                                >
+                                  🔼 Tamamla
+                                </Button>
+                                <Button
                                   variant="default"
                                   size="sm"
                                   onClick={() => {
