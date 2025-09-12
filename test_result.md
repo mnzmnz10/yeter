@@ -127,7 +127,17 @@ backend:
       - working: true
         agent: "main"
         comment: "EXCHANGE RATE DECIMAL DISPLAY IMPLEMENTED: ✅ Created new formatExchangeRate() function that displays exchange rates with 2 decimal places (e.g., 41,32 and 48,54), ✅ Exchange rates now show decimals: USD/TRY: 41,32 and EUR/TRY: 48,54, ✅ Product prices continue to use formatPrice() function which shows no decimals (existing behavior preserved), ✅ Verified both exchange rate and product price displays work correctly. The exchange rate display now provides more precise currency information while maintaining the clean integer display for product prices."
-  - task: "Performance Optimization for Large Datasets"
+  - task: "Category Dialog Enhancement - Show All Products with Search"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js and /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "CATEGORY DIALOG OPTIMIZATION COMPLETED: ✅ Backend API Enhancement - Added skip_pagination=true parameter to /api/products endpoint returns all 443 products without pagination (0.07s response time), ✅ Category Dialog States - Added categoryDialogSearchQuery, allProductsForCategory, loadingCategoryProducts states for independent dialog management, ✅ Search Functionality - Added search bar in category dialog with placeholder 'Ürün ara... (tüm ürünler arasında)', debounced search with 300ms delay, ✅ Product Loading - loadAllProductsForCategory function loads all products for category assignment (bypasses main products pagination), ✅ UI Enhancement - Added product count display '443 toplam ürün • 437 kategorisiz ürün', loading indicator during search, ✅ Performance - Separate API calls for dialog vs main products list ensures category assignment shows all products while main products page remains paginated at 50 items. Category dialog now shows all products with search functionality while main products page maintains optimized pagination."
     implemented: true
     working: true
     file: "/app/backend/server.py and /app/frontend/src/App.js"
