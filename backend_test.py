@@ -1679,6 +1679,347 @@ class KaravanAPITester:
         
         return True
 
+    def test_favorites_feature_comprehensive(self):
+        """Comprehensive test for the new favorites feature"""
+        print("\n🔍 Testing Favorites Feature - NEW FUNCTIONALITY...")
+        
+        # Step 1: Create a test company for favorites testing
+        favorites_company_name = f"Favorites Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Favorites Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": favorites_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Favorites Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            favorites_company_id = company_data.get('id')
+            if not favorites_company_id:
+                self.log_test("Favorites Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(favorites_company_id)
+        except Exception as e:
+            self.log_test("Favorites Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Step 2: Create test products with is_favorite field
+        print("\n🔍 Testing Product Model with is_favorite Field...")
+        
+        test_products = [
+            {
+                "name": "Favorite Solar Panel 450W",
+                "company_id": favorites_company_id,
+                "list_price": 299.99,
+                "discounted_price": 249.99,
+                "currency": "USD",
+                "description": "Test product for favorites - should default to false",
+                "is_favorite": False  # Explicitly set to false
+            },
+            {
+                "name": "Regular Inverter 5000W", 
+                "company_id": favorites_company_id,
+                "list_price": 750.50,
+                "discounted_price": 699.00,
+                "currency": "EUR",
+                "description": "Test product - no is_favorite field (should default to false)"
+                # No is_favorite field - should default to false
+            },
+            {
+                "name": "Premium Battery 200Ah",
+                "company_id": favorites_company_id,
+                "list_price": 8750.00,
+                "discounted_price": 8250.00,
+                "currency": "TRY",
+                "description": "Test product for favorites - explicitly set to true",
+                "is_favorite": True  # Explicitly set to true
+            }
+        ]
+        
+        created_product_ids = []
+        
+        for i, product_data in enumerate(test_products):
+            success, response = self.run_test(
+                f"Create Product {i+1}: {product_data['name'][:30]}...",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        
+                        # Test is_favorite field in response
+                        is_favorite = product_response.get('is_favorite')
+                        expected_favorite = product_data.get('is_favorite', False)  # Default to False
+                        
+                        if is_favorite == expected_favorite:
+                            self.log_test(f"Product {i+1} is_favorite Field", True, f"is_favorite: {is_favorite} (expected: {expected_favorite})")
+                        else:
+                            self.log_test(f"Product {i+1} is_favorite Field", False, f"Expected: {expected_favorite}, Got: {is_favorite}")
+                            
+                    else:
+                        self.log_test(f"Product {i+1} Creation", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Product {i+1} Creation Response", False, f"Error parsing: {e}")
+
+        if len(created_product_ids) < 3:
+            self.log_test("Favorites Test Products", False, f"Only {len(created_product_ids)} products created, need 3")
+            return False
+
+        # Step 3: Test POST /api/products/{product_id}/toggle-favorite endpoint
+        print("\n🔍 Testing Toggle Favorite Endpoint...")
+        
+        # Test toggling the first product (should be false -> true)
+        first_product_id = created_product_ids[0]
+        success, response = self.run_test(
+            "Toggle Favorite - False to True",
+            "POST",
+            f"products/{first_product_id}/toggle-favorite",
+            200
+        )
+        
+        if success and response:
+            try:
+                toggle_response = response.json()
+                if toggle_response.get('success') and toggle_response.get('is_favorite') == True:
+                    self.log_test("Toggle Favorite Response", True, f"Product toggled to favorite: {toggle_response.get('message')}")
+                else:
+                    self.log_test("Toggle Favorite Response", False, f"Unexpected response: {toggle_response}")
+            except Exception as e:
+                self.log_test("Toggle Favorite Response", False, f"Error parsing: {e}")
+        
+        # Test toggling the third product (should be true -> false)
+        third_product_id = created_product_ids[2]
+        success, response = self.run_test(
+            "Toggle Favorite - True to False",
+            "POST",
+            f"products/{third_product_id}/toggle-favorite",
+            200
+        )
+        
+        if success and response:
+            try:
+                toggle_response = response.json()
+                if toggle_response.get('success') and toggle_response.get('is_favorite') == False:
+                    self.log_test("Toggle Favorite Response", True, f"Product toggled from favorite: {toggle_response.get('message')}")
+                else:
+                    self.log_test("Toggle Favorite Response", False, f"Unexpected response: {toggle_response}")
+            except Exception as e:
+                self.log_test("Toggle Favorite Response", False, f"Error parsing: {e}")
+        
+        # Test toggling non-existent product
+        success, response = self.run_test(
+            "Toggle Favorite - Non-existent Product",
+            "POST",
+            "products/non-existent-id/toggle-favorite",
+            404
+        )
+        
+        # Step 4: Test GET /api/products/favorites endpoint
+        print("\n🔍 Testing Get Favorites Endpoint...")
+        
+        success, response = self.run_test(
+            "Get Favorite Products",
+            "GET",
+            "products/favorites",
+            200
+        )
+        
+        if success and response:
+            try:
+                favorites = response.json()
+                if isinstance(favorites, list):
+                    favorites_count = len(favorites)
+                    self.log_test("Favorites List Format", True, f"Found {favorites_count} favorite products")
+                    
+                    # Verify all returned products have is_favorite: true
+                    if favorites_count > 0:
+                        all_favorites = all(product.get('is_favorite') == True for product in favorites)
+                        if all_favorites:
+                            self.log_test("Favorites List Accuracy", True, f"All {favorites_count} products are marked as favorites")
+                        else:
+                            non_favorites = [p for p in favorites if not p.get('is_favorite')]
+                            self.log_test("Favorites List Accuracy", False, f"Found {len(non_favorites)} non-favorite products in favorites list")
+                        
+                        # Check if products are sorted by name
+                        product_names = [p.get('name', '') for p in favorites]
+                        sorted_names = sorted(product_names)
+                        if product_names == sorted_names:
+                            self.log_test("Favorites List Sorting", True, "Favorites are sorted alphabetically by name")
+                        else:
+                            self.log_test("Favorites List Sorting", False, "Favorites are not sorted alphabetically")
+                    else:
+                        self.log_test("Favorites List Content", True, "No favorite products found (expected after toggling)")
+                else:
+                    self.log_test("Favorites List Format", False, "Response is not a list")
+            except Exception as e:
+                self.log_test("Favorites List Response", False, f"Error parsing: {e}")
+        
+        # Step 5: Test GET /api/products endpoint with favorites-first sorting
+        print("\n🔍 Testing Products List with Favorites-First Sorting...")
+        
+        # First, make sure we have some favorites by toggling a few products
+        for i, product_id in enumerate(created_product_ids[:2]):  # Make first 2 products favorites
+            success, response = self.run_test(
+                f"Setup Favorite {i+1}",
+                "POST",
+                f"products/{product_id}/toggle-favorite",
+                200
+            )
+        
+        # Now test the products list
+        success, response = self.run_test(
+            "Get Products with Favorites-First Sorting",
+            "GET",
+            "products?limit=50",  # Get first 50 products
+            200
+        )
+        
+        if success and response:
+            try:
+                products = response.json()
+                if isinstance(products, list) and len(products) > 0:
+                    self.log_test("Products List Format", True, f"Found {len(products)} products")
+                    
+                    # Check sorting: favorites first, then alphabetical
+                    favorites_section = []
+                    non_favorites_section = []
+                    
+                    for product in products:
+                        if product.get('is_favorite'):
+                            favorites_section.append(product)
+                        else:
+                            non_favorites_section.append(product)
+                    
+                    # Verify favorites come first
+                    if len(favorites_section) > 0:
+                        # Check if all favorites come before all non-favorites
+                        first_non_favorite_index = next((i for i, p in enumerate(products) if not p.get('is_favorite')), len(products))
+                        last_favorite_index = next((len(products) - 1 - i for i, p in enumerate(reversed(products)) if p.get('is_favorite')), -1)
+                        
+                        if last_favorite_index < first_non_favorite_index:
+                            self.log_test("Favorites-First Sorting", True, f"All {len(favorites_section)} favorites come before {len(non_favorites_section)} non-favorites")
+                        else:
+                            self.log_test("Favorites-First Sorting", False, "Favorites and non-favorites are mixed in the list")
+                        
+                        # Check alphabetical sorting within favorites
+                        favorite_names = [p.get('name', '') for p in favorites_section]
+                        sorted_favorite_names = sorted(favorite_names)
+                        if favorite_names == sorted_favorite_names:
+                            self.log_test("Favorites Alphabetical Sorting", True, "Favorites are sorted alphabetically")
+                        else:
+                            self.log_test("Favorites Alphabetical Sorting", False, "Favorites are not sorted alphabetically")
+                        
+                        # Check alphabetical sorting within non-favorites
+                        if len(non_favorites_section) > 1:
+                            non_favorite_names = [p.get('name', '') for p in non_favorites_section]
+                            sorted_non_favorite_names = sorted(non_favorite_names)
+                            if non_favorite_names == sorted_non_favorite_names:
+                                self.log_test("Non-Favorites Alphabetical Sorting", True, "Non-favorites are sorted alphabetically")
+                            else:
+                                self.log_test("Non-Favorites Alphabetical Sorting", False, "Non-favorites are not sorted alphabetically")
+                    else:
+                        self.log_test("Favorites in Products List", False, "No favorite products found in products list")
+                else:
+                    self.log_test("Products List Format", False, "Invalid products list response")
+            except Exception as e:
+                self.log_test("Products List Response", False, f"Error parsing: {e}")
+        
+        # Step 6: Test Database Integration - Verify favorites are persisted
+        print("\n🔍 Testing Database Integration...")
+        
+        # Get a specific product to verify its favorite status is persisted
+        if created_product_ids:
+            test_product_id = created_product_ids[0]
+            
+            # Toggle it to favorite
+            success, response = self.run_test(
+                "Set Product as Favorite for DB Test",
+                "POST",
+                f"products/{test_product_id}/toggle-favorite",
+                200
+            )
+            
+            # Fetch the product again to verify persistence
+            success, response = self.run_test(
+                "Verify Favorite Status Persistence",
+                "GET",
+                "products",
+                200
+            )
+            
+            if success and response:
+                try:
+                    all_products = response.json()
+                    test_product = next((p for p in all_products if p.get('id') == test_product_id), None)
+                    
+                    if test_product:
+                        is_favorite = test_product.get('is_favorite')
+                        if is_favorite == True:
+                            self.log_test("Database Persistence", True, f"Favorite status correctly persisted in MongoDB")
+                        else:
+                            self.log_test("Database Persistence", False, f"Favorite status not persisted: {is_favorite}")
+                    else:
+                        self.log_test("Database Persistence", False, "Test product not found in products list")
+                except Exception as e:
+                    self.log_test("Database Persistence", False, f"Error verifying persistence: {e}")
+        
+        # Step 7: Test Edge Cases
+        print("\n🔍 Testing Edge Cases...")
+        
+        # Test toggle with invalid product ID
+        success, response = self.run_test(
+            "Toggle Invalid Product ID",
+            "POST",
+            "products/invalid-uuid-format/toggle-favorite",
+            404
+        )
+        
+        # Test multiple rapid toggles
+        if created_product_ids:
+            test_id = created_product_ids[0]
+            for i in range(3):
+                success, response = self.run_test(
+                    f"Rapid Toggle {i+1}",
+                    "POST",
+                    f"products/{test_id}/toggle-favorite",
+                    200
+                )
+                
+                if success and response:
+                    try:
+                        toggle_response = response.json()
+                        is_favorite = toggle_response.get('is_favorite')
+                        expected = (i % 2) == 0  # Should alternate true/false/true
+                        if is_favorite == expected:
+                            self.log_test(f"Rapid Toggle {i+1} Result", True, f"Correct state: {is_favorite}")
+                        else:
+                            self.log_test(f"Rapid Toggle {i+1} Result", False, f"Expected: {expected}, Got: {is_favorite}")
+                    except Exception as e:
+                        self.log_test(f"Rapid Toggle {i+1} Response", False, f"Error: {e}")
+        
+        print(f"\n✅ Favorites Feature Test Summary:")
+        print(f"   - Tested Product model with is_favorite field and default values")
+        print(f"   - Tested POST /api/products/{{product_id}}/toggle-favorite endpoint")
+        print(f"   - Tested GET /api/products/favorites endpoint")
+        print(f"   - Tested favorites-first sorting in GET /api/products endpoint")
+        print(f"   - Verified database persistence of favorite status")
+        print(f"   - Tested edge cases and error handling")
+        
+        return True
+
     def test_quote_creation_debug(self):
         """Debug quote creation workflow to identify why quotes are being created with 0 products"""
         print("\n🔍 DEBUGGING QUOTE CREATION WORKFLOW - INVESTIGATING 0 PRODUCTS ISSUE...")
