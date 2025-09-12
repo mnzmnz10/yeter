@@ -124,6 +124,7 @@ class ProductCreate(BaseModel):
     list_price: Decimal
     discounted_price: Optional[Decimal] = None
     currency: str
+    is_favorite: bool = False
 
 class Category(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
