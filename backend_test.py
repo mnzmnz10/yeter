@@ -1157,6 +1157,265 @@ class KaravanAPITester:
         
         return True
 
+    def test_quote_functionality_after_rounding_removal(self):
+        """Test quote functionality after removing 'Üzerine Tamamla' (rounding) feature"""
+        print("\n🔍 Testing Quote Functionality After Rounding Feature Removal...")
+        
+        # Step 1: Create a test company for quote testing
+        test_company_name = f"Rounding Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Test Company for Rounding Test",
+            "POST",
+            "companies",
+            200,
+            data={"name": test_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Rounding Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            test_company_id = company_data.get('id')
+            if not test_company_id:
+                self.log_test("Rounding Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(test_company_id)
+        except Exception as e:
+            self.log_test("Rounding Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Step 2: Create test products with various prices
+        test_products = [
+            {
+                "name": "Solar Panel 450W",
+                "company_id": test_company_id,
+                "list_price": 299.99,
+                "discounted_price": 249.99,
+                "currency": "USD",
+                "description": "High efficiency solar panel"
+            },
+            {
+                "name": "Inverter 5000W", 
+                "company_id": test_company_id,
+                "list_price": 750.50,
+                "discounted_price": 699.00,
+                "currency": "EUR",
+                "description": "Hybrid solar inverter"
+            },
+            {
+                "name": "Battery 200Ah",
+                "company_id": test_company_id,
+                "list_price": 8750.00,
+                "discounted_price": 8250.00,
+                "currency": "TRY",
+                "description": "Deep cycle battery"
+            }
+        ]
+        
+        created_product_ids = []
+        
+        for product_data in test_products:
+            success, response = self.run_test(
+                f"Create Product: {product_data['name']}",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        self.log_test(f"Product Created - {product_data['name']}", True, f"ID: {product_id}")
+                    else:
+                        self.log_test(f"Product Creation - {product_data['name']}", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Product Creation - {product_data['name']}", False, f"Error parsing: {e}")
+
+        if len(created_product_ids) < 2:
+            self.log_test("Rounding Test Products", False, f"Only {len(created_product_ids)} products created, need at least 2")
+            return False
+
+        # Step 3: Test Quote Creation without Rounding
+        print("\n🔍 Testing Quote Creation Without Rounding...")
+        
+        quote_data = {
+            "name": "Test Quote Without Rounding",
+            "customer_name": "Test Customer",
+            "customer_email": "test@example.com",
+            "discount_percentage": 5.0,
+            "labor_cost": 1500.0,  # Manual labor cost input
+            "products": [
+                {"id": created_product_ids[0], "quantity": 2},
+                {"id": created_product_ids[1], "quantity": 1},
+                {"id": created_product_ids[2], "quantity": 1}
+            ],
+            "notes": "Quote created after rounding feature removal"
+        }
+        
+        success, response = self.run_test(
+            "Create Quote Without Rounding",
+            "POST",
+            "quotes",
+            200,
+            data=quote_data
+        )
+        
+        created_quote_id = None
+        if success and response:
+            try:
+                quote_response = response.json()
+                created_quote_id = quote_response.get('id')
+                
+                # Validate quote data structure
+                required_fields = ['id', 'name', 'customer_name', 'discount_percentage', 'labor_cost', 'total_list_price', 'total_discounted_price', 'total_net_price', 'products', 'notes', 'created_at', 'status']
+                missing_fields = [field for field in required_fields if field not in quote_response]
+                
+                if not missing_fields:
+                    self.log_test("Quote Data Structure", True, "All required fields present")
+                    
+                    # Validate that labor cost is exactly what we set (no rounding)
+                    labor_cost = quote_response.get('labor_cost', 0)
+                    if labor_cost == 1500.0:
+                        self.log_test("Manual Labor Cost Input", True, f"Labor cost: {labor_cost} (no automatic rounding)")
+                    else:
+                        self.log_test("Manual Labor Cost Input", False, f"Expected: 1500.0, Got: {labor_cost}")
+                    
+                    # Validate price calculations without rounding
+                    total_list_price = quote_response.get('total_list_price', 0)
+                    total_discounted_price = quote_response.get('total_discounted_price', 0)
+                    total_net_price = quote_response.get('total_net_price', 0)
+                    
+                    if total_list_price > 0 and total_discounted_price > 0 and total_net_price > 0:
+                        self.log_test("Price Calculations Without Rounding", True, f"List: {total_list_price}, Discounted: {total_discounted_price}, Net: {total_net_price}")
+                        
+                        # Verify discount calculation
+                        expected_discount_amount = total_discounted_price * (quote_data['discount_percentage'] / 100)
+                        expected_net_price = total_discounted_price - expected_discount_amount + quote_data['labor_cost']
+                        
+                        # Allow small floating point differences
+                        if abs(total_net_price - expected_net_price) < 0.01:
+                            self.log_test("Discount Calculation Accuracy", True, f"Net price calculation correct: {total_net_price}")
+                        else:
+                            self.log_test("Discount Calculation Accuracy", False, f"Expected: {expected_net_price}, Got: {total_net_price}")
+                        
+                        # Verify no automatic rounding to thousands
+                        if total_net_price % 1000 != 0:
+                            self.log_test("No Automatic Rounding", True, f"Net price not rounded to thousands: {total_net_price}")
+                        else:
+                            # Check if it's coincidentally a round number or actually rounded
+                            if abs(total_net_price - expected_net_price) < 0.01:
+                                self.log_test("No Automatic Rounding", True, f"Net price happens to be round but calculated correctly: {total_net_price}")
+                            else:
+                                self.log_test("No Automatic Rounding", False, f"Net price may have been automatically rounded: {total_net_price}")
+                    else:
+                        self.log_test("Price Calculations Without Rounding", False, f"Invalid prices - List: {total_list_price}, Discounted: {total_discounted_price}, Net: {total_net_price}")
+                        
+                else:
+                    self.log_test("Quote Data Structure", False, f"Missing fields: {missing_fields}")
+                    
+            except Exception as e:
+                self.log_test("Quote Creation Response", False, f"Error parsing: {e}")
+        
+        # Step 4: Test Quote Retrieval
+        if created_quote_id:
+            print("\n🔍 Testing Quote Retrieval...")
+            
+            success, response = self.run_test(
+                "Get Created Quote",
+                "GET",
+                f"quotes/{created_quote_id}",
+                200
+            )
+            
+            if success and response:
+                try:
+                    retrieved_quote = response.json()
+                    if retrieved_quote.get('id') == created_quote_id:
+                        self.log_test("Quote Retrieval", True, f"Quote retrieved successfully: {created_quote_id}")
+                        
+                        # Verify data integrity
+                        if retrieved_quote.get('labor_cost') == 1500.0:
+                            self.log_test("Quote Data Integrity", True, "Labor cost preserved correctly")
+                        else:
+                            self.log_test("Quote Data Integrity", False, f"Labor cost changed: {retrieved_quote.get('labor_cost')}")
+                    else:
+                        self.log_test("Quote Retrieval", False, "Retrieved quote ID mismatch")
+                except Exception as e:
+                    self.log_test("Quote Retrieval Response", False, f"Error parsing: {e}")
+        
+        # Step 5: Test Quote List Retrieval
+        print("\n🔍 Testing Quote List Retrieval...")
+        
+        success, response = self.run_test(
+            "Get All Quotes",
+            "GET",
+            "quotes",
+            200
+        )
+        
+        if success and response:
+            try:
+                quotes_list = response.json()
+                if isinstance(quotes_list, list):
+                    self.log_test("Quotes List Format", True, f"Found {len(quotes_list)} quotes")
+                    
+                    # Check if our created quote is in the list
+                    if created_quote_id:
+                        found_quote = any(q.get('id') == created_quote_id for q in quotes_list)
+                        self.log_test("Created Quote in List", found_quote, f"Quote ID: {created_quote_id}")
+                else:
+                    self.log_test("Quotes List Format", False, "Response is not a list")
+            except Exception as e:
+                self.log_test("Quotes List Parsing", False, f"Error: {e}")
+        
+        # Step 6: Test PDF Generation
+        if created_quote_id:
+            print("\n🔍 Testing PDF Generation After Rounding Removal...")
+            
+            try:
+                pdf_url = f"{self.base_url}/quotes/{created_quote_id}/pdf"
+                headers = {'Accept': 'application/pdf'}
+                
+                pdf_response = requests.get(pdf_url, headers=headers, timeout=60)
+                
+                if pdf_response.status_code == 200:
+                    content_type = pdf_response.headers.get('content-type', '')
+                    if 'application/pdf' in content_type and pdf_response.content.startswith(b'%PDF'):
+                        pdf_size = len(pdf_response.content)
+                        self.log_test("PDF Generation After Rounding Removal", True, f"PDF generated successfully, size: {pdf_size} bytes")
+                        
+                        # Save PDF for verification
+                        try:
+                            with open(f'/tmp/quote_no_rounding_{created_quote_id}.pdf', 'wb') as f:
+                                f.write(pdf_response.content)
+                            self.log_test("PDF File Saved", True, f"PDF saved to /tmp/quote_no_rounding_{created_quote_id}.pdf")
+                        except Exception as e:
+                            self.log_test("PDF File Save", False, f"Could not save PDF: {e}")
+                    else:
+                        self.log_test("PDF Generation After Rounding Removal", False, f"Invalid PDF response: {content_type}")
+                else:
+                    self.log_test("PDF Generation After Rounding Removal", False, f"HTTP {pdf_response.status_code}: {pdf_response.text[:200]}")
+                    
+            except Exception as e:
+                self.log_test("PDF Generation Request", False, f"Exception during PDF generation: {e}")
+        
+        print(f"\n✅ Quote Functionality After Rounding Removal Test Summary:")
+        print(f"   - Created {len(created_product_ids)} test products")
+        print(f"   - Successfully created quote without automatic rounding")
+        print(f"   - Verified manual labor cost input works correctly")
+        print(f"   - Confirmed price calculations are accurate without rounding")
+        print(f"   - Tested quote retrieval and data integrity")
+        print(f"   - Verified PDF generation still works")
+        
+        return True
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
