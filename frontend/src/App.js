@@ -1190,23 +1190,25 @@ function App() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 h-16 p-1 bg-slate-100 rounded-xl">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 h-auto sm:h-16 p-1 bg-slate-100 rounded-xl">
             <TabsTrigger 
               value="products" 
-              className="h-14 text-base font-medium transition-all duration-200 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-blue-100 text-blue-700 rounded-lg"
+              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-blue-100 text-blue-700 rounded-lg"
             >
-              <div className="flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Ürünler
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Package className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden xs:inline sm:inline">Ürünler</span>
+                <span className="xs:hidden sm:hidden">Ürün</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
               value="quotes"
-              className="h-14 text-base font-medium transition-all duration-200 data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-purple-100 text-purple-700 rounded-lg"
+              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-purple-100 text-purple-700 rounded-lg"
             >
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Teklifler
+              <div className="flex items-center gap-1 sm:gap-2">
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden xs:inline sm:inline">Teklifler</span>
+                <span className="xs:hidden sm:hidden">Teklif</span>
                 {selectedProducts.size > 0 && (
                   <Badge variant="secondary" className="ml-1 bg-white text-purple-700">
                     {selectedProducts.size}
@@ -1216,29 +1218,32 @@ function App() {
             </TabsTrigger>
             <TabsTrigger 
               value="companies"
-              className="h-14 text-base font-medium transition-all duration-200 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-orange-100 text-orange-700 rounded-lg"
+              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-orange-100 text-orange-700 rounded-lg"
             >
-              <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                Firmalar
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden xs:inline sm:inline">Firmalar</span>
+                <span className="xs:hidden sm:hidden">Firma</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
               value="categories"
-              className="h-14 text-base font-medium transition-all duration-200 data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-teal-100 text-teal-700 rounded-lg"
+              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-teal-100 text-teal-700 rounded-lg"
             >
-              <div className="flex items-center gap-2">
-                <Tags className="w-5 h-5" />
-                Kategoriler
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Tags className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden xs:inline sm:inline">Kategoriler</span>
+                <span className="xs:hidden sm:hidden">Ktgr</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
               value="upload"
-              className="h-14 text-base font-medium transition-all duration-200 data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-emerald-100 text-emerald-700 rounded-lg"
+              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-emerald-100 text-emerald-700 rounded-lg"
             >
-              <div className="flex items-center gap-2">
-                <Upload className="w-5 h-5" />
-                Excel Yükle
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden xs:inline sm:inline">Excel Yükle</span>
+                <span className="xs:hidden sm:hidden">Excel</span>
               </div>
             </TabsTrigger>
           </TabsList>
