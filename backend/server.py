@@ -2285,13 +2285,16 @@ async def get_products(
                 {"description": {"$regex": search, "$options": "i"}}
             ]
         
+        # Sort products: favorites first, then by name
+        sort_criteria = [("is_favorite", -1), ("name", 1)]
+        
         # For backward compatibility - if skip_pagination is true, return all
         if skip_pagination:
-            products = await db.products.find(query).to_list(None)
+            products = await db.products.find(query).sort(sort_criteria).to_list(None)
         else:
             # Calculate skip value for pagination
             skip = (page - 1) * limit
-            products = await db.products.find(query).skip(skip).limit(limit).to_list(limit)
+            products = await db.products.find(query).sort(sort_criteria).skip(skip).limit(limit).to_list(limit)
             
         return [Product(**product) for product in products]
     except Exception as e:
