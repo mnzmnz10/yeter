@@ -2677,26 +2677,7 @@ function App() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => {
-                                    try {
-                                      // PDF URL'ini oluştur
-                                      const pdfUrl = `${window.location.origin}${API}/quotes/${quote.id}/pdf`;
-                                      
-                                      // WhatsApp share URL'ini oluştur
-                                      const whatsappUrl = generateWhatsAppShareUrl(quote.name, pdfUrl);
-                                      
-                                      // WhatsApp'ı aç
-                                      window.open(whatsappUrl, '_blank');
-                                      
-                                      // Kullanıcıya bilgi ver
-                                      if (isMobileDevice()) {
-                                        toast.success('WhatsApp uygulaması açılıyor...');
-                                      } else {
-                                        toast.success('WhatsApp Web açılıyor...');
-                                      }
-                                    } catch (error) {
-                                      console.error('WhatsApp paylaşım hatası:', error);
-                                      toast.error('WhatsApp paylaşımı başarısız oldu');
-                                    }
+                                    shareViaWhatsAppWithPDF(quote.name, quote.id);
                                   }}
                                   className="bg-green-500 text-white hover:bg-green-600"
                                   title="PDF'i WhatsApp ile paylaş"
