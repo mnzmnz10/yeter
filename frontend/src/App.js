@@ -2634,7 +2634,7 @@ function App() {
                         <div className="space-y-4">
                           {filteredQuotes.map((quote) => (
                           <div key={quote.id} className="border rounded-lg p-4 hover:bg-slate-50">
-                            <div className="flex justify-between items-start">
+                            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
                               <div className="flex-1">
                                 <h4 className="font-semibold text-lg">{quote.name}</h4>
                                 <p className="text-sm text-slate-600 mt-1">
@@ -2643,13 +2643,13 @@ function App() {
                                     <span className="text-green-600"> • ₺{formatPrice(quote.labor_cost)} işçilik</span>
                                   )}
                                 </p>
-                                <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                                <div className="flex flex-wrap items-center gap-2 lg:gap-4 mt-2 text-sm text-slate-600">
                                   <span>Ara Toplam: ₺{formatPrice(quote.total_discounted_price)}</span>
                                   {quote.labor_cost > 0 && (
                                     <span className="text-green-600">İşçilik: ₺{formatPrice(quote.labor_cost)}</span>
                                   )}
-                                  <span>Net Toplam: ₺{formatPrice(quote.total_net_price)}</span>
-                                  <span>{new Date(quote.created_at).toLocaleDateString('tr-TR')}</span>
+                                  <span className="font-semibold">Net Toplam: ₺{formatPrice(quote.total_net_price)}</span>
+                                  <span className="text-xs">{new Date(quote.created_at).toLocaleDateString('tr-TR')}</span>
                                 </div>
                               </div>
                               <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
