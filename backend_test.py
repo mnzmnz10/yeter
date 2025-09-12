@@ -3304,7 +3304,7 @@ def main():
         
         # Final summary
         print("\n" + "=" * 80)
-        print("🏁 FINAL TEST SUMMARY - QUOTE CREATION DEBUG")
+        print("🏁 FINAL TEST SUMMARY - FAVORITES FEATURE TESTING")
         print("=" * 80)
         print(f"Total Tests Run: {tester.tests_run}")
         print(f"Tests Passed: {tester.tests_passed}")
@@ -3312,10 +3312,10 @@ def main():
         print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%" if tester.tests_run > 0 else "No tests run")
         
         if tester.tests_passed == tester.tests_run:
-            print("🎉 ALL TESTS PASSED! Quote creation is working correctly.")
+            print("🎉 ALL TESTS PASSED! Favorites feature is working correctly.")
             return 0
         else:
-            print("⚠️  QUOTE CREATION ISSUES IDENTIFIED. Review the debug results above.")
+            print("⚠️  FAVORITES FEATURE ISSUES IDENTIFIED. Review the test results above.")
             return 1
 
 if __name__ == "__main__":
