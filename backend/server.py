@@ -2033,6 +2033,39 @@ async def assign_product_to_category(product_id: str, category_id: str = None):
 
 @api_router.post("/companies/{company_id}/upload-excel")
 async def upload_excel(company_id: str, file: UploadFile = File(...)):
+@api_router.post("/products/{product_id}/toggle-favorite")
+async def toggle_product_favorite(product_id: str):
+    """Toggle a product's favorite status"""
+    try:
+        # Get current product
+        current_product = await db.products.find_one({"id": product_id})
+        if not current_product:
+            raise HTTPException(status_code=404, detail="Ürün bulunamadı")
+        
+        # Toggle favorite status
+        current_favorite = current_product.get("is_favorite", False)
+        new_favorite = not current_favorite
+        
+        result = await db.products.update_one(
+            {"id": product_id},
+            {"$set": {"is_favorite": new_favorite}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Ürün bulunamadı")
+        
+        status_message = "favorilere eklendi" if new_favorite else "favorilerden çıkarıldı"
+        return {
+            "success": True, 
+            "message": f"Ürün {status_message}",
+            "is_favorite": new_favorite
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error toggling product favorite: {e}")
+        raise HTTPException(status_code=500, detail="Favori durumu güncellenemedi")
     """Upload Excel file for a company with smart update system"""
     try:
         # Verify company exists
