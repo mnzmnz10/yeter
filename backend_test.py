@@ -1679,6 +1679,379 @@ class KaravanAPITester:
         
         return True
 
+    def test_quote_creation_debug(self):
+        """Debug quote creation workflow to identify why quotes are being created with 0 products"""
+        print("\n🔍 DEBUGGING QUOTE CREATION WORKFLOW - INVESTIGATING 0 PRODUCTS ISSUE...")
+        
+        # Step 1: Create a test company for debugging
+        debug_company_name = f"Debug Quote Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Debug Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": debug_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Debug Setup - Company Creation", False, "Failed to create debug company")
+            return False
+            
+        try:
+            company_data = response.json()
+            debug_company_id = company_data.get('id')
+            if not debug_company_id:
+                self.log_test("Debug Setup - Company ID", False, "No company ID returned")
+                return False
+            self.created_companies.append(debug_company_id)
+            self.log_test("Debug Setup - Company Created", True, f"Company ID: {debug_company_id}")
+        except Exception as e:
+            self.log_test("Debug Setup - Company Response", False, f"Error parsing: {e}")
+            return False
+
+        # Step 2: Create test products with known IDs
+        debug_products = [
+            {
+                "name": "Debug Solar Panel 450W",
+                "company_id": debug_company_id,
+                "list_price": 299.99,
+                "discounted_price": 249.99,
+                "currency": "USD",
+                "description": "Debug test product 1"
+            },
+            {
+                "name": "Debug Inverter 5000W", 
+                "company_id": debug_company_id,
+                "list_price": 750.50,
+                "discounted_price": 699.00,
+                "currency": "EUR",
+                "description": "Debug test product 2"
+            },
+            {
+                "name": "Debug Battery 200Ah",
+                "company_id": debug_company_id,
+                "list_price": 8750.00,
+                "discounted_price": 8250.00,
+                "currency": "TRY",
+                "description": "Debug test product 3"
+            }
+        ]
+        
+        created_debug_product_ids = []
+        created_debug_products_data = []
+        
+        for i, product_data in enumerate(debug_products):
+            success, response = self.run_test(
+                f"Create Debug Product {i+1}: {product_data['name'][:30]}...",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_debug_product_ids.append(product_id)
+                        created_debug_products_data.append(product_response)
+                        self.created_products.append(product_id)
+                        self.log_test(f"Debug Product {i+1} Created", True, f"ID: {product_id}, Name: {product_data['name'][:30]}...")
+                    else:
+                        self.log_test(f"Debug Product {i+1} Creation", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Debug Product {i+1} Response", False, f"Error parsing: {e}")
+
+        if len(created_debug_product_ids) < 2:
+            self.log_test("Debug Setup - Products", False, f"Only {len(created_debug_product_ids)} products created, need at least 2")
+            return False
+
+        # Step 3: Verify products exist and can be retrieved
+        print("\n🔍 STEP 1: VERIFYING PRODUCTS EXIST IN DATABASE...")
+        
+        for i, product_id in enumerate(created_debug_product_ids):
+            # Get all products and find our specific product
+            success, response = self.run_test(
+                f"Verify Product {i+1} Exists",
+                "GET",
+                "products",
+                200
+            )
+            
+            if success and response:
+                try:
+                    all_products = response.json()
+                    found_product = next((p for p in all_products if p.get('id') == product_id), None)
+                    
+                    if found_product:
+                        self.log_test(f"Product {i+1} Database Verification", True, f"Found in database: {found_product.get('name', 'Unknown')}")
+                        
+                        # Verify required fields for quote creation
+                        required_fields = ['id', 'name', 'company_id', 'list_price', 'currency']
+                        missing_fields = [field for field in required_fields if field not in found_product or found_product[field] is None]
+                        
+                        if not missing_fields:
+                            self.log_test(f"Product {i+1} Required Fields", True, "All required fields present")
+                        else:
+                            self.log_test(f"Product {i+1} Required Fields", False, f"Missing fields: {missing_fields}")
+                            
+                        # Check TRY conversion
+                        list_price_try = found_product.get('list_price_try')
+                        if list_price_try and list_price_try > 0:
+                            self.log_test(f"Product {i+1} TRY Conversion", True, f"TRY price: {list_price_try}")
+                        else:
+                            self.log_test(f"Product {i+1} TRY Conversion", False, f"Invalid TRY price: {list_price_try}")
+                    else:
+                        self.log_test(f"Product {i+1} Database Verification", False, f"Product ID {product_id} not found in database")
+                except Exception as e:
+                    self.log_test(f"Product {i+1} Verification", False, f"Error: {e}")
+
+        # Step 4: Test quote creation with detailed logging
+        print("\n🔍 STEP 2: TESTING QUOTE CREATION WITH KNOWN PRODUCT IDS...")
+        
+        # Create quote data with explicit product structure
+        quote_data = {
+            "name": "Debug Quote - Product Test",
+            "customer_name": "Debug Customer",
+            "customer_email": "debug@test.com",
+            "discount_percentage": 5.0,
+            "labor_cost": 1000.0,
+            "products": [
+                {"id": created_debug_product_ids[0], "quantity": 2},
+                {"id": created_debug_product_ids[1], "quantity": 1}
+            ],
+            "notes": "Debug quote to test product inclusion"
+        }
+        
+        # Log the exact request data
+        print(f"📋 QUOTE REQUEST DATA:")
+        print(f"   - Name: {quote_data['name']}")
+        print(f"   - Customer: {quote_data['customer_name']}")
+        print(f"   - Products count: {len(quote_data['products'])}")
+        for i, product in enumerate(quote_data['products']):
+            print(f"     Product {i+1}: ID={product['id']}, Quantity={product['quantity']}")
+        
+        success, response = self.run_test(
+            "Create Debug Quote",
+            "POST",
+            "quotes",
+            200,
+            data=quote_data
+        )
+        
+        created_quote_id = None
+        if success and response:
+            try:
+                quote_response = response.json()
+                created_quote_id = quote_response.get('id')
+                
+                # CRITICAL: Check if products are in the response
+                response_products = quote_response.get('products', [])
+                self.log_test("Quote Response - Products Count", len(response_products) > 0, f"Response contains {len(response_products)} products (expected: {len(quote_data['products'])})")
+                
+                if len(response_products) == 0:
+                    self.log_test("CRITICAL ISSUE IDENTIFIED", False, "Quote created with 0 products - products array is empty in response")
+                    
+                    # Log the full response for debugging
+                    print(f"📋 FULL QUOTE RESPONSE:")
+                    print(json.dumps(quote_response, indent=2))
+                else:
+                    self.log_test("Quote Products Included", True, f"Quote created with {len(response_products)} products")
+                    
+                    # Verify each product in response
+                    for i, product in enumerate(response_products):
+                        expected_id = quote_data['products'][i]['id']
+                        actual_id = product.get('id')
+                        expected_quantity = quote_data['products'][i]['quantity']
+                        actual_quantity = product.get('quantity')
+                        
+                        if actual_id == expected_id:
+                            self.log_test(f"Product {i+1} ID Match", True, f"Expected: {expected_id}, Got: {actual_id}")
+                        else:
+                            self.log_test(f"Product {i+1} ID Match", False, f"Expected: {expected_id}, Got: {actual_id}")
+                            
+                        if actual_quantity == expected_quantity:
+                            self.log_test(f"Product {i+1} Quantity Match", True, f"Expected: {expected_quantity}, Got: {actual_quantity}")
+                        else:
+                            self.log_test(f"Product {i+1} Quantity Match", False, f"Expected: {expected_quantity}, Got: {actual_quantity}")
+                
+                # Check other quote fields
+                total_list_price = quote_response.get('total_list_price', 0)
+                total_net_price = quote_response.get('total_net_price', 0)
+                
+                if total_list_price > 0 and total_net_price > 0:
+                    self.log_test("Quote Price Calculations", True, f"List: {total_list_price}, Net: {total_net_price}")
+                else:
+                    self.log_test("Quote Price Calculations", False, f"Invalid prices - List: {total_list_price}, Net: {total_net_price}")
+                    
+            except Exception as e:
+                self.log_test("Quote Creation Response Parsing", False, f"Error parsing: {e}")
+
+        # Step 5: Verify quote in database
+        if created_quote_id:
+            print("\n🔍 STEP 3: VERIFYING QUOTE IN DATABASE...")
+            
+            success, response = self.run_test(
+                "Get Created Quote from Database",
+                "GET",
+                f"quotes/{created_quote_id}",
+                200
+            )
+            
+            if success and response:
+                try:
+                    db_quote = response.json()
+                    db_products = db_quote.get('products', [])
+                    
+                    self.log_test("Database Quote - Products Count", len(db_products) > 0, f"Database contains {len(db_products)} products")
+                    
+                    if len(db_products) == 0:
+                        self.log_test("DATABASE ISSUE CONFIRMED", False, "Quote in database has 0 products - data not saved correctly")
+                    else:
+                        self.log_test("Database Quote - Products Saved", True, f"Quote saved with {len(db_products)} products")
+                        
+                        # Compare with original request
+                        for i, db_product in enumerate(db_products):
+                            if i < len(quote_data['products']):
+                                expected_id = quote_data['products'][i]['id']
+                                expected_quantity = quote_data['products'][i]['quantity']
+                                actual_id = db_product.get('id')
+                                actual_quantity = db_product.get('quantity')
+                                
+                                self.log_test(f"DB Product {i+1} Integrity", 
+                                            actual_id == expected_id and actual_quantity == expected_quantity,
+                                            f"ID: {actual_id} (exp: {expected_id}), Qty: {actual_quantity} (exp: {expected_quantity})")
+                                
+                except Exception as e:
+                    self.log_test("Database Quote Verification", False, f"Error: {e}")
+
+        # Step 6: Test with different product combinations
+        print("\n🔍 STEP 4: TESTING DIFFERENT PRODUCT COMBINATIONS...")
+        
+        # Test with single product
+        single_product_quote = {
+            "name": "Debug Single Product Quote",
+            "customer_name": "Single Product Customer",
+            "discount_percentage": 0.0,
+            "labor_cost": 500.0,
+            "products": [
+                {"id": created_debug_product_ids[0], "quantity": 1}
+            ],
+            "notes": "Single product test"
+        }
+        
+        success, response = self.run_test(
+            "Create Single Product Quote",
+            "POST",
+            "quotes",
+            200,
+            data=single_product_quote
+        )
+        
+        if success and response:
+            try:
+                single_quote_response = response.json()
+                single_products = single_quote_response.get('products', [])
+                self.log_test("Single Product Quote", len(single_products) == 1, f"Created with {len(single_products)} products (expected: 1)")
+            except Exception as e:
+                self.log_test("Single Product Quote", False, f"Error: {e}")
+
+        # Test with all three products
+        if len(created_debug_product_ids) >= 3:
+            all_products_quote = {
+                "name": "Debug All Products Quote",
+                "customer_name": "All Products Customer",
+                "discount_percentage": 10.0,
+                "labor_cost": 2000.0,
+                "products": [
+                    {"id": created_debug_product_ids[0], "quantity": 1},
+                    {"id": created_debug_product_ids[1], "quantity": 2},
+                    {"id": created_debug_product_ids[2], "quantity": 1}
+                ],
+                "notes": "All products test"
+            }
+            
+            success, response = self.run_test(
+                "Create All Products Quote",
+                "POST",
+                "quotes",
+                200,
+                data=all_products_quote
+            )
+            
+            if success and response:
+                try:
+                    all_quote_response = response.json()
+                    all_products = all_quote_response.get('products', [])
+                    self.log_test("All Products Quote", len(all_products) == 3, f"Created with {len(all_products)} products (expected: 3)")
+                except Exception as e:
+                    self.log_test("All Products Quote", False, f"Error: {e}")
+
+        # Step 7: Test edge cases
+        print("\n🔍 STEP 5: TESTING EDGE CASES...")
+        
+        # Test with empty products array
+        empty_products_quote = {
+            "name": "Debug Empty Products Quote",
+            "customer_name": "Empty Products Customer",
+            "discount_percentage": 0.0,
+            "labor_cost": 0.0,
+            "products": [],
+            "notes": "Empty products test"
+        }
+        
+        success, response = self.run_test(
+            "Create Empty Products Quote",
+            "POST",
+            "quotes",
+            200,  # Backend might accept this
+            data=empty_products_quote
+        )
+        
+        if success and response:
+            try:
+                empty_quote_response = response.json()
+                empty_products = empty_quote_response.get('products', [])
+                self.log_test("Empty Products Quote Handling", len(empty_products) == 0, f"Empty quote created with {len(empty_products)} products")
+            except Exception as e:
+                self.log_test("Empty Products Quote", False, f"Error: {e}")
+        else:
+            self.log_test("Empty Products Quote Rejection", True, "Backend correctly rejected empty products quote")
+
+        # Test with invalid product ID
+        invalid_product_quote = {
+            "name": "Debug Invalid Product Quote",
+            "customer_name": "Invalid Product Customer",
+            "discount_percentage": 0.0,
+            "labor_cost": 0.0,
+            "products": [
+                {"id": "invalid-product-id-12345", "quantity": 1}
+            ],
+            "notes": "Invalid product ID test"
+        }
+        
+        success, response = self.run_test(
+            "Create Invalid Product Quote",
+            "POST",
+            "quotes",
+            400,  # Should fail with 400
+            data=invalid_product_quote
+        )
+        
+        if not success:
+            self.log_test("Invalid Product ID Handling", True, "Backend correctly rejected invalid product ID")
+        else:
+            self.log_test("Invalid Product ID Handling", False, "Backend should reject invalid product IDs")
+
+        print(f"\n✅ Quote Creation Debug Summary:")
+        print(f"   - Created {len(created_debug_product_ids)} test products")
+        print(f"   - Tested quote creation with various product combinations")
+        print(f"   - Verified database storage and retrieval")
+        print(f"   - Tested edge cases and error handling")
+        
+        return True
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
