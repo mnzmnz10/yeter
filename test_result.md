@@ -224,6 +224,18 @@ frontend:
         agent: "testing"
         comment: "Frontend PDF download functionality confirmed working. Backend API endpoint /api/quotes/{quote_id}/pdf successfully generates and serves PDF files with Turkish character support. No frontend testing required as changes are backend-only."
 
+  - task: "Quote Editing Functionality - Update Instead of Duplicate Creation"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "QUOTE EDITING FUNCTIONALITY TESTING COMPLETED WITH CRITICAL ISSUES IDENTIFIED: ✅ Quote creation workflow working perfectly - successfully created 'Test Quote 123' with 2 products, ✅ '📝 Teklifi Önizle' button accessible and clickable in quotes list, ❌ CRITICAL ISSUE: Quote loading for editing NOT WORKING - when clicking '📝 Teklifi Önizle', quote products are not loaded (0 products selected instead of expected 2), ❌ CRITICAL ISSUE: No editing interface appears - no 'Teklifi Güncelle' or 'Teklifi Kaydet' buttons found after clicking preview, ❌ CRITICAL ISSUE: No input fields for labor cost or discount found when quote should be loaded for editing, ❌ CRITICAL ISSUE: PDF button still shows 'PDF İndir' instead of expected 'Güncelle & PDF İndir' when editing existing quote, ✅ No quote duplication occurred (only 1 'Test Quote 123' exists), ❌ MAJOR FUNCTIONALITY BROKEN: The core quote editing feature is not working - users cannot modify existing quotes because the quote loading mechanism fails to populate the editing interface with quote data. This prevents users from updating labor costs, discounts, or products in existing quotes. REQUIRES IMMEDIATE ATTENTION."
+
   - task: "Quick Quote Creation Feature - Products to Quote directly"
     implemented: true
     working: true
