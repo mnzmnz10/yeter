@@ -325,7 +325,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "MongoDB Atlas Integration and Migration"
+    - "Favorites Feature Implementation"
   stuck_tasks:
     - "Quote Editing Functionality - Update Instead of Duplicate Creation"
   test_all: false
