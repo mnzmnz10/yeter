@@ -2600,7 +2600,7 @@ async def change_upload_currency(upload_id: str, new_currency: str):
         raise HTTPException(status_code=500, detail=f"Para birimi güncellenemedi: {str(e)}")
 
 # Static file serving for MongoDB Atlas migration files
-@app.get("/downloads")
+@app.get("/atlas-downloads")
 async def downloads_page():
     """Serve the downloads index page"""
     try:
@@ -2613,7 +2613,7 @@ async def downloads_page():
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Downloads page not found")
 
-@app.get("/downloads/{filename}")
+@app.get("/atlas-downloads/{filename}")
 async def download_file(filename: str):
     """Serve JSON files for download"""
     file_path = f"/app/downloads/{filename}"
