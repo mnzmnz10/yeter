@@ -874,6 +874,19 @@ function App() {
       return product ? { ...product, quantity } : null;
     }).filter(Boolean);
   }, [selectedProducts, selectedProductsData]);
+  const toggleProductFavorite = async (productId) => {
+    try {
+      const response = await axios.post(`${API}/products/${productId}/toggle-favorite`);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        // Ürün listesini yeniden yükle
+        await loadProducts(1, true);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast.error('Favori durumu güncellenemedi');
+    }
+  };
 
   const calculateQuoteTotals = useMemo(() => {
     const selectedProductsData = getSelectedProductsData();
