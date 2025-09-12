@@ -348,7 +348,7 @@ function App() {
     try {
       await axios.delete(`${API}/companies/${companyId}`);
       await loadCompanies();
-      await loadProducts();
+      await loadProducts(1, true);
       toast.success('Firma silindi');
     } catch (error) {
       console.error('Error deleting company:', error);
