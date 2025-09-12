@@ -112,6 +112,7 @@ class Product(BaseModel):
     currency: str
     list_price_try: Optional[Decimal] = None
     discounted_price_try: Optional[Decimal] = None
+    is_favorite: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProductCreate(BaseModel):
