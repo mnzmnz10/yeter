@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "1. Remove the 'Üzerine Tamamla' (Complete/Round Up) feature completely from the application. 2. Show decimals in exchange rates but continue to not show decimals in product prices."
+user_problem_statement: "1. Remove the 'Üzerine Tamamla' (Complete/Round Up) feature completely from the application. 2. Show decimals in exchange rates but continue to not show decimals in product prices. 3. Optimize application for 2500-3000 products on Raspberry Pi without freezing or performance issues."
 
 backend:
   - task: "Remove Üzerine Tamamla Feature"
