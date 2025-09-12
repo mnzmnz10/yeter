@@ -773,11 +773,16 @@ function App() {
 
   // Üzerine tamamla fonksiyonu - tutarı yukarı yuvarlar
   const roundUpToNextThousand = (amount) => {
-    if (amount <= 0) return 0;
+    // Güvenlik kontrolleri
+    if (!amount || amount <= 0 || isNaN(amount)) return 0;
+    
+    // Sayıyı kesinleştir
+    const numAmount = Number(amount);
+    if (numAmount <= 0) return 0;
     
     // 7200 → 10000, 64632 → 70000 gibi
-    const digits = amount.toString().length;
-    const firstDigit = parseInt(amount.toString()[0]);
+    const digits = numAmount.toString().length;
+    const firstDigit = parseInt(numAmount.toString()[0]);
     
     let roundedValue;
     if (digits === 1) {
