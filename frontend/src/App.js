@@ -780,40 +780,36 @@ function App() {
     const numAmount = Number(amount);
     if (numAmount <= 0) return 0;
     
-    // Örnekler: 7200 → 10000, 64632 → 70000, 1234 → 2000
+    // Örnekler: 7200 → 10000, 64632 → 70000, 17768595 → 20000000
     
     if (numAmount < 1000) {
       // 100-999 → 1000
       return 1000;
     } else if (numAmount < 10000) {
-      // 1000-9999 → 10000
+      // 1000-9999 → 10000 (7200 → 10000 örneği)
       return 10000;
     } else if (numAmount < 100000) {
-      // 10000-99999 → 100000
-      return 100000;
+      // 10000-99999 → 100000 (64632 → 70000 için özel)
+      // 64632 → 70000 mantığı: 6xxxx → 70000
+      const firstDigit = parseInt(numAmount.toString()[0]);
+      return (firstDigit + 1) * 10000;
     } else if (numAmount < 1000000) {
       // 100000-999999 → 1000000
       return 1000000;
     } else {
-      // Daha büyük sayılar için daha akıllı yuvarlama
+      // 1.000.000+ için: İlk rakamı 1 artırıp geri kalanı sıfırla
+      // 17768595 → 20000000 (1 → 2, geri kalan 7 sıfır)
       const str = numAmount.toString();
       const firstDigit = parseInt(str[0]);
       const digits = str.length;
       
-      // İlk 2 basamağı al, sonrasını sıfırla
-      const first2Digits = parseInt(str.substring(0, 2));
-      const powerOf10 = Math.pow(10, digits - 2);
+      // İlk rakamı 1 artır
+      const newFirstDigit = firstDigit + 1;
       
-      // 17768595 → İlk 2 basamak: 17 → 20, sonrası: 20000000
-      const roundedFirst2 = Math.ceil(first2Digits / 10) * 10;
+      // Yeni değer = newFirstDigit * 10^(digits-1)
+      const roundedValue = newFirstDigit * Math.pow(10, digits - 1);
       
-      // Çok büyük fark yaratmasın diye sınırla
-      if (roundedFirst2 * powerOf10 - numAmount > numAmount * 0.5) {
-        // %50'den fazla artış olacaksa, daha küçük yuvarlama yap
-        return Math.ceil(numAmount / 1000000) * 1000000;
-      }
-      
-      return roundedFirst2 * powerOf10;
+      return roundedValue;
     }
   };
 
