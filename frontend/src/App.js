@@ -885,7 +885,7 @@ function App() {
       const response = await axios.post(`${API}/products`, productData);
       
       if (response.data) {
-        await loadProducts();
+        await loadProducts(1, true);
         setShowAddProductDialog(false);
         resetNewProductForm();
         toast.success('Ürün başarıyla eklendi');
