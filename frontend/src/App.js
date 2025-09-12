@@ -3078,6 +3078,9 @@ function App() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Toast Notifications */}
+      <Toaster />
     </div>
   );
 }
