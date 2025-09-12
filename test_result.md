@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the new automatic exchange rate system I just implemented. Key features to test: 1. GET /api/exchange-rates endpoint, 2. POST /api/exchange-rates/update endpoint, 3. Exchange rate data structure, 4. Exchange rate caching, 5. External API integration, 6. Error handling"
+user_problem_statement: "Remove the 'Üzerine Tamamla' (Complete/Round Up) feature completely from the application."
 
 backend:
   - task: "Automatic Exchange Rate System"
