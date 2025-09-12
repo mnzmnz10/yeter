@@ -27,7 +27,7 @@ df.to_excel(excel_buffer, index=False, sheet_name='Ürünler')
 excel_buffer.seek(0)
 
 # API endpoint
-API_BASE = "https://039781ab-c520-4927-8b4a-9e1599f54130.preview.emergentagent.com/api"
+API_BASE = "https://completion-module.preview.emergentagent.com/api"
 COMPANY_ID = "fdd84f9d-4276-41aa-afeb-4637879f30c3"  # Test Firma Bağlantı
 
 # Excel dosyasını yükle
