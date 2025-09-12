@@ -2145,7 +2145,7 @@ function App() {
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-emerald-800">
-                            ₺ {formatPrice(calculateQuoteTotals().totalListPrice)}
+                            ₺ {formatPrice(calculateQuoteTotals.totalListPrice)}
                           </div>
                           <div className="text-sm text-emerald-600">Toplam Liste Fiyatı</div>
                         </div>
