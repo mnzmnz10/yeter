@@ -1886,6 +1886,31 @@ function App() {
                     });
                   })()}
                 </div>
+                
+                {/* Load More Button */}
+                {products.length < totalProducts && (
+                  <div className="mt-6 text-center">
+                    <Button
+                      onClick={() => loadProducts(currentPage + 1, false)}
+                      disabled={loadingProducts}
+                      variant="outline"
+                      className="px-8 py-2"
+                    >
+                      {loadingProducts ? (
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Plus className="w-4 h-4 mr-2" />
+                      )}
+                      {loadingProducts ? 'Yükleniyor...' : `Daha Fazla Yükle (${products.length}/${totalProducts})`}
+                    </Button>
+                  </div>
+                )}
+                
+                {products.length > 0 && (
+                  <div className="mt-4 text-center text-sm text-slate-600">
+                    {totalProducts} ürün içinden {products.length} tanesi gösteriliyor
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
