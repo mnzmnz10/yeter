@@ -3275,8 +3275,8 @@ class KaravanAPITester:
             return 1
 
 def main():
-    """Main test runner - Focus on Quote Creation Debug"""
-    print("🚀 Starting Karavan Backend API Tests - DEBUGGING QUOTE CREATION WITH 0 PRODUCTS ISSUE")
+    """Main test runner - Focus on Favorites Feature Testing"""
+    print("🚀 Starting Karavan Backend API Tests - TESTING FAVORITES FEATURE")
     print("=" * 80)
     
     tester = KaravanAPITester()
@@ -3285,14 +3285,14 @@ def main():
         # Test 1: Root endpoint
         tester.test_root_endpoint()
         
-        # Test 2: MAIN FOCUS - Debug quote creation workflow
-        tester.test_quote_creation_debug()
+        # Test 2: MAIN FOCUS - Favorites Feature Testing
+        tester.test_favorites_feature_comprehensive()
         
         # Test 3: Exchange rates (to ensure currency conversion works)
         tester.test_exchange_rates_comprehensive()
         
-        # Test 4: Quick quote creation (existing functionality)
-        tester.test_quick_quote_creation_comprehensive()
+        # Test 4: Products management (to verify favorites integration)
+        tester.test_products_management()
         
     except KeyboardInterrupt:
         print("\n⚠️  Tests interrupted by user")
