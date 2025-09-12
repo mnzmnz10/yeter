@@ -800,16 +800,14 @@ function App() {
     setSelectedProducts(newSelected);
   };
 
-  const getSelectedProductsData = () => {
+  const getSelectedProductsData = useCallback(() => {
     return Array.from(selectedProducts.entries()).map(([productId, quantity]) => {
       const product = products.find(p => p.id === productId);
       return product ? { ...product, quantity } : null;
     }).filter(Boolean);
-  };
+  }, [selectedProducts, products]);
 
-
-
-  const calculateQuoteTotals = () => {
+  const calculateQuoteTotals = useMemo(() => {
     const selectedProductsData = getSelectedProductsData();
     
     // Hangi fiyatı kullanacağımızı belirle (indirimli fiyat gösterim durumuna göre)
@@ -842,7 +840,7 @@ function App() {
       productCount: selectedProductsData.length,
       totalQuantity: totalQuantity
     };
-  };
+  }, [getSelectedProductsData, showQuoteDiscountedPrices, quoteDiscount, quoteLaborCost]);
 
   const resetNewProductForm = () => {
     setNewProductForm({
