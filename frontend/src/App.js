@@ -487,7 +487,7 @@ function App() {
       const response = await axios.patch(`${API}/products/${editingProduct}`, updateData);
       
       if (response.data.success) {
-        await loadProducts();
+        await loadProducts(1, true);
         cancelEditProduct();
         toast.success('Ürün başarıyla güncellendi');
       }
