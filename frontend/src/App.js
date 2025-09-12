@@ -63,6 +63,11 @@ function App() {
   const [uncategorizedProducts, setUncategorizedProducts] = useState([]);
   const [selectedProductsForCategory, setSelectedProductsForCategory] = useState(new Set());
   
+  // Kategori dialog için ayrı arama ve ürün listesi
+  const [categoryDialogSearchQuery, setCategoryDialogSearchQuery] = useState('');
+  const [allProductsForCategory, setAllProductsForCategory] = useState([]);
+  const [loadingCategoryProducts, setLoadingCategoryProducts] = useState(false);
+  
   // Ürünler sekmesinden teklif oluşturma için state'ler
   const [showQuickQuoteDialog, setShowQuickQuoteDialog] = useState(false);
   const [quickQuoteCustomerName, setQuickQuoteCustomerName] = useState('');
