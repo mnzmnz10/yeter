@@ -642,11 +642,14 @@ function App() {
   };
 
   // Kategori ürün atama dialog'unu aç
-  const openCategoryProductDialog = (category) => {
+  const openCategoryProductDialog = async (category) => {
     setSelectedCategoryForProducts(category);
-    setUncategorizedProducts(getUncategorizedProducts());
     setSelectedProductsForCategory(new Set());
+    setCategoryDialogSearchQuery('');
     setShowCategoryProductDialog(true);
+    
+    // Tüm ürünleri yükle (pagination olmadan)
+    await loadAllProductsForCategory();
   };
 
   // Seçili ürünleri kategoriye ata
