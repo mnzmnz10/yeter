@@ -1986,12 +1986,12 @@ function App() {
                                                   onError={(e) => {e.target.style.display = 'none'}}
                                                 />
                                               )}
-                                              <div className="flex-1">
+                                              <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
-                                                  <div className="font-medium">{product.name}</div>
+                                                  <div className="font-medium truncate pr-2" title={product.name}>{product.name}</div>
                                                   <button
                                                     onClick={() => toggleProductFavorite(product.id)}
-                                                    className={`p-1 rounded-full hover:bg-gray-100 transition-colors ${
+                                                    className={`flex-shrink-0 p-1 rounded-full hover:bg-gray-100 transition-colors ${
                                                       product.is_favorite ? 'text-amber-500' : 'text-gray-300 hover:text-amber-400'
                                                     }`}
                                                     title={product.is_favorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}
@@ -2002,7 +2002,7 @@ function App() {
                                                   </button>
                                                 </div>
                                                 {product.description && (
-                                                  <div className="text-sm text-slate-500 mt-1">{product.description}</div>
+                                                  <div className="text-sm text-slate-500 mt-1 truncate" title={product.description}>{product.description}</div>
                                                 )}
                                               </div>
                                             </div>
