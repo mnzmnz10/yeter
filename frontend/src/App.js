@@ -993,17 +993,38 @@ function App() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   };
 
-  // WhatsApp share URL generator
-  const generateWhatsAppShareUrl = (quoteName, pdfUrl) => {
-    const message = `Merhaba! "${quoteName}" teklifinin PDF'ini paylaşıyorum. PDF dosyasını görüntülemek için: ${pdfUrl}`;
-    const encodedMessage = encodeURIComponent(message);
-    
-    if (isMobileDevice()) {
-      // Mobile device - WhatsApp app açılacak
-      return `whatsapp://send?text=${encodedMessage}`;
-    } else {
-      // Desktop - WhatsApp Web açılacak
-      return `https://web.whatsapp.com/send?text=${encodedMessage}`;
+  // WhatsApp share with PDF download
+  const shareViaWhatsAppWithPDF = async (quoteName, quoteId) => {
+    try {
+      // 1. PDF'i otomatik indir
+      const pdfUrl = `${API}/quotes/${quoteId}/pdf`;
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `${quoteName}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // 2. Kısa bir bekleme sonrası WhatsApp'ı aç
+      setTimeout(() => {
+        const message = `Merhaba! "${quoteName}" teklifinin PDF dosyasını paylaşıyorum. PDF dosyası cihazınıza indirildi, lütfen WhatsApp'ta dosya ekleme butonunu kullanarak paylaşın.`;
+        const encodedMessage = encodeURIComponent(message);
+        
+        let whatsappUrl;
+        if (isMobileDevice()) {
+          whatsappUrl = `whatsapp://send?text=${encodedMessage}`;
+          toast.success('PDF indirildi! WhatsApp uygulaması açılıyor - dosyayı manuel olarak ekleyin.');
+        } else {
+          whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+          toast.success('PDF indirildi! WhatsApp Web açılıyor - dosyayı manuel olarak ekleyin.');
+        }
+        
+        window.open(whatsappUrl, '_blank');
+      }, 1000); // 1 saniye bekle ki PDF indirme başlasın
+
+    } catch (error) {
+      console.error('WhatsApp PDF paylaşım hatası:', error);
+      toast.error('PDF indirme veya WhatsApp paylaşımı başarısız oldu');
     }
   };
 
