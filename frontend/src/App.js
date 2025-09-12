@@ -2496,9 +2496,9 @@ function App() {
                                     }
                                   }}
                                   className="bg-green-100 text-green-800 hover:bg-green-200"
-                                  title={`"${quote.name}" teklifini düzenleme için yükle`}
+                                  title={`"${quote.name}" teklifini önizle`}
                                 >
-                                  📝 Yükle
+                                  📝 Teklifi Önizle
                                 </Button>
                                 <Button
                                   variant="default"
