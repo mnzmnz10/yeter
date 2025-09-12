@@ -2139,7 +2139,7 @@ function App() {
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-emerald-800">
-                            {calculateQuoteTotals().productCount}
+                            {calculateQuoteTotals.productCount}
                           </div>
                           <div className="text-sm text-emerald-600">Ürün Sayısı</div>
                         </div>
