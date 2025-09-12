@@ -20,7 +20,7 @@ DATABASE_NAME = "karavan_db"
 # ATLAS_URI değişkenini aşağıdaki gibi doldurun:
 # mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
 
-ATLAS_URI = "mongodb+srv://corlukaravan:<db_password>@corlukaravanteklif.gjnsd46.mongodb.net/?retryWrites=true&w=majority&appName=Corlukaravanteklif"  # BURAYA ATLAS CONNECTION STRING'İNİZİ GİRİN
+ATLAS_URI = "mongodb+srv://corlukaravan:mnzmnz10@corlukaravanteklif.gjnsd46.mongodb.net/?retryWrites=true&w=majority&appName=Corlukaravanteklif"  # BURAYA ATLAS CONNECTION STRING'İNİZİ GİRİN
 
 if not ATLAS_URI:
     print("❌ Hata: ATLAS_URI değişkenini script içinde doldurmanız gerekiyor!")
