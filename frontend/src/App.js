@@ -1840,13 +1840,13 @@ function App() {
                             <h3 className="text-lg font-semibold text-slate-800">
                               {categoryName}
                             </h3>
-                            {/* İndirimli Fiyat Toggle Butonu - Sadece ilk kategoride göster */}
-                            {index === 0 && (
+                            <div className="flex items-center gap-2 ml-auto">
+                              {/* İndirimli Fiyat Toggle Butonu - Her kategoride göster */}
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setShowDiscountedPrices(!showDiscountedPrices)}
-                                className="ml-2 p-2"
+                                className="p-2"
                                 title={showDiscountedPrices ? "İndirimli fiyatları gizle" : "İndirimli fiyatları göster"}
                               >
                                 {showDiscountedPrices ? (
@@ -1855,10 +1855,10 @@ function App() {
                                   <Eye className="w-4 h-4" />
                                 )}
                               </Button>
-                            )}
-                            <Badge variant="outline" className="ml-auto">
-                              {categoryProducts.length} ürün
-                            </Badge>
+                              <Badge variant="outline">
+                                {categoryProducts.length} ürün
+                              </Badge>
+                            </div>
                           </div>
 
                           {/* Products Table for this category */}
