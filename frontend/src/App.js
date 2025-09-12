@@ -2067,17 +2067,17 @@ function App() {
                                           </Badge>
                                         )}
                                       </TableCell>
-                                      <TableCell>
+                                      <TableCell className="w-28">
                                         ₺ {product.list_price_try ? formatPrice(product.list_price_try) : '---'}
                                       </TableCell>
                                       {showDiscountedPrices && (
-                                        <TableCell>
+                                        <TableCell className="w-28">
                                           {product.discounted_price_try ? (
                                             `₺ ${formatPrice(product.discounted_price_try)}`
                                           ) : '-'}
                                         </TableCell>
                                       )}
-                                      <TableCell>
+                                      <TableCell className="w-24">
                                         <div className="flex gap-2">
                                           {isEditing ? (
                                             <>
