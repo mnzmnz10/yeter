@@ -1218,7 +1218,7 @@ function App() {
             </TabsTrigger>
             <TabsTrigger 
               value="companies"
-              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-orange-100 text-orange-700 rounded-lg"
+              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-green-100 text-green-700 rounded-lg"
             >
               <div className="flex items-center gap-1 sm:gap-2">
                 <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1228,7 +1228,7 @@ function App() {
             </TabsTrigger>
             <TabsTrigger 
               value="categories"
-              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-teal-100 text-teal-700 rounded-lg"
+              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-orange-100 text-orange-700 rounded-lg"
             >
               <div className="flex items-center gap-1 sm:gap-2">
                 <Tags className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1238,7 +1238,7 @@ function App() {
             </TabsTrigger>
             <TabsTrigger 
               value="upload"
-              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-emerald-100 text-emerald-700 rounded-lg"
+              className="h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=data]shadow-lg hover:bg-indigo-100 text-indigo-700 rounded-lg"
             >
               <div className="flex items-center gap-1 sm:gap-2">
                 <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
