@@ -2204,9 +2204,12 @@ async def upload_excel(company_id: str, file: UploadFile = File(...)):
 async def get_products(
     company_id: Optional[str] = None,
     category_id: Optional[str] = None,
-    search: Optional[str] = None
+    search: Optional[str] = None,
+    page: int = 1,
+    limit: int = 100,
+    skip_pagination: bool = False  # For backward compatibility
 ):
-    """Get all products, optionally filtered by company, category, or search term"""
+    """Get products with pagination, optionally filtered by company, category, or search term"""
     try:
         query = {}
         if company_id:
@@ -2214,10 +2217,20 @@ async def get_products(
         if category_id:
             query["category_id"] = category_id
         if search:
-            # Case-insensitive search in product name
-            query["name"] = {"$regex": search, "$options": "i"}
+            # Case-insensitive search in product name and description
+            query["$or"] = [
+                {"name": {"$regex": search, "$options": "i"}},
+                {"description": {"$regex": search, "$options": "i"}}
+            ]
+        
+        # For backward compatibility - if skip_pagination is true, return all
+        if skip_pagination:
+            products = await db.products.find(query).to_list(None)
+        else:
+            # Calculate skip value for pagination
+            skip = (page - 1) * limit
+            products = await db.products.find(query).skip(skip).limit(limit).to_list(limit)
             
-        products = await db.products.find(query).to_list(None)
         return [Product(**product) for product in products]
     except Exception as e:
         logger.error(f"Error getting products: {e}")
