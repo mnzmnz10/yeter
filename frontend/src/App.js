@@ -2178,7 +2178,7 @@ function App() {
                               <div><strong>İndirim:</strong> Liste fiyatı üzerinden %{quoteDiscount} indirim uygulandı. Tasarruf: <strong>₺ {formatPrice(calculateQuoteTotals.discountAmount)}</strong></div>
                             )}
                             {quoteLaborCost > 0 && (
-                              <div><strong>İşçilik:</strong> Ek işçilik maliyeti eklendi. Tutar: <strong>₺ {formatPrice(calculateQuoteTotals().laborCost)}</strong></div>
+                              <div><strong>İşçilik:</strong> Ek işçilik maliyeti eklendi. Tutar: <strong>₺ {formatPrice(calculateQuoteTotals.laborCost)}</strong></div>
                             )}
                           </div>
                         </div>
