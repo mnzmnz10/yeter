@@ -2915,7 +2915,7 @@ class KaravanAPITester:
             
         finally:
             # Always cleanup
-            self.cleanup()
+            self.cleanup_test_data()
         
         # Print final results
         print("\n" + "=" * 80)
