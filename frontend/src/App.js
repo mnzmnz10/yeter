@@ -736,6 +736,12 @@ function App() {
         quantity: p.quantity || 1
       }));
 
+      console.log('🔍 Quick quote creation data:');
+      console.log('🔍 selectedProducts Map:', selectedProducts);
+      console.log('🔍 selectedProductsData Map:', selectedProductsData);
+      console.log('🔍 getSelectedProductsData() result:', getSelectedProductsData());
+      console.log('🔍 selectedProductData for API:', selectedProductData);
+
       const quoteData = {
         name: quickQuoteCustomerName.trim(),
         customer_name: quickQuoteCustomerName.trim(),
