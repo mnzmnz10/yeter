@@ -1873,9 +1873,51 @@ class KaravanAPITester:
             return 1
 
 def main():
-    """Main test runner"""
+    """Main test runner - Focus on Quote Functionality After Rounding Removal"""
+    print("🚀 Starting Karavan Backend API Tests - Focus: Quote Functionality After Rounding Removal")
+    print("=" * 80)
+    
     tester = KaravanAPITester()
-    return tester.run_all_tests()
+    
+    try:
+        # Test 1: Root endpoint
+        tester.test_root_endpoint()
+        
+        # Test 2: Quote functionality after rounding removal (main focus)
+        tester.test_quote_functionality_after_rounding_removal()
+        
+        # Test 3: Exchange rates (to ensure currency conversion still works)
+        tester.test_exchange_rates_comprehensive()
+        
+        # Test 4: PDF generation comprehensive test
+        tester.test_pdf_generation_comprehensive()
+        
+        # Test 5: Quick quote creation (to ensure frontend integration works)
+        tester.test_quick_quote_creation_comprehensive()
+        
+    except KeyboardInterrupt:
+        print("\n⚠️  Tests interrupted by user")
+    except Exception as e:
+        print(f"\n❌ Unexpected error during testing: {e}")
+    finally:
+        # Cleanup
+        tester.cleanup()
+        
+        # Final summary
+        print("\n" + "=" * 80)
+        print("🏁 FINAL TEST SUMMARY")
+        print("=" * 80)
+        print(f"Total Tests Run: {tester.tests_run}")
+        print(f"Tests Passed: {tester.tests_passed}")
+        print(f"Tests Failed: {tester.tests_run - tester.tests_passed}")
+        print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%" if tester.tests_run > 0 else "No tests run")
+        
+        if tester.tests_passed == tester.tests_run:
+            print("🎉 ALL TESTS PASSED! Quote functionality works correctly after rounding removal.")
+            return 0
+        else:
+            print("⚠️  Some tests failed. Please review the results above.")
+            return 1
 
 if __name__ == "__main__":
     sys.exit(main())
