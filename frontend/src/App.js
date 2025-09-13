@@ -912,6 +912,7 @@ function App() {
   });
   const [selectedPackageForEdit, setSelectedPackageForEdit] = useState(null);
   const [packageSelectedProducts, setPackageSelectedProducts] = useState(new Map());
+  const [packageSelectedSupplies, setPackageSelectedSupplies] = useState(new Map());
   const [packageWithProducts, setPackageWithProducts] = useState(null);
   const [loadingPackageProducts, setLoadingPackageProducts] = useState(false);
   const [packageProductSearch, setPackageProductSearch] = useState('');
