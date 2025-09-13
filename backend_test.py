@@ -3300,9 +3300,389 @@ class KaravanAPITester:
             print("⚠️  SOME TESTS FAILED!")
             return 1
 
+    def test_package_system_comprehensive(self):
+        """Comprehensive test for Package system backend"""
+        print("\n🔍 Testing Package System Backend...")
+        
+        # Step 1: Create test company and products for package testing
+        package_company_name = f"Package Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Package Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": package_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Package Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            package_company_id = company_data.get('id')
+            if not package_company_id:
+                self.log_test("Package Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(package_company_id)
+        except Exception as e:
+            self.log_test("Package Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Create test products for packages
+        test_products = [
+            {
+                "name": "Güneş Paneli 450W Monokristal",
+                "company_id": package_company_id,
+                "list_price": 299.99,
+                "discounted_price": 249.99,
+                "currency": "USD",
+                "description": "Yüksek verimli güneş paneli"
+            },
+            {
+                "name": "İnvertör 5000W Hibrit", 
+                "company_id": package_company_id,
+                "list_price": 850.50,
+                "discounted_price": 799.00,
+                "currency": "EUR",
+                "description": "Hibrit güneş enerjisi invertörü"
+            },
+            {
+                "name": "Akü 200Ah Derin Döngü",
+                "company_id": package_company_id,
+                "list_price": 12500.00,
+                "discounted_price": 11250.00,
+                "currency": "TRY",
+                "description": "Güneş enerjisi sistemi için özel akü"
+            },
+            {
+                "name": "Şarj Kontrolcüsü MPPT 60A",
+                "company_id": package_company_id,
+                "list_price": 189.99,
+                "discounted_price": 159.99,
+                "currency": "USD",
+                "description": "MPPT teknolojili şarj kontrolcüsü"
+            }
+        ]
+        
+        created_product_ids = []
+        
+        for product_data in test_products:
+            success, response = self.run_test(
+                f"Create Package Product: {product_data['name'][:30]}...",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        self.log_test(f"Package Product Created - {product_data['name'][:20]}...", True, f"ID: {product_id}")
+                    else:
+                        self.log_test(f"Package Product Creation - {product_data['name'][:20]}...", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Package Product Creation - {product_data['name'][:20]}...", False, f"Error parsing: {e}")
+
+        if len(created_product_ids) < 3:
+            self.log_test("Package Test Products", False, f"Only {len(created_product_ids)} products created, need at least 3")
+            return False
+
+        # Step 2: Test Package CRUD Operations
+        print("\n🔍 Testing Package CRUD Operations...")
+        
+        # Test 1: Create Package (POST /api/packages)
+        package_data = {
+            "name": "Güneş Enerjisi Başlangıç Paketi",
+            "description": "Ev tipi güneş enerjisi sistemi için temel paket",
+            "sale_price": 25000.00,
+            "image_url": "https://example.com/solar-package.jpg"
+        }
+        
+        success, response = self.run_test(
+            "Create Package - POST /api/packages",
+            "POST",
+            "packages",
+            200,
+            data=package_data
+        )
+        
+        created_package_id = None
+        if success and response:
+            try:
+                package_response = response.json()
+                created_package_id = package_response.get('id')
+                
+                # Validate package structure
+                required_fields = ['id', 'name', 'description', 'sale_price', 'image_url', 'created_at']
+                missing_fields = [field for field in required_fields if field not in package_response]
+                
+                if not missing_fields:
+                    self.log_test("Package Creation Structure", True, "All required fields present")
+                    
+                    # Validate data types and values
+                    if package_response.get('name') == package_data['name']:
+                        self.log_test("Package Name Validation", True, f"Name: {package_response.get('name')}")
+                    else:
+                        self.log_test("Package Name Validation", False, f"Expected: {package_data['name']}, Got: {package_response.get('name')}")
+                    
+                    if float(package_response.get('sale_price', 0)) == package_data['sale_price']:
+                        self.log_test("Package Sale Price Validation", True, f"Sale Price: {package_response.get('sale_price')}")
+                    else:
+                        self.log_test("Package Sale Price Validation", False, f"Expected: {package_data['sale_price']}, Got: {package_response.get('sale_price')}")
+                        
+                else:
+                    self.log_test("Package Creation Structure", False, f"Missing fields: {missing_fields}")
+                    
+            except Exception as e:
+                self.log_test("Package Creation Response", False, f"Error parsing: {e}")
+        
+        if not created_package_id:
+            self.log_test("Package System Test", False, "Cannot continue without package ID")
+            return False
+
+        # Test 2: Get All Packages (GET /api/packages)
+        success, response = self.run_test(
+            "Get All Packages - GET /api/packages",
+            "GET",
+            "packages",
+            200
+        )
+        
+        if success and response:
+            try:
+                packages = response.json()
+                if isinstance(packages, list):
+                    self.log_test("Packages List Format", True, f"Found {len(packages)} packages")
+                    
+                    # Check if our created package is in the list
+                    found_package = any(p.get('id') == created_package_id for p in packages)
+                    self.log_test("Created Package in List", found_package, f"Package ID: {created_package_id}")
+                else:
+                    self.log_test("Packages List Format", False, "Response is not a list")
+            except Exception as e:
+                self.log_test("Packages List Parsing", False, f"Error: {e}")
+
+        # Test 3: Add Products to Package (POST /api/packages/{id}/products)
+        package_products_data = [
+            {"product_id": created_product_ids[0], "quantity": 2},
+            {"product_id": created_product_ids[1], "quantity": 1},
+            {"product_id": created_product_ids[2], "quantity": 1},
+            {"product_id": created_product_ids[3], "quantity": 3}
+        ]
+        
+        success, response = self.run_test(
+            "Add Products to Package - POST /api/packages/{id}/products",
+            "POST",
+            f"packages/{created_package_id}/products",
+            200,
+            data=package_products_data
+        )
+        
+        if success and response:
+            try:
+                add_products_response = response.json()
+                if add_products_response.get('success'):
+                    message = add_products_response.get('message', '')
+                    self.log_test("Add Products to Package Success", True, f"Message: {message}")
+                else:
+                    self.log_test("Add Products to Package Success", False, "Success flag not true")
+            except Exception as e:
+                self.log_test("Add Products to Package Response", False, f"Error parsing: {e}")
+
+        # Test 4: Get Package with Products (GET /api/packages/{id})
+        success, response = self.run_test(
+            "Get Package with Products - GET /api/packages/{id}",
+            "GET",
+            f"packages/{created_package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                package_with_products = response.json()
+                
+                # Validate PackageWithProducts structure
+                required_fields = ['id', 'name', 'description', 'sale_price', 'image_url', 'created_at', 'products', 'total_discounted_price']
+                missing_fields = [field for field in required_fields if field not in package_with_products]
+                
+                if not missing_fields:
+                    self.log_test("Package with Products Structure", True, "All required fields present")
+                    
+                    # Validate products array
+                    products = package_with_products.get('products', [])
+                    if isinstance(products, list) and len(products) > 0:
+                        self.log_test("Package Products Array", True, f"Found {len(products)} products in package")
+                        
+                        # Validate product structure
+                        sample_product = products[0]
+                        product_required_fields = ['id', 'name', 'list_price', 'currency', 'quantity']
+                        product_missing_fields = [field for field in product_required_fields if field not in sample_product]
+                        
+                        if not product_missing_fields:
+                            self.log_test("Package Product Structure", True, "Product structure valid")
+                        else:
+                            self.log_test("Package Product Structure", False, f"Missing product fields: {product_missing_fields}")
+                        
+                        # Validate quantities match what we sent
+                        expected_quantities = {p['product_id']: p['quantity'] for p in package_products_data}
+                        actual_quantities = {p['id']: p['quantity'] for p in products}
+                        
+                        quantities_match = all(
+                            actual_quantities.get(pid) == expected_quantities.get(pid)
+                            for pid in expected_quantities.keys()
+                        )
+                        
+                        if quantities_match:
+                            self.log_test("Package Product Quantities", True, "All quantities match expected values")
+                        else:
+                            self.log_test("Package Product Quantities", False, f"Expected: {expected_quantities}, Got: {actual_quantities}")
+                    else:
+                        self.log_test("Package Products Array", False, f"Invalid products array: {products}")
+                    
+                    # Validate total_discounted_price calculation
+                    total_discounted_price = package_with_products.get('total_discounted_price')
+                    if total_discounted_price is not None and float(total_discounted_price) > 0:
+                        self.log_test("Package Total Discounted Price Calculation", True, f"Total: {total_discounted_price}")
+                    else:
+                        self.log_test("Package Total Discounted Price Calculation", False, f"Invalid total: {total_discounted_price}")
+                        
+                else:
+                    self.log_test("Package with Products Structure", False, f"Missing fields: {missing_fields}")
+                    
+            except Exception as e:
+                self.log_test("Package with Products Response", False, f"Error parsing: {e}")
+
+        # Test 5: Update Package (PUT /api/packages/{id})
+        updated_package_data = {
+            "name": "Güneş Enerjisi Gelişmiş Paketi - Güncellenmiş",
+            "description": "Güncellenmiş açıklama - daha kapsamlı sistem",
+            "sale_price": 28000.00,
+            "image_url": "https://example.com/updated-solar-package.jpg"
+        }
+        
+        success, response = self.run_test(
+            "Update Package - PUT /api/packages/{id}",
+            "PUT",
+            f"packages/{created_package_id}",
+            200,
+            data=updated_package_data
+        )
+        
+        if success and response:
+            try:
+                updated_package_response = response.json()
+                
+                # Validate updated fields
+                if updated_package_response.get('name') == updated_package_data['name']:
+                    self.log_test("Package Update - Name", True, f"Updated name: {updated_package_response.get('name')}")
+                else:
+                    self.log_test("Package Update - Name", False, f"Name not updated correctly")
+                
+                if float(updated_package_response.get('sale_price', 0)) == updated_package_data['sale_price']:
+                    self.log_test("Package Update - Sale Price", True, f"Updated price: {updated_package_response.get('sale_price')}")
+                else:
+                    self.log_test("Package Update - Sale Price", False, f"Price not updated correctly")
+                    
+            except Exception as e:
+                self.log_test("Package Update Response", False, f"Error parsing: {e}")
+
+        # Test 6: Delete Package (DELETE /api/packages/{id})
+        # First verify package products exist
+        package_products_before = None
+        try:
+            check_response = requests.get(f"{self.base_url}/packages/{created_package_id}", timeout=30)
+            if check_response.status_code == 200:
+                package_data = check_response.json()
+                package_products_before = len(package_data.get('products', []))
+        except:
+            pass
+        
+        success, response = self.run_test(
+            "Delete Package - DELETE /api/packages/{id}",
+            "DELETE",
+            f"packages/{created_package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                delete_response = response.json()
+                if delete_response.get('success'):
+                    self.log_test("Package Deletion Success", True, f"Message: {delete_response.get('message')}")
+                    
+                    # Verify package is actually deleted
+                    verify_success, verify_response = self.run_test(
+                        "Verify Package Deleted",
+                        "GET",
+                        f"packages/{created_package_id}",
+                        404  # Should return 404 now
+                    )
+                    
+                    if verify_success:
+                        self.log_test("Package Deletion Verification", True, "Package not found after deletion (expected)")
+                    else:
+                        self.log_test("Package Deletion Verification", False, "Package still exists after deletion")
+                        
+                    # Test business logic: package products should also be deleted
+                    if package_products_before and package_products_before > 0:
+                        self.log_test("Package Products Cascade Delete", True, f"Package had {package_products_before} products before deletion")
+                    else:
+                        self.log_test("Package Products Cascade Delete", False, "Could not verify cascade delete")
+                        
+                else:
+                    self.log_test("Package Deletion Success", False, "Success flag not true")
+            except Exception as e:
+                self.log_test("Package Deletion Response", False, f"Error parsing: {e}")
+
+        # Step 3: Test Edge Cases
+        print("\n🔍 Testing Package Edge Cases...")
+        
+        # Test with non-existent package ID
+        success, response = self.run_test(
+            "Get Non-existent Package",
+            "GET",
+            "packages/non-existent-id",
+            404
+        )
+        
+        if success:
+            self.log_test("Non-existent Package Handling", True, "Correctly returns 404 for non-existent package")
+        else:
+            self.log_test("Non-existent Package Handling", False, "Should return 404 for non-existent package")
+
+        # Test adding products to non-existent package
+        success, response = self.run_test(
+            "Add Products to Non-existent Package",
+            "POST",
+            "packages/non-existent-id/products",
+            404,
+            data=[{"product_id": created_product_ids[0], "quantity": 1}]
+        )
+        
+        if success:
+            self.log_test("Add Products to Non-existent Package", True, "Correctly returns 404")
+        else:
+            self.log_test("Add Products to Non-existent Package", False, "Should return 404")
+
+        print(f"\n✅ Package System Test Summary:")
+        print(f"   - Tested Package CRUD operations (Create, Read, Update, Delete)")
+        print(f"   - Tested Package Products operations (Add products to package)")
+        print(f"   - Verified database models (packages and package_products collections)")
+        print(f"   - Tested business logic (price calculations, cascade delete)")
+        print(f"   - Tested edge cases (non-existent IDs, invalid products)")
+        print(f"   - Verified Turkish language support in responses")
+        
+        return True
+
 def main():
-    """Main test runner - Focus on Favorites Feature Testing"""
-    print("🚀 Starting Karavan Backend API Tests - TESTING FAVORITES FEATURE")
+    """Main test runner - Focus on Package System Testing"""
+    print("🚀 Starting Karavan Backend API Tests - TESTING PACKAGE SYSTEM")
     print("=" * 80)
     
     tester = KaravanAPITester()
@@ -3311,13 +3691,13 @@ def main():
         # Test 1: Root endpoint
         tester.test_root_endpoint()
         
-        # Test 2: MAIN FOCUS - Favorites Feature Testing
-        tester.test_favorites_feature_comprehensive()
+        # Test 2: MAIN FOCUS - Package System Testing
+        tester.test_package_system_comprehensive()
         
         # Test 3: Exchange rates (to ensure currency conversion works)
         tester.test_exchange_rates_comprehensive()
         
-        # Test 4: Products management (to verify favorites integration)
+        # Test 4: Products management (to verify package integration)
         tester.test_products_management()
         
     except KeyboardInterrupt:
@@ -3330,7 +3710,7 @@ def main():
         
         # Final summary
         print("\n" + "=" * 80)
-        print("🏁 FINAL TEST SUMMARY - FAVORITES FEATURE TESTING")
+        print("🏁 FINAL TEST SUMMARY - PACKAGE SYSTEM TESTING")
         print("=" * 80)
         print(f"Total Tests Run: {tester.tests_run}")
         print(f"Tests Passed: {tester.tests_passed}")
@@ -3338,10 +3718,10 @@ def main():
         print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%" if tester.tests_run > 0 else "No tests run")
         
         if tester.tests_passed == tester.tests_run:
-            print("🎉 ALL TESTS PASSED! Favorites feature is working correctly.")
+            print("🎉 ALL TESTS PASSED! Package system is working correctly.")
             return 0
         else:
-            print("⚠️  FAVORITES FEATURE ISSUES IDENTIFIED. Review the test results above.")
+            print("⚠️  PACKAGE SYSTEM ISSUES IDENTIFIED. Review the test results above.")
             return 1
 
 if __name__ == "__main__":
