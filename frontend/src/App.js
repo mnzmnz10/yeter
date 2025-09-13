@@ -2447,13 +2447,22 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle>Excel Dosyası Yükle</CardTitle>
-                <CardDescription>
-                  Ürün fiyat listelerinizi Excel formatında yükleyin
-                  <br />
-                  <span className="text-sm text-amber-600">
-                    Beklenen kolonlar: Ürün Adı, Liste Fiyatı, İndirimli Fiyat, Para Birimi
-                  </span>
-                </CardDescription>
+                <CardDescription>Ürün fiyat listelerinizi Excel formatında yükleyin</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-amber-800 mb-2">Renk Kodlama (Renkli Excel için):</h4>
+                  <p className="text-sm text-amber-700 space-y-1">
+                    <span className="block">🔴 <strong>Kırmızı:</strong> Ürün Adı</span>
+                    <span className="block">🔵 <strong>Mavi:</strong> Ürün Açıklaması</span>
+                    <span className="block">🟡 <strong>Sarı:</strong> Marka (yeni!)</span>
+                    <span className="block">🟢 <strong>Yeşil:</strong> Liste Fiyatı</span>
+                    <span className="block">🟠 <strong>Turuncu:</strong> İndirimli Fiyat</span>
+                  </p>
+                  <p className="text-xs text-amber-600 mt-2">
+                    💼 <strong>Firma:</strong> Aşağıdaki dropdown'dan seçilir/oluşturulur
+                  </p>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
