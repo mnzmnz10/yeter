@@ -263,9 +263,9 @@ class CurrencySelectionTester:
         try:
             # Create test data without currency parameter
             default_currency_data = {
-                'Product Name': ['Default Currency Test Product'],
-                'List Price': [150.00],
-                'Description': ['Test product without currency parameter']
+                'Ürün Adı': ['Default Currency Test Product'],
+                'Liste Fiyatı': [150.00],
+                'Açıklama': ['Test product without currency parameter']
             }
             
             df = pd.DataFrame(default_currency_data)
