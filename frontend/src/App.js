@@ -2313,12 +2313,12 @@ function App() {
                   </Card>
 
                   {/* Package Supplies (Sarf Malzemeleri) */}
-                  <Card>
-                    <CardHeader>
+                  <Card className="bg-orange-50 border-orange-200">
+                    <CardHeader className="bg-orange-100/50">
                       <div className="flex justify-between items-center">
                         <div>
-                          <CardTitle className="text-orange-800">Sarf Malzemeleri</CardTitle>
-                          <CardDescription>
+                          <CardTitle className="text-orange-900">Sarf Malzemeleri</CardTitle>
+                          <CardDescription className="text-orange-700">
                             Maliyet hesaplaması için (müşteriye gösterilmez)
                           </CardDescription>
                         </div>
