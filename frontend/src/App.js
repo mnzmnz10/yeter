@@ -997,6 +997,43 @@ function App() {
     }
   };
 
+  const startCopyPackage = (pkg) => {
+    setPackageToCopy(pkg);
+    setCopyPackageName(`${pkg.name} - Kopya`);
+    setCopyPackageDialog(true);
+  };
+
+  const copyPackage = async () => {
+    if (!copyPackageName.trim()) {
+      toast.error('Yeni paket adı gerekli');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('new_name', copyPackageName);
+
+      const response = await axios.post(`${API}/packages/${packageToCopy.id}/copy`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (response.data.success) {
+        await loadPackages();
+        toast.success(response.data.message);
+        setCopyPackageDialog(false);
+        setCopyPackageName('');
+        setPackageToCopy(null);
+      }
+    } catch (error) {
+      console.error('Error copying package:', error);
+      if (error.response?.data?.detail) {
+        toast.error(error.response.data.detail);
+      } else {
+        toast.error('Paket kopyalanırken hata oluştu');
+      }
+    }
+  };
+
   const loadAllProductsForPackageEditing = async () => {
     try {
       console.log('Loading products for package editing...');
