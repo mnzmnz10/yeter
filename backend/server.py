@@ -1360,7 +1360,7 @@ async def update_product(product_id: str, product_update: Dict[str, Any]):
             update_data["category_id"] = category_id
         
         # Diğer güncellenebilir alanlar
-        allowed_fields = ["name", "description", "list_price", "discounted_price", "currency", "company_id"]
+        allowed_fields = ["name", "brand", "description", "list_price", "discounted_price", "currency", "company_id"]
         for field in allowed_fields:
             if field in product_update:
                 update_data[field] = product_update[field]
