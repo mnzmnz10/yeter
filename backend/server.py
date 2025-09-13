@@ -852,14 +852,10 @@ class ExcelService:
                         if not product_name or len(str_value) > len(product_name):
                             product_name = str_value
                     
-                    # Para birimi kontrol et
-                    if any(curr in str_value.upper() for curr in ['USD', 'EUR', 'TRY', '$', '€', '₺']):
-                        if 'USD' in str_value.upper() or '$' in str_value:
-                            currency = 'USD'
-                        elif 'EUR' in str_value.upper() or '€' in str_value:
-                            currency = 'EUR'
-                        elif 'TRY' in str_value.upper() or '₺' in str_value:
-                            currency = 'TRY'
+                    # Para birimi kontrol et - gelişmiş algılama
+                    detected_currency = ExcelService.detect_currency_from_text(str_value, None)
+                    if detected_currency:
+                        currency = detected_currency
             
             # Geçerli ürün bilgisi var mı kontrol et
             if product_name and list_price > 0:
