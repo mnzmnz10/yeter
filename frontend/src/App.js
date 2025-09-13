@@ -1188,6 +1188,11 @@ function App() {
         await loadPackageWithProducts(selectedPackageForEdit.id);
       }
     } catch (error) {
+      console.error('Error adding supplies to package:', error);
+      toast.error('Sarf malzemeleri pakete eklenemedi');
+    }
+  };
+
   const loadSupplyProducts = async () => {
     try {
       const response = await axios.get(`${API}/products/supplies`);
