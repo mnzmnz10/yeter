@@ -2250,12 +2250,29 @@ function App() {
                                       <div className="flex-1">
                                         <div className="font-medium text-sm">{supply.name}</div>
                                         <div className="text-xs text-orange-600">
-                                          Adet: {supply.quantity} • ₺ {formatPrice(supply.list_price_try || 0)}
+                                          ₺ {formatPrice(supply.list_price_try || 0)} / birim
                                         </div>
                                       </div>
-                                      <Badge variant="outline" className="text-orange-700 border-orange-300">
-                                        {supply.quantity}x
-                                      </Badge>
+                                      <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1">
+                                          <Input
+                                            type="number"
+                                            min="1"
+                                            value={supply.quantity}
+                                            onChange={(e) => updateSupplyQuantity(supply.id, parseInt(e.target.value) || 1)}
+                                            className="w-16 h-8 text-sm"
+                                          />
+                                          <span className="text-xs text-orange-600">adet</span>
+                                        </div>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => removeSupplyFromPackage(supply.id)}
+                                          className="p-1 h-8 w-8 text-red-600 hover:bg-red-50 border-red-200"
+                                        >
+                                          <X className="w-4 h-4" />
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
