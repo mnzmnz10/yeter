@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "1. Remove the 'Üzerine Tamamla' (Complete/Round Up) feature completely from the application. 2. Show decimals in exchange rates but continue to not show decimals in product prices. 3. Optimize application for 2500-3000 products on Raspberry Pi without freezing or performance issues."
+user_problem_statement: "Fix critical backend startup issues related to uvicorn imports and duplicate startup events. Ensure the 'Sarf Malzemeleri' (Consumables/Supplies) category is created properly on startup and the supply filtering functionality works correctly. Verify package editing functionality is working as expected."
 
 backend:
   - task: "Product Favorites Feature Implementation"
