@@ -997,6 +997,11 @@ function App() {
       });
       setPackageSelectedProducts(selectedMap);
       
+      // Initialize expanded categories (expand first category by default)
+      if (categories.length > 0) {
+        setExpandedCategories(new Set([categories[0].id]));
+      }
+      
     } catch (error) {
       console.error('Error loading package with products:', error);
       toast.error('Paket detayları yüklenemedi');
