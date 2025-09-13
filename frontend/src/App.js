@@ -2022,7 +2022,7 @@ function App() {
                     <Button
                       onClick={updatePackage}
                       className="bg-teal-600 hover:bg-teal-700"
-                      disabled={!packageForm.name || !packageForm.sale_price}
+                      disabled={!packageForm.name}
                     >
                       <Save className="w-4 h-4 mr-2" />
                       Değişiklikleri Kaydet
