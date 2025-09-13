@@ -2906,21 +2906,24 @@ async def upload_excel(company_id: str, file: UploadFile = File(...), currency: 
                         target_company_name = new_company_dict['name']
                         logger.info(f"Created new company: {product_data['company_name']}")
                 
+                # Use user-selected currency if provided, otherwise use detected currency
+                final_currency = user_selected_currency if user_selected_currency else product_data.get('currency', 'USD')
+                
                 # Convert prices to TRY
                 list_price_try = await currency_service.convert_to_try(
                     Decimal(str(product_data['list_price'])), 
-                    product_data['currency']
+                    final_currency
                 )
                 
                 discounted_price_try = None
                 if product_data.get('discounted_price'):
                     discounted_price_try = await currency_service.convert_to_try(
                         Decimal(str(product_data['discounted_price'])), 
-                        product_data['currency']
+                        final_currency
                     )
                 
-                # Count currency distribution
-                currency = product_data['currency']
+                # Count currency distribution (use final currency)
+                currency = final_currency
                 currency_distribution[currency] = currency_distribution.get(currency, 0) + 1
                 
                 # Check if product already exists (by name and company)
