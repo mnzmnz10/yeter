@@ -1872,19 +1872,7 @@ function App() {
                         )}
                       </div>
                       <div className="flex gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowPackageDiscountedPrices(!showPackageDiscountedPrices)}
-                          className="p-2"
-                          title={showPackageDiscountedPrices ? "Satış fiyatını göster" : "İndirimli fiyat toplamını göster"}
-                        >
-                          {showPackageDiscountedPrices ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </Button>
+                        {/* Eye icon removed from package cards */}
                         <Button
                           variant="outline"
                           size="sm"
