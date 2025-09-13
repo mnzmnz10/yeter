@@ -193,6 +193,7 @@ class Package(BaseModel):
     description: Optional[str] = None
     sale_price: Decimal
     image_url: Optional[str] = None
+    is_pinned: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class PackageCreate(BaseModel):
