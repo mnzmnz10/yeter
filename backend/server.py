@@ -138,7 +138,7 @@ class Product(BaseModel):
     name: str
     company_id: str
     category_id: Optional[str] = None
-    brand: str = ""  # Yeni marka alanı
+    brand: str = ""  # Marka alanı
     description: Optional[str] = None
     image_url: Optional[str] = None
     list_price: Decimal
@@ -147,6 +147,7 @@ class Product(BaseModel):
     list_price_try: Optional[Decimal] = None
     discounted_price_try: Optional[Decimal] = None
     is_favorite: bool = False
+    stock_quantity: Optional[int] = None  # Sadece favori ürünler için stok takibi
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProductCreate(BaseModel):
