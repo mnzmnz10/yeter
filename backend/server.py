@@ -2956,6 +2956,7 @@ async def upload_excel(company_id: str, file: UploadFile = File(...), currency: 
                     new_list_price = float(product_data['list_price'])
                     
                     # Calculate price change
+                    new_list_price = float(list_price)
                     if old_list_price != new_list_price:
                         price_change_amount = new_list_price - old_list_price
                         price_change_percent = ((new_list_price - old_list_price) / old_list_price * 100) if old_list_price > 0 else 0
