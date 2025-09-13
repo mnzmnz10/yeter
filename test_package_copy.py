@@ -278,7 +278,7 @@ class PackageCopyTester:
                 "POST",
                 f"packages/{original_package_id}/supplies",
                 200,
-                data={"supplies": package_supplies_data}
+                data=package_supplies_data
             )
             
             if success and response:
