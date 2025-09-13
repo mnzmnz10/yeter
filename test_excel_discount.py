@@ -74,12 +74,20 @@ class ExcelDiscountTester:
                     if response.status_code == 200:
                         self.log_test(f"Discount Validation - {description}", True, f"Accepted discount '{discount_value}'")
                     else:
-                        self.log_test(f"Discount Validation - {description}", False, f"Expected 200, got {response.status_code}")
+                        try:
+                            error_detail = response.json().get('detail', 'Unknown error')
+                            self.log_test(f"Discount Validation - {description}", False, f"Expected 200, got {response.status_code}: {error_detail}")
+                        except:
+                            self.log_test(f"Discount Validation - {description}", False, f"Expected 200, got {response.status_code}: {response.text[:100]}")
                 else:
                     if response.status_code == 400:
                         self.log_test(f"Discount Validation - {description}", True, f"Correctly rejected discount '{discount_value}'")
                     else:
-                        self.log_test(f"Discount Validation - {description}", False, f"Expected 400, got {response.status_code}")
+                        try:
+                            error_detail = response.json().get('detail', 'Unknown error')
+                            self.log_test(f"Discount Validation - {description}", False, f"Expected 400, got {response.status_code}: {error_detail}")
+                        except:
+                            self.log_test(f"Discount Validation - {description}", False, f"Expected 400, got {response.status_code}: {response.text[:100]}")
                         
             except Exception as e:
                 self.log_test(f"Discount Validation - {description}", False, f"Exception: {e}")
