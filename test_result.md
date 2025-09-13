@@ -355,7 +355,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Favorites Feature Implementation"
+    - "Package PDF Generation Features"
   stuck_tasks:
     - "Quote Editing Functionality - Update Instead of Duplicate Creation"
   test_all: false
