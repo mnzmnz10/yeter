@@ -1036,6 +1036,9 @@ function App() {
       image_url: pkg.image_url || ''
     });
     loadPackageWithProducts(pkg.id);
+    
+    // Load all products for package editing (without pagination)
+    loadAllProductsForPackageEditing();
   };
 
   const addProductsToPackage = async () => {
