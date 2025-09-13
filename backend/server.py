@@ -1033,6 +1033,11 @@ class ExcelService:
             'aküler': 'product_name', 'akü': 'product_name', 'batarya': 'product_name',
             'ad': 'product_name', 'name': 'product_name',
             
+            # Marka varyantları (yeni)
+            'marka': 'brand', 'brand': 'brand', 'markalar': 'brand', 'brands': 'brand',
+            'üretici': 'brand', 'uretici': 'brand', 'manufacturer': 'brand',
+            'yapimci': 'brand', 'yapımcı': 'brand', 'maker': 'brand',
+            
             # Liste fiyatı varyantları
             'liste fiyatı': 'list_price', 'liste fiyati': 'list_price', 'list price': 'list_price',
             'fiyat$': 'list_price', 'fiyat $': 'list_price', 'fiyat': 'list_price',
