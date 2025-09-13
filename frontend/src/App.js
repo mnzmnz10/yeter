@@ -406,6 +406,7 @@ function App() {
       // Excel dosyasını yükle
       const formData = new FormData();
       formData.append('file', uploadFile);
+      formData.append('currency', uploadCurrency); // Para birimini de gönder
 
       const response = await axios.post(`${API}/companies/${companyId}/upload-excel`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
