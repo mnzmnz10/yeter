@@ -4743,6 +4743,10 @@ class KaravanAPITester:
             print("\n🎯 PRIORITY 5: Excel Currency Selection System")
             self.test_excel_currency_selection_system()
             
+            # PRIORITY 6: Excel Discount Functionality (NEW)
+            print("\n🎯 PRIORITY 6: Excel Discount Functionality")
+            self.test_excel_discount_functionality()
+            
         finally:
             # Always cleanup
             self.cleanup_test_data()
