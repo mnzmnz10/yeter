@@ -221,7 +221,7 @@ class PackageWithProducts(BaseModel):
     id: str
     name: str
     description: Optional[str] = None
-    sale_price: Decimal
+    sale_price: Optional[Decimal] = None
     image_url: Optional[str] = None
     created_at: datetime
     products: List[Dict[str, Any]] = []
