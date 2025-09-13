@@ -2449,6 +2449,11 @@ async def update_supply_quantity(package_id: str, supply_id: str, quantity: int)
         
         return {"success": True, "message": "Kategori silindi"}
     except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting category: {e}")
+        raise HTTPException(status_code=500, detail="Kategori silinemedi")
+
 @api_router.get("/products/supplies")
 async def get_supply_products():
     """Get products from 'Sarf Malzemeleri' category only"""
