@@ -2002,14 +2002,14 @@ function App() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Package Information */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Paket Bilgileri</CardTitle>
-                      <CardDescription>Paket temel bilgilerini düzenleyin</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                {/* Package Information - Horizontal Layout */}
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle>Paket Bilgileri</CardTitle>
+                    <CardDescription>Paket temel bilgilerini düzenleyin</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <Label htmlFor="edit-package-name">Paket Adı</Label>
                         <Input
@@ -2017,15 +2017,6 @@ function App() {
                           value={packageForm.name}
                           onChange={(e) => setPackageForm({...packageForm, name: e.target.value})}
                           placeholder="Paket adı"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="edit-package-description">Açıklama</Label>
-                        <Input
-                          id="edit-package-description"
-                          value={packageForm.description}
-                          onChange={(e) => setPackageForm({...packageForm, description: e.target.value})}
-                          placeholder="Paket açıklaması"
                         />
                       </div>
                       <div className="flex gap-2 items-end">
@@ -2054,18 +2045,6 @@ function App() {
                           )}
                         </Button>
                       </div>
-                      {packageWithProducts && showPackageDiscountedPrices && (
-                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg space-y-2">
-                          <div className="text-sm text-amber-800">
-                            <strong>Ürünler Toplamı:</strong> ₺ {formatPrice(packageWithProducts.total_discounted_price || 0)}
-                          </div>
-                          {packageWithProducts.supplies && packageWithProducts.supplies.length > 0 && (
-                            <div className="text-sm text-amber-800">
-                              <strong>Sarf Malzemeleri dahil:</strong> ₺ {formatPrice(packageWithProducts.total_discounted_price_with_supplies || 0)}
-                            </div>
-                          )}
-                        </div>
-                      )}
                       <div>
                         <Label htmlFor="edit-package-image">Görsel URL</Label>
                         <Input
@@ -2075,18 +2054,44 @@ function App() {
                           placeholder="https://example.com/image.jpg"
                         />
                       </div>
-                      {packageForm.image_url && (
-                        <div>
-                          <img 
-                            src={packageForm.image_url} 
-                            alt="Paket görseli"
-                            className="w-full h-32 object-cover rounded-lg border"
-                            onError={(e) => {e.target.style.display = 'none'}}
-                          />
+                    </div>
+                    {packageWithProducts && showPackageDiscountedPrices && (
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg space-y-2 mt-4">
+                        <div className="text-sm text-amber-800">
+                          <strong>Ürünler Toplamı:</strong> ₺ {formatPrice(packageWithProducts.total_discounted_price || 0)}
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                        {packageWithProducts.supplies && packageWithProducts.supplies.length > 0 && (
+                          <div className="text-sm text-amber-800">
+                            <strong>Sarf Malzemeleri dahil:</strong> ₺ {formatPrice(packageWithProducts.total_discounted_price_with_supplies || 0)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="mt-4">
+                      <Label htmlFor="edit-package-description">Açıklama</Label>
+                      <textarea
+                        id="edit-package-description"
+                        value={packageForm.description}
+                        onChange={(e) => setPackageForm({...packageForm, description: e.target.value})}
+                        placeholder="Paket açıklaması"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        rows="2"
+                      />
+                    </div>
+                    {packageForm.image_url && (
+                      <div className="mt-4">
+                        <img 
+                          src={packageForm.image_url} 
+                          alt="Paket görseli"
+                          className="w-full h-32 object-cover rounded-lg border"
+                          onError={(e) => {e.target.style.display = 'none'}}
+                        />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <div className="grid grid-cols-1 gap-6">
 
                   {/* Package Products */}
                   <Card>
