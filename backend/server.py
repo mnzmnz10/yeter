@@ -1970,13 +1970,13 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         story.append(self._create_modern_header())
         story.append(Spacer(1, 30))
         
+        # Tarih - sağ üst köşe
+        story.append(self._create_date_header())
+        story.append(Spacer(1, 10))
+        
         # Paket başlığı
         package_name = package_data.get('name', 'Paket Bilgisi')
         story.append(Paragraph(f"<b>{package_name}</b>", self.title_style))
-        story.append(Spacer(1, 15))
-        
-        # Paket bilgileri satırı
-        story.append(self._create_package_info_section(package_data))
         story.append(Spacer(1, 25))
         
         # Ürün tablosu başlığı
