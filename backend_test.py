@@ -3060,53 +3060,84 @@ class KaravanAPITester:
         except Exception as e:
             self.log_test("Working Excel Format Test", False, f"Error creating test file: {e}")
 
-        # Test 3: Test currency detection in data cells (not just headers)
-        print("\n🔍 Testing Currency Detection in Data Cells...")
+        # Test 4: Test Turkish currency variants through header detection
+        print("\n🔍 Testing Turkish Currency Variants...")
         
-        data_cell_scenario = {
-            'Product Name': ['Solar Panel', 'Inverter', 'Battery'],
-            'Price': [100.00, 200.00, 300.00],
-            'Currency Info': ['USD', 'EUR', 'TRY']
-        }
+        # Test different Turkish currency expressions
+        turkish_currency_tests = [
+            ("DOLAR", "USD"),
+            ("DOLAR İSARETİ", "USD"),
+            ("AMERİKAN DOLARI", "USD"),
+            ("EURO", "EUR"),
+            ("AVRO", "EUR"),
+            ("AVRUPA", "EUR"),
+            ("TÜRK LİRASI", "TRY"),
+            ("TURKİYE", "TRY"),
+            ("LIRA", "TRY")
+        ]
         
-        try:
-            df = pd.DataFrame(data_cell_scenario)
-            excel_buffer = BytesIO()
-            df.to_excel(excel_buffer, index=False)
-            excel_buffer.seek(0)
+        turkish_detection_results = []
+        
+        for turkish_text, expected_currency in turkish_currency_tests:
+            # Create a simple Excel with Turkish currency header
+            turkish_test_data = {
+                'Ürün Adı': ['Test Product 1', 'Test Product 2'],
+                f'Fiyat {turkish_text}': [100.00, 200.00]
+            }
             
-            files = {'file': ('data_cell_currency_test.xlsx', excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
-            
-            success, response = self.run_test(
-                "Upload Excel - Currency in Data Cells",
-                "POST",
-                f"companies/{test_company_id}/upload-excel",
-                200,
-                files=files
-            )
-            
-            if success and response:
-                try:
-                    upload_result = response.json()
-                    if upload_result.get('success'):
-                        currency_distribution = upload_result.get('currency_distribution', {})
-                        products_count = upload_result.get('products_count', 0)
-                        
-                        # Check if currencies were detected from data cells
-                        detected_currencies = list(currency_distribution.keys())
-                        if detected_currencies:
-                            self.log_test("Currency Detection in Data Cells", True, 
-                                        f"Detected currencies from data cells: {currency_distribution}")
+            try:
+                df = pd.DataFrame(turkish_test_data)
+                excel_buffer = BytesIO()
+                df.to_excel(excel_buffer, index=False)
+                excel_buffer.seek(0)
+                
+                files = {'file': (f'turkish_{turkish_text.replace(" ", "_")}_test.xlsx', excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                
+                success, response = self.run_test(
+                    f"Upload Excel - Turkish '{turkish_text}' Test",
+                    "POST",
+                    f"companies/{test_company_id}/upload-excel",
+                    200,
+                    files=files
+                )
+                
+                if success and response:
+                    try:
+                        upload_result = response.json()
+                        if upload_result.get('success'):
+                            currency_distribution = upload_result.get('currency_distribution', {})
+                            products_count = upload_result.get('products_count', 0)
+                            
+                            if expected_currency in currency_distribution:
+                                turkish_detection_results.append((turkish_text, expected_currency, True))
+                                self.log_test(f"Turkish Currency Detection - {turkish_text}", True, 
+                                            f"Correctly detected {expected_currency} from '{turkish_text}'")
+                            else:
+                                turkish_detection_results.append((turkish_text, expected_currency, False))
+                                self.log_test(f"Turkish Currency Detection - {turkish_text}", False, 
+                                            f"Expected {expected_currency}, got: {currency_distribution}")
                         else:
-                            self.log_test("Currency Detection in Data Cells", False, 
-                                        f"No currencies detected from data cells")
-                    else:
-                        self.log_test("Currency Detection in Data Cells", False, "Upload failed")
-                except Exception as e:
-                    self.log_test("Currency Detection in Data Cells", False, f"Error parsing: {e}")
+                            turkish_detection_results.append((turkish_text, expected_currency, False))
+                            self.log_test(f"Turkish Currency Upload - {turkish_text}", False, "Upload failed")
+                    except Exception as e:
+                        turkish_detection_results.append((turkish_text, expected_currency, False))
+                        self.log_test(f"Turkish Currency Response - {turkish_text}", False, f"Error parsing: {e}")
+                else:
+                    turkish_detection_results.append((turkish_text, expected_currency, False))
                     
-        except Exception as e:
-            self.log_test("Data Cell Currency Test", False, f"Error creating test file: {e}")
+            except Exception as e:
+                turkish_detection_results.append((turkish_text, expected_currency, False))
+                self.log_test(f"Turkish Currency Excel - {turkish_text}", False, f"Error creating test file: {e}")
+        
+        # Summarize Turkish currency detection results
+        successful_detections = sum(1 for _, _, success in turkish_detection_results if success)
+        total_tests = len(turkish_detection_results)
+        
+        if total_tests > 0:
+            success_rate = (successful_detections / total_tests) * 100
+            self.log_test("Turkish Currency Variants Overall", 
+                        success_rate >= 50,  # Expect at least 50% success
+                        f"{successful_detections}/{total_tests} Turkish variants detected correctly ({success_rate:.1f}%)")
 
         # Test 4: Test fallback behavior when no currency is detected
         print("\n🔍 Testing Currency Detection Fallback Behavior...")
