@@ -1939,139 +1939,192 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         formatted = f"{float(price):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
         return formatted
 
-    def generate_package_pdf_with_prices(self, package_data, products, include_prices=True):
-        """Paket PDF'i oluştur - fiyatlı veya fiyatsız"""
-        buffer = io.BytesIO()
+    def generate_package_pdf(self, package_data, products, include_prices=True):
+        """Teklif taslağını kullanarak paket PDF'i oluştur"""
+        buffer = BytesIO()
         
-        # PDF document oluştur
+        # Yüksek kaliteli PDF ayarları (teklif ile aynı)
         doc = SimpleDocTemplate(
             buffer,
             pagesize=A4,
-            rightMargin=2*cm,
-            leftMargin=2*cm,
+            rightMargin=2.5*cm,
+            leftMargin=2.5*cm,
             topMargin=2*cm,
-            bottomMargin=2*cm
+            bottomMargin=2*cm,
+            title=f"Paket - {package_data.get('name', 'Adsız')}"
         )
         
         # PDF içeriği
         story = []
         
-        # Başlık
-        story.append(Paragraph("PAKET BİLGİSİ", self.title_style))
-        story.append(Spacer(1, 20))
-        
-        # Paket bilgileri
-        story.append(Paragraph(f"<b>Paket Adı:</b> {package_data.get('name', '')}", self.normal_style))
-        if package_data.get('description'):
-            story.append(Paragraph(f"<b>Açıklama:</b> {package_data.get('description', '')}", self.normal_style))
-        
-        story.append(Spacer(1, 20))
-        
-        # Ürün listesi tablosu
-        if include_prices:
-            # Fiyatlı liste
-            table_data = [
-                [
-                    Paragraph("<b>Ürün Adı</b>", self.table_header_style),
-                    Paragraph("<b>Adet</b>", self.table_header_style),
-                    Paragraph("<b>Birim Fiyat</b>", self.table_header_style),
-                    Paragraph("<b>Toplam</b>", self.table_header_style)
-                ]
-            ]
-            
-            total_amount = 0
-            for product in products:
-                quantity = product.get('quantity', 1)
-                unit_price = float(product.get('list_price_try', 0))
-                line_total = unit_price * quantity
-                total_amount += line_total
-                
-                table_data.append([
-                    Paragraph(product.get('name', ''), self.table_content_style),
-                    Paragraph(str(quantity), self.table_content_style),
-                    Paragraph(f"₺ {self._format_price_modern(unit_price)}", self.table_content_style),
-                    Paragraph(f"₺ {self._format_price_modern(line_total)}", self.table_content_style)
-                ])
-            
-            # Toplam satırı
-            table_data.append([
-                Paragraph("<b>TOPLAM</b>", self.table_header_style),
-                Paragraph("", self.table_header_style),
-                Paragraph("", self.table_header_style),
-                Paragraph(f"<b>₺ {self._format_price_modern(total_amount)}</b>", self.table_header_style)
-            ])
-            
-            col_widths = [8*cm, 2*cm, 3*cm, 3*cm]
-        else:
-            # Fiyatsız liste
-            table_data = [
-                [
-                    Paragraph("<b>Ürün Adı</b>", self.table_header_style),
-                    Paragraph("<b>Adet</b>", self.table_header_style)
-                ]
-            ]
-            
-            for product in products:
-                quantity = product.get('quantity', 1)
-                table_data.append([
-                    Paragraph(product.get('name', ''), self.table_content_style),
-                    Paragraph(str(quantity), self.table_content_style)
-                ])
-            
-            col_widths = [12*cm, 3*cm]
-        
-        # Tablo oluştur
-        table = Table(table_data, colWidths=col_widths, repeatRows=1)
-        table.setStyle(TableStyle([
-            # Başlık stili
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563eb')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Montserrat-Bold' if self.montserrat_bold_available else 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            
-            # İçerik stili
-            ('FONTNAME', (0, 1), (-1, -1), 'Montserrat' if self.montserrat_available else 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 9),
-            ('ALIGN', (0, 1), (0, -1), 'LEFT'),  # Ürün adları sola hizalı
-            ('ALIGN', (1, 1), (-1, -1), 'CENTER'),  # Diğer kolonlar orta hizalı
-            
-            # Kenarlık
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            
-            # Satır renkleri (zebra pattern)
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')])
-        ]))
-        
-        # Toplam satırı özel stil (fiyatlı listede)
-        if include_prices:
-            table.setStyle(TableStyle([
-                ('BACKGROUND', (-4, -1), (-1, -1), colors.HexColor('#e2e8f0')),
-                ('FONTNAME', (-4, -1), (-1, -1), 'Montserrat-Bold' if self.montserrat_bold_available else 'Helvetica-Bold'),
-                ('FONTSIZE', (-4, -1), (-1, -1), 10)
-            ]))
-        
-        story.append(table)
+        # Header (Logo + Firma bilgileri)
+        story.append(self._create_modern_header())
         story.append(Spacer(1, 30))
         
-        # Satış fiyatı
-        if not include_prices:
-            # Elle girilen satış fiyatı
-            sale_price = package_data.get('sale_price', 0)
-            story.append(Paragraph(f"<b>Satış Fiyatı: ₺ {self._format_price_modern(sale_price)}</b>", self.subtitle_style))
+        # Paket başlığı
+        package_name = package_data.get('name', 'Paket Bilgisi')
+        story.append(Paragraph(f"<b>{package_name}</b>", self.title_style))
+        story.append(Spacer(1, 15))
         
-        story.append(Spacer(1, 20))
+        # Paket bilgileri satırı
+        story.append(self._create_package_info_section(package_data))
+        story.append(Spacer(1, 25))
         
-        # Tarih
-        from datetime import datetime
-        now = datetime.now()
-        story.append(Paragraph(f"Tarih: {now.strftime('%d.%m.%Y')}", self.normal_style))
+        # Ürün tablosu başlığı
+        story.append(Paragraph("<b>Paket İçeriği</b>", self.subtitle_style))
+        story.append(Spacer(1, 10))
+        
+        # Ürün tablosu
+        story.append(self._create_package_products_table(products, include_prices))
+        story.append(Spacer(1, 25))
+        
+        # Toplam hesaplama bölümü
+        if include_prices:
+            # Fiyatlı listede otomatik toplam
+            total_amount = sum(float(p.get('list_price_try', 0)) * p.get('quantity', 1) for p in products)
+            story.extend(self._create_package_totals_section(total_amount, "Toplam Ürün Fiyatı"))
+        else:
+            # Fiyatsız listede elle girilen satış fiyatı
+            sale_price = float(package_data.get('sale_price', 0))
+            story.extend(self._create_package_totals_section(sale_price, "Paket Satış Fiyatı"))
+        
+        story.append(Spacer(1, 30))
+        
+        # Footer notları
+        story.extend(self._create_modern_footer())
         
         # PDF oluştur
         doc.build(story)
         buffer.seek(0)
         return buffer
+    
+    def _create_package_info_section(self, package_data):
+        """Paket bilgi satırı"""
+        from datetime import datetime
+        from reportlab.platypus import Table as PDFTable
+        
+        # Tarih
+        now = datetime.now()
+        date_str = now.strftime('%d.%m.%Y')
+        
+        # Paket bilgileri
+        info_data = [
+            ["Tarih:", date_str],
+            ["Açıklama:", package_data.get('description', '-') or '-']
+        ]
+        
+        # Tablo oluştur
+        info_table = PDFTable(info_data, colWidths=[3*cm, 6*cm])
+        info_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), self.get_font_name()),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#4A5568')),
+            ('TEXTCOLOR', (1, 0), (1, -1), colors.HexColor('#2D3748')),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        
+        return info_table
+    
+    def _create_package_products_table(self, products, include_prices=True):
+        """Paket ürünleri tablosu - teklif stilinde"""
+        from reportlab.platypus import Table as PDFTable
+        
+        # Tablo başlıkları
+        if include_prices:
+            headers = ["Ürün Adı", "Adet", "Birim Fiyat", "Toplam"]
+            col_widths = [8*cm, 2*cm, 3*cm, 3*cm]
+        else:
+            headers = ["Ürün Adı", "Adet"]
+            col_widths = [12*cm, 3*cm]
+        
+        # Header row
+        header_row = []
+        for header in headers:
+            header_row.append(Paragraph(f"<b>{header}</b>", self.header_style))
+        
+        table_data = [header_row]
+        
+        # Ürün satırları
+        for product in products:
+            quantity = product.get('quantity', 1)
+            product_name = product.get('name', '')
+            
+            if include_prices:
+                unit_price = float(product.get('list_price_try', 0))
+                line_total = unit_price * quantity
+                
+                row = [
+                    Paragraph(product_name, self.data_style),
+                    Paragraph(str(quantity), self.data_style),
+                    Paragraph(f"₺ {self._format_price_modern(unit_price)}", self.data_style),
+                    Paragraph(f"₺ {self._format_price_modern(line_total)}", self.data_style)
+                ]
+            else:
+                row = [
+                    Paragraph(product_name, self.data_style),
+                    Paragraph(str(quantity), self.data_style)
+                ]
+            
+            table_data.append(row)
+        
+        # Tablo oluştur
+        table = PDFTable(table_data, colWidths=col_widths, repeatRows=1)
+        
+        # Tablo stili (teklif ile aynı)
+        table.setStyle(TableStyle([
+            # Header stili
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2F4B68')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), self.get_font_name(is_bold=True)),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('TOPPADDING', (0, 0), (-1, 0), 12),
+            
+            # Veri stili
+            ('FONTNAME', (0, 1), (-1, -1), self.get_font_name()),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('ALIGN', (0, 1), (0, -1), 'LEFT'),  # Ürün adları sola hizalı
+            ('ALIGN', (1, 1), (-1, -1), 'CENTER'),  # Diğer kolonlar orta hizalı
+            ('LEFTPADDING', (0, 1), (0, -1), 8),
+            ('RIGHTPADDING', (-1, 1), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+            ('TOPPADDING', (0, 1), (-1, -1), 8),
+            
+            # Kenarlık ve zemin
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F7FAFC')])
+        ]))
+        
+        return table
+    
+    def _create_package_totals_section(self, amount, label):
+        """Paket toplam bölümü"""
+        from reportlab.platypus import Table as PDFTable
+        
+        # Toplam tablosu
+        totals_data = [
+            [label, f"₺ {self._format_price_modern(amount)}"]
+        ]
+        
+        totals_table = PDFTable(totals_data, colWidths=[10*cm, 6*cm])
+        totals_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (0, 0), 'RIGHT'),
+            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+            ('FONTNAME', (0, 0), (-1, -1), self.get_font_name(is_bold=True)),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#2F4B68')),
+            ('LINEABOVE', (0, 0), (-1, 0), 1, colors.HexColor('#2F4B68')),
+            ('TOPPADDING', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        
+        return [totals_table]
 
 # ===== PACKAGE PDF ENDPOINTS =====
 
