@@ -201,6 +201,7 @@ class PackageCreate(BaseModel):
     description: Optional[str] = None
     sale_price: Decimal
     image_url: Optional[str] = None
+    is_pinned: bool = False
 
 class PackageProduct(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
