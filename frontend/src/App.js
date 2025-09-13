@@ -3136,6 +3136,9 @@ function App() {
                                         </TableCell>
                                       )}
                                       <TableCell className="w-24">
+                                        {product.stock_quantity || 0}
+                                      </TableCell>
+                                      <TableCell className="w-24">
                                         <div className="flex gap-2">
                                           {isEditing ? (
                                             <>
