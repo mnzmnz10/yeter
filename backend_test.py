@@ -4984,39 +4984,23 @@ class KaravanAPITester:
         return True
 
 def main():
-    """Main test runner - Focus on Package Supplies Testing"""
-    print("🚀 Starting Package Supplies (Sarf Malzemesi) Test")
+    """Main test runner - Focus on Excel Currency Detection Testing"""
+    print("🚀 Starting Excel Currency Detection Testing")
     print("=" * 80)
     
     tester = KaravanAPITester()
     
     try:
-        # Test Package Supplies functionality (as requested)
-        tester.test_package_supplies_comprehensive()
+        # Test Excel Currency Detection functionality (as requested)
+        success = tester.run_currency_detection_tests()
+        return 0 if success else 1
         
     except KeyboardInterrupt:
         print("\n⚠️  Tests interrupted by user")
+        return 1
     except Exception as e:
         print(f"\n❌ Unexpected error during testing: {e}")
-    finally:
-        # Cleanup
-        tester.cleanup()
-        
-        # Final summary
-        print("\n" + "=" * 80)
-        print("🏁 FINAL TEST SUMMARY - PACKAGE SUPPLIES SYSTEM")
-        print("=" * 80)
-        print(f"Total Tests Run: {tester.tests_run}")
-        print(f"Tests Passed: {tester.tests_passed}")
-        print(f"Tests Failed: {tester.tests_run - tester.tests_passed}")
-        print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%" if tester.tests_run > 0 else "No tests run")
-        
-        if tester.tests_passed == tester.tests_run:
-            print("🎉 ALL TESTS PASSED! Package Supplies system is working correctly.")
-            return 0
-        else:
-            print("⚠️  PACKAGE SUPPLIES ISSUES IDENTIFIED. Review the test results above.")
-            return 1
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main())
