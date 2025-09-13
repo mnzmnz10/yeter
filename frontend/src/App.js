@@ -30,6 +30,9 @@ function App() {
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadCurrency, setUploadCurrency] = useState('USD'); // Excel yükleme için para birimi
   const [uploadDiscount, setUploadDiscount] = useState(''); // Excel yükleme için iskonto yüzdesi
+  const [copyPackageDialog, setCopyPackageDialog] = useState(false); // Paket kopyalama dialog'u
+  const [packageToCopy, setPackageToCopy] = useState(null); // Kopyalanacak paket
+  const [copyPackageName, setCopyPackageName] = useState(''); // Yeni paket adı
   const [stats, setStats] = useState({
     totalCompanies: 0,
     totalProducts: 0
