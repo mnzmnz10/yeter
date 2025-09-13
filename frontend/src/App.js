@@ -1614,16 +1614,18 @@ function App() {
           {/* Upload Tab */}
           {/* Packages Tab */}
           <TabsContent value="packages" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800">Paket Yönetimi</h2>
-                <p className="text-slate-600 mt-1">Hazır paketler oluşturun ve yönetin</p>
-              </div>
-              <Button onClick={() => setShowPackageDialog(true)} className="bg-teal-600 hover:bg-teal-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Yeni Paket
-              </Button>
-            </div>
+            {!selectedPackageForEdit ? (
+              <>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">Paket Yönetimi</h2>
+                    <p className="text-slate-600 mt-1">Hazır paketler oluşturun ve yönetin</p>
+                  </div>
+                  <Button onClick={() => setShowPackageDialog(true)} className="bg-teal-600 hover:bg-teal-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Yeni Paket
+                  </Button>
+                </div>
 
             {/* Package Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
