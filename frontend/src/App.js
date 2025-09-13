@@ -1034,6 +1034,24 @@ function App() {
     }
   };
 
+  const togglePackagePin = async (packageId) => {
+    try {
+      const response = await axios.post(`${API}/packages/${packageId}/pin`);
+      
+      if (response.data.success) {
+        await loadPackages();
+        toast.success(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error toggling package pin:', error);
+      if (error.response?.data?.detail) {
+        toast.error(error.response.data.detail);
+      } else {
+        toast.error('Paket sabitleme durumu değiştirilemedi');
+      }
+    }
+  };
+
   const loadAllProductsForPackageEditing = async () => {
     try {
       console.log('Loading products for package editing...');
