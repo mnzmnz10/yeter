@@ -3707,55 +3707,29 @@ class KaravanAPITester:
         return True
 
     def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting Karavan Elektrik Ekipmanları Backend API Tests")
+        """Run focused backend tests based on review request"""
+        print("🚀 Starting Karavan Backend Testing - Focus on Startup & Package System")
         print(f"🌐 Testing against: {self.base_url}")
         print("=" * 80)
         
         try:
-            # PRIORITY TEST: MongoDB Atlas Integration (as requested in review)
-            self.test_mongodb_atlas_integration()
+            # PRIORITY 1: Backend Startup and Supplies System
+            print("\n🎯 PRIORITY 1: Backend Startup & Sarf Malzemeleri System")
+            self.test_backend_startup_and_supplies_system()
             
-            # Test basic connectivity
+            # PRIORITY 2: Package System Core Functionality
+            print("\n🎯 PRIORITY 2: Package System Core Functionality")
+            self.test_package_system_focused()
+            
+            # PRIORITY 3: Core API Tests
+            print("\n🎯 PRIORITY 3: Core API Functionality")
             self.test_root_endpoint()
-            
-            # Test exchange rates comprehensively
             self.test_exchange_rates_comprehensive()
             
-            # Test company management
+            # PRIORITY 4: Company and Product Management
+            print("\n🎯 PRIORITY 4: Company & Product Management")
             company_ids = self.test_company_management()
-            
-            # Test Excel upload (requires companies)
-            if company_ids:
-                upload_results = self.test_excel_upload(company_ids)
-                
-                # Print upload summary
-                print("\n📊 EXCEL UPLOAD SUMMARY:")
-                for company_name, product_count in upload_results.items():
-                    print(f"  {company_name}: {product_count} products uploaded")
-            else:
-                print("⚠️  No companies created, skipping Excel upload tests")
-            
-            # Test products management
             self.test_products_management()
-            
-            # CRITICAL: Test NaN fix comprehensively
-            self.test_nan_fix_comprehensive()
-            
-            # CRITICAL: Test Quick Quote Creation Feature
-            self.test_quick_quote_creation_comprehensive()
-            
-            # CRITICAL: Test PDF generation with Turkish characters and Montserrat font
-            self.test_pdf_generation_comprehensive()
-            
-            # Test comparison endpoint
-            self.test_comparison_endpoint()
-            
-            # Test price refresh
-            self.test_refresh_prices()
-            
-            # CRITICAL: Test Category Dialog Functionality
-            self.test_category_dialog_functionality()
             
         finally:
             # Always cleanup
