@@ -223,9 +223,9 @@ class CurrencySelectionTester:
         try:
             # Create simple test data
             invalid_currency_data = {
-                'Product Name': ['Invalid Currency Test Product'],
-                'List Price': [100.00],
-                'Description': ['Test product with invalid currency']
+                'Ürün Adı': ['Invalid Currency Test Product'],
+                'Liste Fiyatı': [100.00],
+                'Açıklama': ['Test product with invalid currency']
             }
             
             df = pd.DataFrame(invalid_currency_data)
