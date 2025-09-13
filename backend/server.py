@@ -2195,6 +2195,11 @@ async def update_package(package_id: str, package: PackageCreate):
     """Update a package"""
     try:
         update_data = package.dict(exclude_unset=True)
+        
+        # Convert Decimal to float for MongoDB compatibility
+        if "sale_price" in update_data and update_data["sale_price"] is not None:
+            update_data["sale_price"] = float(update_data["sale_price"])
+        
         result = await db.packages.update_one(
             {"id": package_id},
             {"$set": update_data}
