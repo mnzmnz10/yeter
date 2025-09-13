@@ -1896,6 +1896,15 @@ function App() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => startCopyPackage(pkg)}
+                          className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          title="Paketi Kopyala"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => deletePackage(pkg.id)}
                           className="p-2 text-red-600 hover:bg-red-50"
                         >
