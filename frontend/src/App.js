@@ -3136,7 +3136,18 @@ function App() {
                                         </TableCell>
                                       )}
                                       <TableCell className="w-24">
-                                        {product.stock_quantity || 0}
+                                        {product.is_favorite ? (
+                                          <Input
+                                            type="number"
+                                            min="0"
+                                            value={product.stock_quantity || 0}
+                                            onChange={(e) => updateProductStock(product.id, parseInt(e.target.value) || 0)}
+                                            className="w-16 text-center text-sm"
+                                            placeholder="0"
+                                          />
+                                        ) : (
+                                          <span className="text-gray-400 text-sm">-</span>
+                                        )}
                                       </TableCell>
                                       <TableCell className="w-24">
                                         <div className="flex gap-2">
