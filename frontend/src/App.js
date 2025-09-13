@@ -2282,9 +2282,35 @@ function App() {
                           
                           {/* Sarf Malzemesi Ekleme */}
                           <div className="border-t pt-4">
-                            <h4 className="font-medium text-orange-800 mb-3">Sarf Malzemesi Ekle:</h4>
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="font-medium text-orange-800">Sarf Malzemesi Ekle:</h4>
+                              <div className="text-xs text-orange-600">
+                                {packageSelectedSupplies.size} seçildi
+                              </div>
+                            </div>
+                            
+                            {/* Sarf Malzemesi Arama */}
+                            <div className="mb-3">
+                              <div className="relative">
+                                <Input
+                                  type="text"
+                                  placeholder="Sarf malzemesi ara..."
+                                  value={supplySearch}
+                                  onChange={(e) => setSupplySearch(e.target.value)}
+                                  className="pr-8"
+                                />
+                                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                            
                             <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                              {products.map((product) => {
+                              {supplyProducts.filter(product => 
+                                !supplySearch || product.name.toLowerCase().includes(supplySearch.toLowerCase())
+                              ).map((product) => {
                                 const company = companies.find(c => c.id === product.company_id);
                                 const isSelected = packageSelectedSupplies.has(product.id);
                                 const quantity = packageSelectedSupplies.get(product.id) || 1;
