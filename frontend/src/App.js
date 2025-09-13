@@ -1586,6 +1586,110 @@ function App() {
           </TabsContent>
 
           {/* Upload Tab */}
+          {/* Packages Tab */}
+          <TabsContent value="packages" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">Paket Yönetimi</h2>
+                <p className="text-slate-600 mt-1">Hazır paketler oluşturun ve yönetin</p>
+              </div>
+              <Button onClick={() => setShowPackageDialog(true)} className="bg-teal-600 hover:bg-teal-700">
+                <Plus className="w-4 h-4 mr-2" />
+                Yeni Paket
+              </Button>
+            </div>
+
+            {/* Package Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {packages.map((pkg) => (
+                <Card key={pkg.id} className="border-teal-200 hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg text-teal-800">{pkg.name}</CardTitle>
+                        {pkg.description && (
+                          <CardDescription className="mt-1">{pkg.description}</CardDescription>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowPackageDiscountedPrices(!showPackageDiscountedPrices)}
+                          className="p-2"
+                          title={showPackageDiscountedPrices ? "Satış fiyatını göster" : "İndirimli fiyat toplamını göster"}
+                        >
+                          {showPackageDiscountedPrices ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => startEditPackage(pkg)}
+                          className="p-2"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => deletePackage(pkg.id)}
+                          className="p-2 text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {pkg.image_url && (
+                      <img 
+                        src={pkg.image_url} 
+                        alt={pkg.name}
+                        className="w-full h-32 object-cover rounded-lg mb-3"
+                        onError={(e) => {e.target.style.display = 'none'}}
+                      />
+                    )}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-slate-600">Satış Fiyatı:</span>
+                        <span className="font-bold text-teal-600">₺ {formatPrice(pkg.sale_price)}</span>
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPackageForProducts(pkg);
+                            setShowPackageProductsDialog(true);
+                          }}
+                          className="flex-1"
+                        >
+                          <Package className="w-4 h-4 mr-1" />
+                          Ürün Ekle
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {packages.length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-slate-800 mb-2">Henüz paket yok</h3>
+                  <p className="text-slate-600 mb-4">İlk paketinizi oluşturmak için "Yeni Paket" butonuna tıklayın</p>
+                  <Button onClick={() => setShowPackageDialog(true)} className="bg-teal-600 hover:bg-teal-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Yeni Paket Oluştur
+                  </Button>
+                </div>
+              )}
+            </div>
+          </TabsContent>
           <TabsContent value="upload" className="space-y-6">
             <Card>
               <CardHeader>
