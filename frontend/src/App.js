@@ -1880,11 +1880,19 @@ function App() {
             {/* Package Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {packages.map((pkg) => (
-                <Card key={pkg.id} className="border-teal-200 hover:shadow-lg transition-shadow">
+                <Card key={pkg.id} className={`${pkg.is_pinned ? 'border-yellow-300 bg-yellow-50/30' : 'border-teal-200'} hover:shadow-lg transition-shadow relative`}>
+                  {pkg.is_pinned && (
+                    <div className="absolute top-2 left-2">
+                      <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                        <Pin className="w-3 h-3" />
+                        <span>Sabitli</span>
+                      </div>
+                    </div>
+                  )}
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <CardTitle className="text-lg text-teal-800">{pkg.name}</CardTitle>
+                        <CardTitle className={`text-lg ${pkg.is_pinned ? 'text-teal-900 mt-6' : 'text-teal-800'}`}>{pkg.name}</CardTitle>
                         {pkg.description && (
                           <CardDescription className="mt-1">{pkg.description}</CardDescription>
                         )}
