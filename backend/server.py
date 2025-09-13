@@ -138,6 +138,7 @@ class Product(BaseModel):
     name: str
     company_id: str
     category_id: Optional[str] = None
+    brand: str = ""  # Yeni marka alanı
     description: Optional[str] = None
     image_url: Optional[str] = None
     list_price: Decimal
