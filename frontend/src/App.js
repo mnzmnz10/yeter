@@ -2019,7 +2019,19 @@ function App() {
                             placeholder="0.00"
                           />
                         </div>
-                        {/* Eye icon removed from package cards */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowPackageDiscountedPrices(!showPackageDiscountedPrices)}
+                          className="p-2"
+                          title={showPackageDiscountedPrices ? "Satış fiyatını göster" : "İndirimli fiyat toplamını göster"}
+                        >
+                          {showPackageDiscountedPrices ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
                       </div>
                       <div>
                         <Label htmlFor="edit-package-image">Görsel URL</Label>
