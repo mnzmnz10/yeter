@@ -1116,29 +1116,6 @@ function App() {
       toast.error('PDF indirilemedi');
     }
   };
-        (product.description && product.description.toLowerCase().includes(searchTerm))
-      );
-    }
-
-    // Group by categories
-    const grouped = {};
-    filteredProducts.forEach(product => {
-      const category = categories.find(c => c.id === product.category_id);
-      const categoryName = category ? category.name : 'Kategorisiz';
-      const categoryId = category ? category.id : 'uncategorized';
-      
-      if (!grouped[categoryId]) {
-        grouped[categoryId] = {
-          name: categoryName,
-          products: [],
-          color: category?.color || '#64748b'
-        };
-      }
-      grouped[categoryId].products.push(product);
-    });
-
-    return grouped;
-  };
 
   const toggleCategoryExpansion = (categoryId) => {
     const newExpanded = new Set(expandedCategories);
