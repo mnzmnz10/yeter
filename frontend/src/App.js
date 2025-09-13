@@ -2161,6 +2161,114 @@ function App() {
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* Package Supplies (Sarf Malzemeleri) */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <CardTitle className="text-orange-800">Sarf Malzemeleri</CardTitle>
+                          <CardDescription>
+                            Maliyet hesaplaması için (müşteriye gösterilmez)
+                          </CardDescription>
+                        </div>
+                        <Button
+                          onClick={addSuppliesToPackage}
+                          className="bg-orange-600 hover:bg-orange-700"
+                          disabled={packageSelectedSupplies.size === 0}
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          Sarf Malz. Kaydet
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {loadingPackageProducts ? (
+                        <div className="text-center py-4">
+                          <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-orange-600" />
+                          <p className="text-slate-600 text-sm">Yükleniyor...</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {/* Mevcut Sarf Malzemeleri */}
+                          {packageWithProducts && packageWithProducts.supplies.length > 0 && (
+                            <div className="mb-4">
+                              <h4 className="font-medium text-orange-800 mb-2">Mevcut Sarf Malzemeleri:</h4>
+                              <div className="space-y-2">
+                                {packageWithProducts.supplies.map((supply) => (
+                                  <div key={supply.id} className="border rounded-lg p-3 bg-orange-50">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex-1">
+                                        <div className="font-medium text-sm">{supply.name}</div>
+                                        <div className="text-xs text-orange-600">
+                                          Adet: {supply.quantity} • ₺ {formatPrice(supply.list_price_try || 0)}
+                                        </div>
+                                      </div>
+                                      <Badge variant="outline" className="text-orange-700 border-orange-300">
+                                        {supply.quantity}x
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Sarf Malzemesi Ekleme */}
+                          <div className="border-t pt-4">
+                            <h4 className="font-medium text-orange-800 mb-3">Sarf Malzemesi Ekle:</h4>
+                            <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
+                              {products.map((product) => {
+                                const company = companies.find(c => c.id === product.company_id);
+                                const isSelected = packageSelectedSupplies.has(product.id);
+                                const quantity = packageSelectedSupplies.get(product.id) || 1;
+                                
+                                return (
+                                  <div key={`supply-${product.id}`} className={`border rounded-lg p-2 ${isSelected ? 'border-orange-300 bg-orange-50' : 'border-gray-200'}`}>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={(e) => {
+                                          const newSelected = new Map(packageSelectedSupplies);
+                                          if (e.target.checked) {
+                                            newSelected.set(product.id, 1);
+                                          } else {
+                                            newSelected.delete(product.id);
+                                          }
+                                          setPackageSelectedSupplies(newSelected);
+                                        }}
+                                        className="rounded border-gray-300"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="font-medium text-sm truncate">{product.name}</div>
+                                        <div className="text-xs text-slate-500">
+                                          {company?.name || 'Unknown'} • ₺ {formatPrice(product.list_price_try || 0)}
+                                        </div>
+                                      </div>
+                                      {isSelected && (
+                                        <Input
+                                          type="number"
+                                          min="1"
+                                          value={quantity}
+                                          onChange={(e) => {
+                                            const newSelected = new Map(packageSelectedSupplies);
+                                            newSelected.set(product.id, parseInt(e.target.value) || 1);
+                                            setPackageSelectedSupplies(newSelected);
+                                          }}
+                                          className="w-16 h-8 text-sm"
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
               </>
             )}
