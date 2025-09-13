@@ -1097,6 +1097,11 @@ class ExcelService:
                 if 'product_name' in row:
                     product_name = str(row['product_name']).strip() if pd.notna(row['product_name']) else ""
                 
+                # Marka (yeni)
+                brand = ""
+                if 'brand' in row and pd.notna(row['brand']):
+                    brand = str(row['brand']).strip()
+                
                 # Liste fiyatı
                 list_price = 0
                 if 'list_price' in row:
