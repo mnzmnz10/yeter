@@ -8,6 +8,7 @@ import requests
 import sys
 import json
 import time
+import uuid
 from datetime import datetime
 from io import BytesIO
 import pandas as pd
