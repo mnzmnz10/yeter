@@ -5480,6 +5480,10 @@ class KaravanAPITester:
             print("\n🎯 PRIORITY 6: Excel Discount Functionality")
             self.test_excel_discount_functionality()
             
+            # PRIORITY 7: Package Sale Price Optional Testing (NEW)
+            print("\n🎯 PRIORITY 7: Package Sale Price Optional Feature")
+            self.test_package_sale_price_optional()
+            
         finally:
             # Always cleanup
             self.cleanup_test_data()
