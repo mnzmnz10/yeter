@@ -3197,10 +3197,10 @@ function App() {
                               size="sm"
                               onClick={clearSelection}
                               className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200"
-                              title="Seçimi Temizle"
+                              title="Teklifi Kapat"
                             >
                               <X className="w-3 h-3 mr-1" />
-                              <span className="text-xs">Temizle</span>
+                              <span className="text-xs">Teklifi Kapat</span>
                             </Button>
                           )}
                           {/* Teklif İndirimli Fiyat Toggle Butonu */}
