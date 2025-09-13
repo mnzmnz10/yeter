@@ -2421,6 +2421,241 @@ class KaravanAPITester:
         
         return True
 
+    def test_package_pdf_features_comprehensive(self):
+        """Comprehensive test for Package PDF generation features"""
+        print("\n🔍 Testing Package PDF Features...")
+        
+        # Test the specific package ID from the request
+        test_package_id = "02f1cde5-44ec-46d0-99ea-76ec31c240d9"
+        
+        # Step 1: Verify the package exists
+        success, response = self.run_test(
+            f"Get Package {test_package_id}",
+            "GET",
+            f"packages/{test_package_id}",
+            200
+        )
+        
+        if not success or not response:
+            self.log_test("Package Existence Check", False, f"Package {test_package_id} not found")
+            return False
+            
+        try:
+            package_data = response.json()
+            package_name = package_data.get('name', 'Unknown Package')
+            products = package_data.get('products', [])
+            sale_price = package_data.get('sale_price', 0)
+            
+            self.log_test("Package Data Retrieval", True, f"Package: {package_name}, Products: {len(products)}, Sale Price: {sale_price}")
+            
+            if len(products) == 0:
+                self.log_test("Package Products Check", False, "Package has no products - cannot test PDF generation")
+                return False
+                
+        except Exception as e:
+            self.log_test("Package Data Parsing", False, f"Error parsing package data: {e}")
+            return False
+
+        # Step 2: Test PDF with Prices endpoint
+        print(f"\n🔍 Testing PDF with Prices for Package: {package_name}")
+        
+        try:
+            pdf_with_prices_url = f"{self.base_url}/packages/{test_package_id}/pdf-with-prices"
+            headers = {'Accept': 'application/pdf'}
+            
+            pdf_response = requests.get(pdf_with_prices_url, headers=headers, timeout=60)
+            
+            if pdf_response.status_code == 200:
+                # Check if response is actually a PDF
+                content_type = pdf_response.headers.get('content-type', '')
+                if 'application/pdf' in content_type:
+                    pdf_size = len(pdf_response.content)
+                    self.log_test("PDF with Prices Generation", True, f"PDF generated successfully, size: {pdf_size} bytes")
+                    
+                    # Basic PDF validation
+                    if pdf_response.content.startswith(b'%PDF'):
+                        self.log_test("PDF with Prices Format", True, "Valid PDF format detected")
+                        
+                        # Test PDF size - should be reasonable for a package PDF
+                        if pdf_size > 5000:  # At least 5KB for a proper PDF
+                            self.log_test("PDF with Prices Size Check", True, f"PDF size is reasonable: {pdf_size} bytes")
+                        else:
+                            self.log_test("PDF with Prices Size Check", False, f"PDF seems too small: {pdf_size} bytes - may indicate error")
+                            
+                        # Check filename in Content-Disposition header
+                        content_disposition = pdf_response.headers.get('content-disposition', '')
+                        if 'fiyatli.pdf' in content_disposition:
+                            self.log_test("PDF with Prices Filename", True, f"Correct filename format: {content_disposition}")
+                        else:
+                            self.log_test("PDF with Prices Filename", False, f"Unexpected filename: {content_disposition}")
+                            
+                    else:
+                        self.log_test("PDF with Prices Format", False, "Response does not appear to be a valid PDF")
+                        
+                else:
+                    self.log_test("PDF with Prices Content Type", False, f"Expected PDF, got: {content_type}")
+                    try:
+                        error_response = pdf_response.json()
+                        self.log_test("PDF with Prices Error", False, f"API Error: {error_response}")
+                    except:
+                        self.log_test("PDF with Prices Error", False, f"Non-JSON error response: {pdf_response.text[:200]}")
+                        
+            else:
+                self.log_test("PDF with Prices Request", False, f"HTTP {pdf_response.status_code}: {pdf_response.text[:200]}")
+                
+        except Exception as e:
+            self.log_test("PDF with Prices Request", False, f"Exception during PDF generation: {e}")
+
+        # Step 3: Test PDF without Prices endpoint
+        print(f"\n🔍 Testing PDF without Prices for Package: {package_name}")
+        
+        try:
+            pdf_without_prices_url = f"{self.base_url}/packages/{test_package_id}/pdf-without-prices"
+            headers = {'Accept': 'application/pdf'}
+            
+            pdf_response = requests.get(pdf_without_prices_url, headers=headers, timeout=60)
+            
+            if pdf_response.status_code == 200:
+                # Check if response is actually a PDF
+                content_type = pdf_response.headers.get('content-type', '')
+                if 'application/pdf' in content_type:
+                    pdf_size = len(pdf_response.content)
+                    self.log_test("PDF without Prices Generation", True, f"PDF generated successfully, size: {pdf_size} bytes")
+                    
+                    # Basic PDF validation
+                    if pdf_response.content.startswith(b'%PDF'):
+                        self.log_test("PDF without Prices Format", True, "Valid PDF format detected")
+                        
+                        # Test PDF size
+                        if pdf_size > 5000:  # At least 5KB for a proper PDF
+                            self.log_test("PDF without Prices Size Check", True, f"PDF size is reasonable: {pdf_size} bytes")
+                        else:
+                            self.log_test("PDF without Prices Size Check", False, f"PDF seems too small: {pdf_size} bytes - may indicate error")
+                            
+                        # Check filename in Content-Disposition header
+                        content_disposition = pdf_response.headers.get('content-disposition', '')
+                        if 'liste.pdf' in content_disposition:
+                            self.log_test("PDF without Prices Filename", True, f"Correct filename format: {content_disposition}")
+                        else:
+                            self.log_test("PDF without Prices Filename", False, f"Unexpected filename: {content_disposition}")
+                            
+                    else:
+                        self.log_test("PDF without Prices Format", False, "Response does not appear to be a valid PDF")
+                        
+                else:
+                    self.log_test("PDF without Prices Content Type", False, f"Expected PDF, got: {content_type}")
+                    try:
+                        error_response = pdf_response.json()
+                        self.log_test("PDF without Prices Error", False, f"API Error: {error_response}")
+                    except:
+                        self.log_test("PDF without Prices Error", False, f"Non-JSON error response: {pdf_response.text[:200]}")
+                        
+            else:
+                self.log_test("PDF without Prices Request", False, f"HTTP {pdf_response.status_code}: {pdf_response.text[:200]}")
+                
+        except Exception as e:
+            self.log_test("PDF without Prices Request", False, f"Exception during PDF generation: {e}")
+
+        # Step 4: Test Package Data Integration
+        print(f"\n🔍 Testing Package Data Integration...")
+        
+        # Verify package-products relationship
+        if products:
+            total_products = len(products)
+            self.log_test("Package-Products Relationship", True, f"Package contains {total_products} products")
+            
+            # Check quantity values
+            quantities_valid = True
+            for product in products:
+                quantity = product.get('quantity', 0)
+                if not isinstance(quantity, int) or quantity <= 0:
+                    quantities_valid = False
+                    break
+                    
+            if quantities_valid:
+                self.log_test("Product Quantities Validation", True, "All product quantities are valid integers > 0")
+            else:
+                self.log_test("Product Quantities Validation", False, "Some product quantities are invalid")
+                
+            # Check product names
+            product_names_valid = True
+            for product in products:
+                name = product.get('name', '')
+                if not name or len(name.strip()) < 3:
+                    product_names_valid = False
+                    break
+                    
+            if product_names_valid:
+                self.log_test("Product Names Validation", True, "All products have valid names")
+            else:
+                self.log_test("Product Names Validation", False, "Some products have invalid names")
+        
+        # Step 5: Test PDF Template & Design (indirect testing)
+        print(f"\n🔍 Testing PDF Template & Design Features...")
+        
+        # We can't directly inspect PDF content, but we can test if the PDFs are generated
+        # with reasonable sizes that suggest they contain the expected content
+        
+        # Test both PDFs again to compare sizes
+        try:
+            # Get both PDFs
+            pdf_with_prices_response = requests.get(f"{self.base_url}/packages/{test_package_id}/pdf-with-prices", 
+                                                  headers={'Accept': 'application/pdf'}, timeout=60)
+            pdf_without_prices_response = requests.get(f"{self.base_url}/packages/{test_package_id}/pdf-without-prices", 
+                                                     headers={'Accept': 'application/pdf'}, timeout=60)
+            
+            if (pdf_with_prices_response.status_code == 200 and 
+                pdf_without_prices_response.status_code == 200):
+                
+                with_prices_size = len(pdf_with_prices_response.content)
+                without_prices_size = len(pdf_without_prices_response.content)
+                
+                # PDF with prices should typically be larger (contains price columns)
+                if with_prices_size > without_prices_size:
+                    self.log_test("PDF Size Comparison", True, f"With prices: {with_prices_size}B > Without prices: {without_prices_size}B")
+                else:
+                    self.log_test("PDF Size Comparison", False, f"With prices: {with_prices_size}B <= Without prices: {without_prices_size}B (unexpected)")
+                
+                # Both PDFs should be substantial in size (indicating proper content)
+                min_expected_size = 8000  # 8KB minimum
+                if with_prices_size > min_expected_size and without_prices_size > min_expected_size:
+                    self.log_test("PDF Content Completeness", True, f"Both PDFs exceed minimum size threshold ({min_expected_size}B)")
+                else:
+                    self.log_test("PDF Content Completeness", False, f"One or both PDFs are too small (may indicate missing content)")
+                    
+        except Exception as e:
+            self.log_test("PDF Template Testing", False, f"Error during template testing: {e}")
+
+        # Step 6: Test Error Handling
+        print(f"\n🔍 Testing Error Handling...")
+        
+        # Test with non-existent package ID
+        fake_package_id = "00000000-0000-0000-0000-000000000000"
+        
+        success, response = self.run_test(
+            "PDF with Prices - Non-existent Package",
+            "GET",
+            f"packages/{fake_package_id}/pdf-with-prices",
+            404
+        )
+        
+        success, response = self.run_test(
+            "PDF without Prices - Non-existent Package",
+            "GET",
+            f"packages/{fake_package_id}/pdf-without-prices",
+            404
+        )
+
+        print(f"\n✅ Package PDF Features Test Summary:")
+        print(f"   - Tested package ID: {test_package_id}")
+        print(f"   - Verified package data integration")
+        print(f"   - Tested PDF with prices endpoint")
+        print(f"   - Tested PDF without prices endpoint")
+        print(f"   - Validated PDF format and content")
+        print(f"   - Tested error handling")
+        
+        return True
+
     def cleanup_test_data(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
