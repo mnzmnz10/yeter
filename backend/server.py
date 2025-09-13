@@ -194,7 +194,7 @@ class Package(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     description: Optional[str] = None
-    sale_price: Decimal
+    sale_price: Optional[Decimal] = None
     image_url: Optional[str] = None
     is_pinned: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -202,7 +202,7 @@ class Package(BaseModel):
 class PackageCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    sale_price: Decimal
+    sale_price: Optional[Decimal] = None
     image_url: Optional[str] = None
     is_pinned: bool = False
 
