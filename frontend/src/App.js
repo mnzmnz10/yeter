@@ -1052,6 +1052,46 @@ function App() {
       const searchTerm = packageProductSearch.toLowerCase();
       filteredProducts = products.filter(product => 
         product.name.toLowerCase().includes(searchTerm) ||
+  // Package PDF download functions
+  const downloadPackagePDF = async (packageId, withPrices) => {
+    try {
+      const endpoint = withPrices 
+        ? `${API}/packages/${packageId}/pdf-with-prices`
+        : `${API}/packages/${packageId}/pdf-without-prices`;
+      
+      const response = await axios.get(endpoint, {
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Set filename based on response headers or default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = withPrices ? 'paket_fiyatli.pdf' : 'paket_liste.pdf';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename=([^;]+)/);
+        if (filenameMatch) {
+          filename = filenameMatch[1].replace(/"/g, '');
+        }
+      }
+      
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`PDF ${withPrices ? '(fiyatlı)' : '(liste)'} başarıyla indirildi`);
+      
+    } catch (error) {
+      console.error('Error downloading package PDF:', error);
+      toast.error('PDF indirilemedi');
+    }
+  };
         (product.description && product.description.toLowerCase().includes(searchTerm))
       );
     }
