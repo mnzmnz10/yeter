@@ -408,6 +408,7 @@ function App() {
       const formData = new FormData();
       formData.append('file', uploadFile);
       formData.append('currency', uploadCurrency); // Para birimini de gönder
+      formData.append('discount', uploadDiscount || '0'); // İskonto yüzdesini de gönder
 
       const response = await axios.post(`${API}/companies/${companyId}/upload-excel`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
