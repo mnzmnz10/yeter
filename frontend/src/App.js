@@ -1042,6 +1042,58 @@ function App() {
 
   const calculateQuoteTotals = useMemo(() => {
     const selectedProductsData = getSelectedProductsData();
+  // Package product filtering and grouping
+  const getFilteredAndGroupedProducts = () => {
+    // Filter products by search
+    let filteredProducts = products;
+    if (packageProductSearch.trim()) {
+      const searchTerm = packageProductSearch.toLowerCase();
+      filteredProducts = products.filter(product => 
+        product.name.toLowerCase().includes(searchTerm) ||
+        (product.description && product.description.toLowerCase().includes(searchTerm))
+      );
+    }
+
+    // Group by categories
+    const grouped = {};
+    filteredProducts.forEach(product => {
+      const category = categories.find(c => c.id === product.category_id);
+      const categoryName = category ? category.name : 'Kategorisiz';
+      const categoryId = category ? category.id : 'uncategorized';
+      
+      if (!grouped[categoryId]) {
+        grouped[categoryId] = {
+          name: categoryName,
+          products: [],
+          color: category?.color || '#64748b'
+        };
+      }
+      grouped[categoryId].products.push(product);
+    });
+
+    return grouped;
+  };
+
+  const toggleCategoryExpansion = (categoryId) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
+  };
+
+  // Auto-expand categories when searching
+  const handleProductSearch = (searchTerm) => {
+    setPackageProductSearch(searchTerm);
+    if (searchTerm.trim()) {
+      // Expand all categories when searching
+      const allCategoryIds = new Set(categories.map(c => c.id));
+      allCategoryIds.add('uncategorized');
+      setExpandedCategories(allCategoryIds);
+    }
+  };
     
     // Hangi fiyatı kullanacağımızı belirle (indirimli fiyat gösterim durumuna göre)
     const totalListPrice = selectedProductsData.reduce((sum, p) => {
