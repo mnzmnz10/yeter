@@ -2857,6 +2857,12 @@ async def upload_excel(company_id: str, file: UploadFile = File(...), currency: 
         if not products_data:
             raise HTTPException(status_code=400, detail="Excel dosyasında geçerli ürün verisi bulunamadı")
         
+        # Handle user-selected currency override
+        user_selected_currency = None
+        if currency and currency.upper() in ['USD', 'EUR', 'TRY']:
+            user_selected_currency = currency.upper()
+            logger.info(f"User selected currency override: {user_selected_currency}")
+        
         # Get current exchange rates
         await currency_service.get_exchange_rates()
         
