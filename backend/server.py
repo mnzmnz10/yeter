@@ -131,6 +131,7 @@ class Category(BaseModel):
     name: str
     description: Optional[str] = None
     color: Optional[str] = None
+    is_deletable: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CategoryCreate(BaseModel):
