@@ -1236,6 +1236,7 @@ async def delete_company(company_id: str):
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
+    brand: Optional[str] = None  # Yeni marka alanı
     description: Optional[str] = None
     image_url: Optional[str] = None
     list_price: Optional[Decimal] = None
