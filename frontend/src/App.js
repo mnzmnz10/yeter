@@ -990,8 +990,10 @@ function App() {
 
   const loadAllProductsForPackageEditing = async () => {
     try {
+      console.log('Loading products for package editing...');
       // Load all products without pagination for package editing
       const response = await axios.get(`${API}/products?skip_pagination=true`);
+      console.log(`Loaded ${response.data.length} products for package editing`);
       setProducts(response.data);
     } catch (error) {
       console.error('Error loading products for package editing:', error);
