@@ -1016,19 +1016,21 @@ function App() {
     loadPackageWithProducts(pkg.id);
   };
 
-  const addProductsToPackage = async (packageId, selectedProducts) => {
+  const addProductsToPackage = async () => {
+    if (!selectedPackageForEdit) return;
+    
     try {
-      const products = Array.from(selectedProducts.entries()).map(([productId, quantity]) => ({
+      const products = Array.from(packageSelectedProducts.entries()).map(([productId, quantity]) => ({
         product_id: productId,
         quantity: quantity
       }));
       
-      const response = await axios.post(`${API}/packages/${packageId}/products`, products);
+      const response = await axios.post(`${API}/packages/${selectedPackageForEdit.id}/products`, products);
       if (response.data.success) {
         toast.success(response.data.message);
-        setShowPackageProductsDialog(false);
-        setPackageSelectedProducts(new Map());
         await loadPackages();
+        // Reload package details
+        await loadPackageWithProducts(selectedPackageForEdit.id);
       }
     } catch (error) {
       console.error('Error adding products to package:', error);
