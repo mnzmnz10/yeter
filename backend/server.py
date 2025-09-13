@@ -2764,6 +2764,38 @@ async def update_package(package_id: str, package: PackageCreate):
         logger.error(f"Error updating package: {e}")
         raise HTTPException(status_code=500, detail="Paket güncellenemedi")
 
+@api_router.post("/packages/{package_id}/pin")
+async def toggle_package_pin(package_id: str):
+    """Toggle pin status of a package"""
+    try:
+        # Get current package
+        package = await db.packages.find_one({"id": package_id})
+        if not package:
+            raise HTTPException(status_code=404, detail="Package not found")
+        
+        # Toggle pin status
+        new_pin_status = not package.get("is_pinned", False)
+        
+        await db.packages.update_one(
+            {"id": package_id},
+            {"$set": {"is_pinned": new_pin_status}}
+        )
+        
+        action = "sabitlendi" if new_pin_status else "sabitleme kaldırıldı"
+        
+        return {
+            "success": True,
+            "message": f"Paket başarıyla {action}",
+            "is_pinned": new_pin_status,
+            "package_name": package["name"]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error toggling package pin: {e}")
+        raise HTTPException(status_code=500, detail="Paket sabitleme durumu değiştirilemedi")
+
 @api_router.post("/packages/{package_id}/copy")
 async def copy_package(package_id: str, new_name: str = Form(...)):
     """Copy a package with all its products and supplies"""
