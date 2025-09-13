@@ -2103,6 +2103,13 @@ async def toggle_product_favorite(product_id: str):
 @api_router.get("/products/favorites", response_model=List[Product])
 async def get_favorite_products():
     """Get all favorite products"""
+    try:
+        products = await db.products.find({"is_favorite": True}).sort("name", 1).to_list(None)
+        return [Product(**product) for product in products]
+    except Exception as e:
+        logger.error(f"Error getting favorite products: {e}")
+        raise HTTPException(status_code=500, detail="Favori ürünler getirilemedi")
+
 # Package endpoints
 @api_router.post("/packages", response_model=Package)
 async def create_package(package: PackageCreate):
