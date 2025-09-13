@@ -4481,6 +4481,10 @@ class KaravanAPITester:
             company_ids = self.test_company_management()
             self.test_products_management()
             
+            # PRIORITY 5: Excel Currency Selection System (NEW)
+            print("\n🎯 PRIORITY 5: Excel Currency Selection System")
+            self.test_excel_currency_selection_system()
+            
         finally:
             # Always cleanup
             self.cleanup_test_data()
