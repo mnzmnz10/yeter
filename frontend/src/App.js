@@ -2049,10 +2049,10 @@ function App() {
                 </div>
 
                 {/* Package Information - Horizontal Layout */}
-                <Card className="mb-6">
-                  <CardHeader>
-                    <CardTitle>Paket Bilgileri</CardTitle>
-                    <CardDescription>Paket temel bilgilerini düzenleyin</CardDescription>
+                <Card className="mb-6 bg-blue-50 border-blue-200">
+                  <CardHeader className="bg-blue-100/50">
+                    <CardTitle className="text-blue-900">📋 Paket Bilgileri</CardTitle>
+                    <CardDescription className="text-blue-700">Paket temel bilgilerini düzenleyin</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
