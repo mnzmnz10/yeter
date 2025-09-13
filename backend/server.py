@@ -2528,7 +2528,9 @@ async def get_package_with_products(package_id: str):
             image_url=package.get("image_url"),
             created_at=package["created_at"],
             products=products,
-            total_discounted_price=total_discounted_price
+            supplies=supplies,
+            total_discounted_price=total_discounted_price,
+            total_discounted_price_with_supplies=total_discounted_price + total_supplies_price
         )
     except HTTPException:
         raise
