@@ -947,8 +947,10 @@ function App() {
   };
 
   const updatePackage = async () => {
+    if (!selectedPackageForEdit) return;
+    
     try {
-      const response = await axios.put(`${API}/packages/${editingPackage}`, {
+      const response = await axios.put(`${API}/packages/${selectedPackageForEdit.id}`, {
         name: packageForm.name,
         description: packageForm.description,
         sale_price: parseFloat(packageForm.sale_price) || 0,
@@ -957,10 +959,9 @@ function App() {
       
       if (response.data) {
         toast.success('Paket başarıyla güncellendi');
-        setShowPackageDialog(false);
-        setEditingPackage(null);
-        setPackageForm({ name: '', description: '', sale_price: '', image_url: '' });
         await loadPackages();
+        // Reload package details
+        await loadPackageWithProducts(selectedPackageForEdit.id);
       }
     } catch (error) {
       console.error('Error updating package:', error);
