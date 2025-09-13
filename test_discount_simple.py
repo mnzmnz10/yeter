@@ -31,12 +31,11 @@ def create_test_company():
 def test_excel_upload_with_discount(company_id):
     """Test Excel upload with discount parameter"""
     
-    # Create test data in ELEKTROZİRVE format (4 columns) with header row
+    # Create test data in general format (3 columns to avoid ELEKTROZİRVE format)
     test_data = {
-        'Güneş Panelleri': ['Güneş Panelleri', 'Solar Panel 450W Monocrystalline High Efficiency'],
-        'LİSTE FİYATI': ['LİSTE FİYATI', 100.00],
-        'İskonto': ['İskonto', 0],
-        'Net Fiyat': ['Net Fiyat', 100.00]
+        'Ürün Adı': ['Solar Panel 450W Monocrystalline High Efficiency'],
+        'Liste Fiyatı': [100.00],
+        'Para Birimi': ['USD']
     }
     
     df = pd.DataFrame(test_data)
