@@ -1043,10 +1043,7 @@ function App() {
       toast.error('Ürünler pakete eklenemedi');
     }
   };
-  const [showPackageDiscountedPrices, setShowPackageDiscountedPrices] = useState(false);
 
-  const calculateQuoteTotals = useMemo(() => {
-    const selectedProductsData = getSelectedProductsData();
   // Package product filtering and grouping
   const getFilteredAndGroupedProducts = () => {
     // Filter products by search
