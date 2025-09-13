@@ -4083,6 +4083,42 @@ class KaravanAPITester:
         
         return True
 
+    def run_currency_detection_tests(self):
+        """Run focused Excel currency detection tests"""
+        print("🚀 Starting Excel Currency Detection Testing")
+        print(f"🌐 Testing against: {self.base_url}")
+        print("=" * 80)
+        
+        try:
+            # Core API tests first
+            print("\n🎯 STEP 1: Core API Verification")
+            self.test_root_endpoint()
+            self.test_exchange_rates_comprehensive()
+            
+            # Main currency detection tests
+            print("\n🎯 STEP 2: Excel Currency Detection System")
+            self.test_excel_currency_detection_comprehensive()
+            
+        finally:
+            # Always cleanup
+            self.cleanup_test_data()
+        
+        # Print final results
+        print("\n" + "=" * 80)
+        print("📊 CURRENCY DETECTION TEST RESULTS")
+        print("=" * 80)
+        print(f"Total Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Tests Failed: {self.tests_run - self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%" if self.tests_run > 0 else "Success Rate: 0%")
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 All currency detection tests passed!")
+            return True
+        else:
+            print("⚠️ Some tests failed. Check the logs above for details.")
+            return False
+
     def run_all_tests(self):
         """Run focused backend tests based on review request"""
         print("🚀 Starting Karavan Backend Testing - Focus on Startup & Package System")
