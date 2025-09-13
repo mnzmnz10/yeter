@@ -4357,6 +4357,44 @@ function App() {
 
       {/* Package Products Selection Dialog - Replaced with full page edit */}
 
+      {/* Package Copy Dialog */}
+      <Dialog open={copyPackageDialog} onOpenChange={setCopyPackageDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Paket Kopyala</DialogTitle>
+            <DialogDescription>
+              {packageToCopy?.name} paketini kopyalayarak yeni bir paket oluşturun.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="copy-name" className="text-right">
+                Yeni Ad
+              </Label>
+              <Input
+                id="copy-name"
+                value={copyPackageName}
+                onChange={(e) => setCopyPackageName(e.target.value)}
+                className="col-span-3"
+                placeholder="Yeni paket adı..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setCopyPackageDialog(false)}
+            >
+              İptal
+            </Button>
+            <Button onClick={copyPackage} disabled={!copyPackageName.trim()}>
+              <Copy className="w-4 h-4 mr-2" />
+              Kopyala
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Toast Notifications */}
       <Toaster />
     </div>
