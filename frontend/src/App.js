@@ -998,6 +998,15 @@ function App() {
       });
       setPackageSelectedProducts(selectedMap);
       
+      // Set selected supplies from package
+      const selectedSuppliesMap = new Map();
+      if (response.data.supplies) {
+        response.data.supplies.forEach(supply => {
+          selectedSuppliesMap.set(supply.id, supply.quantity);
+        });
+      }
+      setPackageSelectedSupplies(selectedSuppliesMap);
+      
       // Initialize expanded categories (expand first category by default)
       if (categories.length > 0) {
         setExpandedCategories(new Set([categories[0].id]));
