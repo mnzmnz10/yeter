@@ -1780,6 +1780,28 @@ class PDFQuoteGenerator:
         
         return info_table
     
+    def _create_date_header(self):
+        """Sağ üst köşede tarih"""
+        from datetime import datetime
+        from reportlab.platypus import Table as PDFTable
+        
+        # Tarih
+        now = datetime.now()
+        date_str = now.strftime('%d.%m.%Y')
+        
+        # Sağa hizalı tarih
+        date_style = ParagraphStyle(
+            'DateHeader',
+            parent=self.styles['Normal'],
+            fontName=self.get_font_name(),
+            fontSize=11,
+            alignment=TA_RIGHT,
+            textColor=colors.HexColor('#4A5568')
+        )
+        
+        date_paragraph = Paragraph(f"Tarih: {date_str}", date_style)
+        return date_paragraph
+    
     def _create_modern_products_table(self, products: List[Dict]):
         """Modern tasarımda ürün tablosu oluştur - Yeni renk şeması ile"""
         primary_color = colors.HexColor('#25c7eb')
