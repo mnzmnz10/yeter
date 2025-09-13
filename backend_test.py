@@ -43,6 +43,8 @@ class KaravanAPITester:
                     response = requests.post(url, files=files, timeout=30)
                 else:
                     response = requests.post(url, json=data, headers=headers, timeout=30)
+            elif method == 'PUT':
+                response = requests.put(url, json=data, headers=headers, timeout=30)
             elif method == 'DELETE':
                 response = requests.delete(url, headers=headers, timeout=30)
 
