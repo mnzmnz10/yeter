@@ -1929,6 +1929,15 @@ class PDFPackageGenerator(PDFQuoteGenerator):
     
     def __init__(self):
         super().__init__()  # PDFQuoteGenerator'dan miras al
+        # Eksik style'ları ekle
+        self.header_style = ParagraphStyle(
+            'PackageHeader',
+            parent=self.styles['Normal'],
+            fontName=self.get_font_name(is_bold=True),
+            fontSize=10,
+            alignment=TA_CENTER,
+            textColor=colors.white
+        )
 
     def _format_price_modern(self, price):
         """Modern format ile fiyat gösterimi"""
