@@ -2343,6 +2343,64 @@ async def delete_category(category_id: str):
         
         # Then delete the category
         result = await db.categories.delete_one({"id": category_id})
+@api_router.post("/packages/{package_id}/supplies")
+async def add_supplies_to_package(package_id: str, supplies: List[PackageSupplyCreate]):
+    """Pakete sarf malzemesi ekle"""
+    try:
+        # Check if package exists
+        package = await db.packages.find_one({"id": package_id})
+        if not package:
+            raise HTTPException(status_code=404, detail="Paket bulunamadı")
+        
+        # Remove existing supplies
+        await db.package_supplies.delete_many({"package_id": package_id})
+        
+        # Add new supplies
+        package_supplies = []
+        for supply in supplies:
+            # Verify product exists
+            existing_product = await db.products.find_one({"id": supply.product_id})
+            if not existing_product:
+                continue
+                
+            package_supply = {
+                "id": str(uuid.uuid4()),
+                "package_id": package_id,
+                "product_id": supply.product_id,
+                "quantity": supply.quantity,
+                "note": supply.note,
+                "created_at": datetime.now(timezone.utc)
+            }
+            package_supplies.append(package_supply)
+        
+        if package_supplies:
+            await db.package_supplies.insert_many(package_supplies)
+        
+        return {"success": True, "message": f"{len(package_supplies)} sarf malzemesi pakete eklendi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error adding supplies to package: {e}")
+        raise HTTPException(status_code=500, detail="Sarf malzemeleri pakete eklenemedi")
+
+@api_router.delete("/packages/{package_id}/supplies/{supply_id}")
+async def remove_supply_from_package(package_id: str, supply_id: str):
+    """Paketten sarf malzemesi çıkar"""
+    try:
+        result = await db.package_supplies.delete_one({
+            "id": supply_id,
+            "package_id": package_id
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Sarf malzemesi bulunamadı")
+        
+        return {"success": True, "message": "Sarf malzemesi paketten çıkarıldı"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error removing supply from package: {e}")
+        raise HTTPException(status_code=500, detail="Sarf malzemesi paketten çıkarılamadı")
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Kategori bulunamadı")
         
