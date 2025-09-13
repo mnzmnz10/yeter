@@ -739,6 +739,7 @@ class ColorBasedExcelService:
                     products.append({
                         'name': product_name,
                         'description': description if description else None,
+                        'brand': brand if brand else "",  # Yeni: marka alanı
                         'company_name': detected_company,
                         'list_price': list_price,
                         'discounted_price': discounted_price if discounted_price and discounted_price > 0 else None,
