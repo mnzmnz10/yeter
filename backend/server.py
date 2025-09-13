@@ -687,22 +687,22 @@ class ColorBasedExcelService:
                         ColorBasedExcelService.detect_color_category(desc_cell.fill) == 'BLUE'):
                         description = str(desc_cell.value).strip()
 
-                # Firma (Sarı) - SADECE sarı hücre kabul edilir
-                if column_mapping['company'] >= 0:
-                    company_cell = sheet.cell(row=row_idx + 1, column=column_mapping['company'] + 1)
-                    if (company_cell.value and 
-                        ColorBasedExcelService.detect_color_category(company_cell.fill) == 'YELLOW'):
-                        company_value = str(company_cell.value).strip()
+                # Marka (Sarı) - SADECE sarı hücre kabul edilir
+                if column_mapping['brand'] >= 0:
+                    brand_cell = sheet.cell(row=row_idx + 1, column=column_mapping['brand'] + 1)
+                    if (brand_cell.value and 
+                        ColorBasedExcelService.detect_color_category(brand_cell.fill) == 'YELLOW'):
+                        brand_value = str(brand_cell.value).strip()
                         # Excel formülü değilse VE sayısal değer değilse kullan
-                        if not company_value.startswith('='):
+                        if not brand_value.startswith('='):
                             try:
                                 # Sayısal değer mi kontrol et
-                                float(company_value)
-                                # Sayısal değerse varsayılan firma adını kullan
-                                logger.warning(f"Skipping numeric company name: {company_value}")
+                                float(brand_value)
+                                # Sayısal değerse boş bırak
+                                logger.warning(f"Skipping numeric brand name: {brand_value}")
                             except ValueError:
-                                # Sayısal değer değilse kullan
-                                detected_company = company_value
+                                # Sayısal değer değilse marka olarak kullan
+                                brand = brand_value
 
                 # Liste Fiyatı (Yeşil) - SADECE yeşil hücre kabul edilir
                 if column_mapping['list_price'] >= 0:
