@@ -2489,6 +2489,36 @@ async def get_package_with_products(package_id: str):
                     total_discounted_price += Decimal(str(product["discounted_price_try"])) * pp["quantity"]
                 else:
                     total_discounted_price += Decimal(str(product.get("list_price_try", 0))) * pp["quantity"]
+
+        # Get package supplies (sarf malzemeleri)
+        package_supplies = await db.package_supplies.find({"package_id": package_id}).to_list(None)
+        
+        # Get supply details and calculate totals
+        supplies = []
+        total_supplies_price = Decimal('0')
+        
+        for ps in package_supplies:
+            supply = await db.products.find_one({"id": ps["product_id"]})
+            if supply:
+                supply_data = {
+                    "id": supply["id"],
+                    "name": supply["name"],
+                    "list_price": supply.get("list_price", 0),
+                    "discounted_price": supply.get("discounted_price"),
+                    "list_price_try": supply.get("list_price_try", 0),
+                    "discounted_price_try": supply.get("discounted_price_try"),
+                    "currency": supply.get("currency", "USD"),
+                    "quantity": ps["quantity"],
+                    "note": ps.get("note", ""),
+                    "company_id": supply.get("company_id")
+                }
+                supplies.append(supply_data)
+                
+                # Calculate supply price total
+                if supply.get("discounted_price_try"):
+                    total_supplies_price += Decimal(str(supply["discounted_price_try"])) * ps["quantity"]
+                else:
+                    total_supplies_price += Decimal(str(supply.get("list_price_try", 0))) * ps["quantity"]
         
         return PackageWithProducts(
             id=package["id"],
