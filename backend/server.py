@@ -3110,6 +3110,7 @@ async def upload_excel(company_id: str, file: UploadFile = File(...), currency: 
                     
                     # Update existing product
                     update_data = {
+                        "brand": product_data.get('brand', ''),  # Marka güncellemesi
                         "list_price": float(list_price),
                         "discounted_price": float(discounted_price) if discounted_price else None,
                         "currency": final_currency,
