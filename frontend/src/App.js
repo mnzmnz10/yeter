@@ -1096,6 +1096,11 @@ function App() {
       setExpandedCategories(allCategoryIds);
     }
   };
+
+  const [showPackageDiscountedPrices, setShowPackageDiscountedPrices] = useState(false);
+
+  const calculateQuoteTotals = useMemo(() => {
+    const selectedProductsData = getSelectedProductsData();
     
     // Hangi fiyatı kullanacağımızı belirle (indirimli fiyat gösterim durumuna göre)
     const totalListPrice = selectedProductsData.reduce((sum, p) => {
