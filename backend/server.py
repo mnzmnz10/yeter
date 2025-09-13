@@ -1257,6 +1257,8 @@ async def update_product(product_id: str, update_data: ProductUpdate):
         update_dict = {}
         if update_data.name is not None:
             update_dict["name"] = update_data.name
+        if update_data.brand is not None:
+            update_dict["brand"] = update_data.brand
         if update_data.description is not None:
             update_dict["description"] = update_data.description
         if update_data.image_url is not None:
