@@ -1136,6 +1136,28 @@ function App() {
       const allCategoryIds = new Set(categories.map(c => c.id));
       allCategoryIds.add('uncategorized');
       setExpandedCategories(allCategoryIds);
+  const addSuppliesToPackage = async () => {
+    if (!selectedPackageForEdit) return;
+    
+    try {
+      const supplies = Array.from(packageSelectedSupplies.entries()).map(([productId, quantity]) => ({
+        product_id: productId,
+        quantity: quantity,
+        note: "Sarf malzemesi"
+      }));
+      
+      const response = await axios.post(`${API}/packages/${selectedPackageForEdit.id}/supplies`, supplies);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await loadPackages();
+        // Reload package details
+        await loadPackageWithProducts(selectedPackageForEdit.id);
+      }
+    } catch (error) {
+      console.error('Error adding supplies to package:', error);
+      toast.error('Sarf malzemeleri pakete eklenemedi');
+    }
+  };
     }
   };
 
