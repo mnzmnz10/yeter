@@ -2463,8 +2463,6 @@ function App() {
                     💼 <strong>Firma:</strong> Aşağıdaki dropdown'dan seçilir/oluşturulur
                   </p>
                 </div>
-              </CardHeader>
-              <CardContent>
                 <div className="space-y-4">
                   {/* Firma Seçim Modu */}
                   <div>
