@@ -1754,27 +1754,22 @@ function App() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleCategoryFilter(category.id)}
-                          >
-                            <Package className="w-4 h-4 mr-1" />
-                            Ürünleri Göster
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
                             onClick={() => openCategoryProductDialog(category)}
                             className="bg-blue-50 hover:bg-blue-100 text-blue-700"
                           >
                             <Plus className="w-4 h-4 mr-1" />
                             Ürün Ekle
                           </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => deleteCategory(category.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          {/* Only show delete button if category is deletable */}
+                          {category.is_deletable !== false && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => deleteCategory(category.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
