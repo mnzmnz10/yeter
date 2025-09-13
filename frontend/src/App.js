@@ -988,6 +988,17 @@ function App() {
     }
   };
 
+  const loadAllProductsForPackageEditing = async () => {
+    try {
+      // Load all products without pagination for package editing
+      const response = await axios.get(`${API}/products?skip_pagination=true`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Error loading products for package editing:', error);
+      toast.error('Ürünler yüklenemedi');
+    }
+  };
+
   const loadPackageWithProducts = async (packageId) => {
     setLoadingPackageProducts(true);
     try {
