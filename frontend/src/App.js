@@ -899,6 +899,20 @@ function App() {
       toast.error('Favori ürünler yüklenemedi');
     }
   };
+  // Package management states
+  const [packages, setPackages] = useState([]);
+  const [showPackageDialog, setShowPackageDialog] = useState(false);
+  const [editingPackage, setEditingPackage] = useState(null);
+  const [packageForm, setPackageForm] = useState({
+    name: '',
+    description: '',
+    sale_price: '',
+    image_url: ''
+  });
+  const [showPackageProductsDialog, setShowPackageProductsDialog] = useState(false);
+  const [selectedPackageForProducts, setSelectedPackageForProducts] = useState(null);
+  const [packageSelectedProducts, setPackageSelectedProducts] = useState(new Map());
+  const [showPackageDiscountedPrices, setShowPackageDiscountedPrices] = useState(false);
 
   const calculateQuoteTotals = useMemo(() => {
     const selectedProductsData = getSelectedProductsData();
