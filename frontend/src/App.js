@@ -1012,7 +1012,6 @@ function App() {
       sale_price: pkg.sale_price.toString(),
       image_url: pkg.image_url || ''
     });
-    setActiveTab('package-edit');
     loadPackageWithProducts(pkg.id);
   };
 
