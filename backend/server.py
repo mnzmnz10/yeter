@@ -2343,6 +2343,17 @@ async def delete_category(category_id: str):
         
         # Then delete the category
         result = await db.categories.delete_one({"id": category_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Kategori bulunamadı")
+        
+        return {"success": True, "message": "Kategori başarıyla silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting category: {e}")
+        raise HTTPException(status_code=500, detail="Kategori silinemedi")
+
 @api_router.post("/packages/{package_id}/supplies")
 async def add_supplies_to_package(package_id: str, supplies: List[PackageSupplyCreate]):
     """Pakete sarf malzemesi ekle"""
