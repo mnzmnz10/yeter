@@ -910,9 +910,10 @@ function App() {
     sale_price: '',
     image_url: ''
   });
-  const [showPackageProductsDialog, setShowPackageProductsDialog] = useState(false);
-  const [selectedPackageForProducts, setSelectedPackageForProducts] = useState(null);
+  const [selectedPackageForEdit, setSelectedPackageForEdit] = useState(null);
   const [packageSelectedProducts, setPackageSelectedProducts] = useState(new Map());
+  const [packageWithProducts, setPackageWithProducts] = useState(null);
+  const [loadingPackageProducts, setLoadingPackageProducts] = useState(false);
   // Package management functions
   const loadPackages = async () => {
     try {
