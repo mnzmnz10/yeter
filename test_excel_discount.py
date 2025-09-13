@@ -191,9 +191,10 @@ class ExcelDiscountTester:
         
         for currency in currencies:
             test_data = {
-                'Product Name': [f'Currency Test {currency}'],
-                'List Price': [100.00],
-                'Currency': [currency]
+                'Ürün Adı': [f'Currency Test Solar Panel {currency}'],
+                'Liste Fiyatı': [100.00],
+                'İskonto': [0],
+                'Net Fiyat': [100.00]
             }
             
             df = pd.DataFrame(test_data)
