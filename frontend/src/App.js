@@ -1145,6 +1145,9 @@ function App() {
       const allCategoryIds = new Set(categories.map(c => c.id));
       allCategoryIds.add('uncategorized');
       setExpandedCategories(allCategoryIds);
+    }
+  };
+
   const addSuppliesToPackage = async () => {
     if (!selectedPackageForEdit) return;
     
@@ -1165,8 +1168,6 @@ function App() {
     } catch (error) {
       console.error('Error adding supplies to package:', error);
       toast.error('Sarf malzemeleri pakete eklenemedi');
-    }
-  };
     }
   };
 
