@@ -1890,7 +1890,15 @@ function App() {
                         )}
                       </div>
                       <div className="flex gap-1">
-                        {/* Eye icon removed from package cards */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => togglePackagePin(pkg.id)}
+                          className={`p-2 ${pkg.is_pinned ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 bg-yellow-50' : 'text-gray-600 hover:text-gray-700 hover:bg-gray-50'}`}
+                          title={pkg.is_pinned ? "Sabitlemeyi Kaldır" : "Başa Sabitle"}
+                        >
+                          <Pin className="w-4 h-4" />
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
