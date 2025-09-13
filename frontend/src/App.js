@@ -419,6 +419,7 @@ function App() {
       setSelectedCompany('');
       setUploadCompanyName('');
       setUploadCurrency('USD');
+      setUploadDiscount('');
       await loadProducts(1, true);
       toast.success(response.data.message);
     } catch (error) {
