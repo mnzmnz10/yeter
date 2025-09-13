@@ -2239,6 +2239,7 @@ function App() {
                                                 <div className="font-medium text-sm truncate">{product.name}</div>
                                                 <div className="text-xs text-slate-500">
                                                   {company?.name || 'Unknown'} • ₺ {formatPrice(product.list_price_try || 0)}
+                                                  {product.brand && <div className="mt-0.5">📦 {product.brand}</div>}
                                                 </div>
                                               </div>
                                               {isSelected && (
