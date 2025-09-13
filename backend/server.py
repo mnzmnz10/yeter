@@ -2336,7 +2336,16 @@ async def update_category(category_id: str, update_data: CategoryCreate):
 async def delete_category(category_id: str):
     """Delete a category"""
     try:
-        # First, remove category from all products
+        # Check if category exists and is deletable
+        category = await db.categories.find_one({"id": category_id})
+        if not category:
+            raise HTTPException(status_code=404, detail="Kategori bulunamadı")
+        
+        # Check if category is deletable
+        if not category.get("is_deletable", True):
+            raise HTTPException(status_code=400, detail="Bu kategori silinemez")
+        
+        # First, remove this category from all products
         await db.products.update_many(
             {"category_id": category_id},
             {"$unset": {"category_id": ""}}
