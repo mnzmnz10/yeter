@@ -2631,7 +2631,7 @@ async def toggle_product_favorite(product_id: str):
         raise HTTPException(status_code=500, detail="Favori durumu güncellenemedi")
 
 @api_router.post("/products/{product_id}/favorite")
-async def toggle_product_favorite(product_id: str):
+async def toggle_product_favorite_v2(product_id: str):
     """Toggle favorite status of a product"""
     try:
         # Get current product
