@@ -1104,15 +1104,29 @@ class ExcelService:
                     except:
                         discounted_price = None
                 
-                # Para birimi - varsayılan USD
-                currency = "USD"
-                if 'currency' in row and pd.notna(row['currency']):
-                    currency = str(row['currency']).strip().upper()
+                # Para birimi algılama - gelişmiş
+                currency = "USD"  # varsayılan
                 
-                # USD işareti olan fiyatları tespit et
+                # Önce currency sütunu varsa onu kullan
+                if 'currency' in row and pd.notna(row['currency']):
+                    detected = ExcelService.detect_currency_from_text(str(row['currency']))
+                    if detected:
+                        currency = detected
+                
+                # Tüm sütunlarda para birimi işaretçilerini ara
                 for col_name, col_value in row.items():
-                    if pd.notna(col_value) and '$' in str(col_value):
-                        currency = 'USD'
+                    if pd.notna(col_value):
+                        cell_text = str(col_value)
+                        detected = ExcelService.detect_currency_from_text(cell_text, None)
+                        if detected:
+                            currency = detected
+                            break
+                
+                # Sütun başlıklarında da para birimi ara
+                for col_name in df.columns:
+                    detected = ExcelService.detect_currency_from_text(str(col_name), None)
+                    if detected:
+                        currency = detected
                         break
                 
                 # Geçerli ürün kontrolü
