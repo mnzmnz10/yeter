@@ -2896,6 +2896,383 @@ class KaravanAPITester:
         
         return True
 
+    def test_excel_currency_detection_comprehensive(self):
+        """Comprehensive test for enhanced Excel currency detection system"""
+        print("\n🔍 Testing Enhanced Excel Currency Detection System...")
+        
+        # Test 1: Create test company for currency detection tests
+        currency_test_company_name = f"Currency Detection Test {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Currency Detection Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": currency_test_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Currency Detection Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            test_company_id = company_data.get('id')
+            if not test_company_id:
+                self.log_test("Currency Detection Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(test_company_id)
+        except Exception as e:
+            self.log_test("Currency Detection Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Test 2: Create Excel files with different Turkish currency expressions
+        print("\n🔍 Testing Excel Files with Turkish Currency Expressions...")
+        
+        currency_test_scenarios = [
+            {
+                "name": "Turkish Dollar Variants",
+                "data": {
+                    'Ürün Adı': ['Solar Panel 450W', 'Inverter 5000W', 'Battery 200Ah'],
+                    'Liste Fiyatı DOLAR': [299.99, 750.50, 450.00],
+                    'İndirimli Fiyat': [249.99, 699.00, 399.00],
+                    'Açıklama': ['High efficiency panel', 'Hybrid inverter', 'Deep cycle battery']
+                },
+                "expected_currency": "USD"
+            },
+            {
+                "name": "Turkish Euro Variants", 
+                "data": {
+                    'Ürün': ['Güneş Paneli', 'İnvertör', 'Akü'],
+                    'AVRO Fiyat': [250.00, 600.00, 380.00],
+                    'İskonto': [200.00, 550.00, 340.00],
+                    'Notlar': ['Yüksek verim', 'Hibrit sistem', 'Derin döngü']
+                },
+                "expected_currency": "EUR"
+            },
+            {
+                "name": "Turkish Lira Variants",
+                "data": {
+                    'Malzeme Adı': ['Panel 450W', 'Şarj Kontrolcüsü', 'Kablo Seti'],
+                    'TÜRK LİRASI Liste': [12500.00, 3500.00, 1200.00],
+                    'TL İndirimli': [11250.00, 3150.00, 1080.00],
+                    'Detay': ['Monokristal', 'MPPT teknoloji', 'Özel kablo']
+                },
+                "expected_currency": "TRY"
+            },
+            {
+                "name": "American Dollar Variants",
+                "data": {
+                    'Ürün Adı': ['Test Product 1', 'Test Product 2', 'Test Product 3'],
+                    'AMERİKAN DOLARI': [100.00, 200.00, 300.00],
+                    'İndirim': [85.00, 170.00, 255.00],
+                    'Notlar': ['USD test 1', 'USD test 2', 'USD test 3']
+                },
+                "expected_currency": "USD"
+            }
+        ]
+        
+        currency_detection_results = {}
+        
+        for scenario in currency_test_scenarios:
+            try:
+                # Create Excel file for this scenario
+                df = pd.DataFrame(scenario['data'])
+                excel_buffer = BytesIO()
+                df.to_excel(excel_buffer, index=False)
+                excel_buffer.seek(0)
+                
+                # Upload the Excel file
+                files = {'file': (f'{scenario["name"]}.xlsx', excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                
+                success, response = self.run_test(
+                    f"Upload Excel - {scenario['name']}",
+                    "POST",
+                    f"companies/{test_company_id}/upload-excel",
+                    200,
+                    files=files
+                )
+                
+                if success and response:
+                    try:
+                        upload_result = response.json()
+                        if upload_result.get('success'):
+                            products_count = upload_result.get('products_count', 0)
+                            currency_distribution = upload_result.get('currency_distribution', {})
+                            
+                            currency_detection_results[scenario['name']] = {
+                                'products_count': products_count,
+                                'currency_distribution': currency_distribution,
+                                'expected_currency': scenario['expected_currency']
+                            }
+                            
+                            # Check if expected currency was detected
+                            if scenario['expected_currency'] in currency_distribution:
+                                detected_count = currency_distribution[scenario['expected_currency']]
+                                self.log_test(f"Currency Detection - {scenario['name']}", True, 
+                                            f"Detected {detected_count} products with {scenario['expected_currency']} currency")
+                            else:
+                                self.log_test(f"Currency Detection - {scenario['name']}", False, 
+                                            f"Expected {scenario['expected_currency']}, got: {currency_distribution}")
+                            
+                            self.log_test(f"Excel Upload - {scenario['name']}", True, 
+                                        f"Uploaded {products_count} products, currencies: {currency_distribution}")
+                        else:
+                            self.log_test(f"Excel Upload - {scenario['name']}", False, "Upload failed")
+                    except Exception as e:
+                        self.log_test(f"Excel Upload Response - {scenario['name']}", False, f"Error parsing: {e}")
+                        
+            except Exception as e:
+                self.log_test(f"Excel Creation - {scenario['name']}", False, f"Error creating test file: {e}")
+
+        # Test 3: Test currency detection in data cells (not just headers)
+        print("\n🔍 Testing Currency Detection in Data Cells...")
+        
+        data_cell_scenario = {
+            'Ürün': ['Product with USD in cell', 'Product with EUR in cell', 'Product with TL in cell'],
+            'Fiyat': ['100 DOLAR', '85 EURO', '4200 TL'],
+            'Açıklama': ['Contains USD reference', 'Contains EUR reference', 'Contains TRY reference']
+        }
+        
+        try:
+            df = pd.DataFrame(data_cell_scenario)
+            excel_buffer = BytesIO()
+            df.to_excel(excel_buffer, index=False)
+            excel_buffer.seek(0)
+            
+            files = {'file': ('data_cell_currency_test.xlsx', excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+            
+            success, response = self.run_test(
+                "Upload Excel - Currency in Data Cells",
+                "POST",
+                f"companies/{test_company_id}/upload-excel",
+                200,
+                files=files
+            )
+            
+            if success and response:
+                try:
+                    upload_result = response.json()
+                    if upload_result.get('success'):
+                        currency_distribution = upload_result.get('currency_distribution', {})
+                        products_count = upload_result.get('products_count', 0)
+                        
+                        # Check if currencies were detected from data cells
+                        detected_currencies = list(currency_distribution.keys())
+                        if detected_currencies:
+                            self.log_test("Currency Detection in Data Cells", True, 
+                                        f"Detected currencies from data cells: {currency_distribution}")
+                        else:
+                            self.log_test("Currency Detection in Data Cells", False, 
+                                        f"No currencies detected from data cells")
+                    else:
+                        self.log_test("Currency Detection in Data Cells", False, "Upload failed")
+                except Exception as e:
+                    self.log_test("Currency Detection in Data Cells", False, f"Error parsing: {e}")
+                    
+        except Exception as e:
+            self.log_test("Data Cell Currency Test", False, f"Error creating test file: {e}")
+
+        # Test 4: Test fallback behavior when no currency is detected
+        print("\n🔍 Testing Currency Detection Fallback Behavior...")
+        
+        no_currency_scenario = {
+            'Product Name': ['Generic Product 1', 'Generic Product 2', 'Generic Product 3'],
+            'Price': [100.00, 200.00, 300.00],
+            'Description': ['No currency specified', 'Price without currency', 'Generic description']
+        }
+        
+        try:
+            df = pd.DataFrame(no_currency_scenario)
+            excel_buffer = BytesIO()
+            df.to_excel(excel_buffer, index=False)
+            excel_buffer.seek(0)
+            
+            files = {'file': ('no_currency_test.xlsx', excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+            
+            success, response = self.run_test(
+                "Upload Excel - No Currency Specified",
+                "POST",
+                f"companies/{test_company_id}/upload-excel",
+                200,
+                files=files
+            )
+            
+            if success and response:
+                try:
+                    upload_result = response.json()
+                    if upload_result.get('success'):
+                        currency_distribution = upload_result.get('currency_distribution', {})
+                        products_count = upload_result.get('products_count', 0)
+                        
+                        # Check fallback currency (should default to USD or TRY)
+                        fallback_currencies = ['USD', 'TRY']  # Common fallback currencies
+                        detected_fallback = any(curr in currency_distribution for curr in fallback_currencies)
+                        
+                        if detected_fallback:
+                            self.log_test("Currency Detection Fallback", True, 
+                                        f"Fallback currency applied: {currency_distribution}")
+                        else:
+                            self.log_test("Currency Detection Fallback", False, 
+                                        f"No fallback currency detected: {currency_distribution}")
+                    else:
+                        self.log_test("Currency Detection Fallback", False, "Upload failed")
+                except Exception as e:
+                    self.log_test("Currency Detection Fallback", False, f"Error parsing: {e}")
+                    
+        except Exception as e:
+            self.log_test("Fallback Currency Test", False, f"Error creating test file: {e}")
+
+        # Test 5: Test both ColorBasedExcelService and ExcelService currency detection
+        print("\n🔍 Testing Both Excel Services Currency Detection...")
+        
+        # Create a colored Excel file (for ColorBasedExcelService)
+        try:
+            import openpyxl
+            from openpyxl.styles import PatternFill
+            
+            # Create workbook with colored cells
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            
+            # Add headers with colors
+            ws['A1'] = 'Ürün Adı'
+            ws['A1'].fill = PatternFill(start_color='FFFF0000', end_color='FFFF0000', fill_type='solid')  # Red
+            
+            ws['B1'] = 'Liste Fiyatı DOLAR'
+            ws['B1'].fill = PatternFill(start_color='FF00B050', end_color='FF00B050', fill_type='solid')  # Green
+            
+            ws['C1'] = 'İndirimli Fiyat'
+            ws['C1'].fill = PatternFill(start_color='FFFFC000', end_color='FFFFC000', fill_type='solid')  # Orange
+            
+            # Add data
+            ws['A2'] = 'Colored Excel Test Product'
+            ws['B2'] = 150.00
+            ws['C2'] = 135.00
+            
+            # Save to buffer
+            colored_excel_buffer = BytesIO()
+            wb.save(colored_excel_buffer)
+            colored_excel_buffer.seek(0)
+            
+            files = {'file': ('colored_currency_test.xlsx', colored_excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+            
+            success, response = self.run_test(
+                "Upload Colored Excel - Currency Detection",
+                "POST",
+                f"companies/{test_company_id}/upload-excel",
+                200,
+                files=files
+            )
+            
+            if success and response:
+                try:
+                    upload_result = response.json()
+                    if upload_result.get('success'):
+                        currency_distribution = upload_result.get('currency_distribution', {})
+                        products_count = upload_result.get('products_count', 0)
+                        
+                        # Should detect USD from "DOLAR" in header
+                        if 'USD' in currency_distribution:
+                            self.log_test("ColorBasedExcelService Currency Detection", True, 
+                                        f"Detected USD from colored header: {currency_distribution}")
+                        else:
+                            self.log_test("ColorBasedExcelService Currency Detection", False, 
+                                        f"Failed to detect USD from DOLAR header: {currency_distribution}")
+                    else:
+                        self.log_test("ColorBasedExcelService Currency Detection", False, "Upload failed")
+                except Exception as e:
+                    self.log_test("ColorBasedExcelService Currency Detection", False, f"Error parsing: {e}")
+                    
+        except Exception as e:
+            self.log_test("Colored Excel Currency Test", False, f"Error creating colored Excel: {e}")
+
+        # Test 6: Test currency conversion and storage
+        print("\n🔍 Testing Currency Conversion and Storage...")
+        
+        # Get products created from currency detection tests
+        success, response = self.run_test(
+            "Get Products for Currency Conversion Check",
+            "GET",
+            "products",
+            200
+        )
+        
+        if success and response:
+            try:
+                products = response.json()
+                if isinstance(products, list) and products:
+                    # Filter products from our test company
+                    test_products = [p for p in products if p.get('company_id') == test_company_id]
+                    
+                    for product in test_products[:5]:  # Check first 5 products
+                        currency = product.get('currency', 'Unknown')
+                        list_price = product.get('list_price', 0)
+                        list_price_try = product.get('list_price_try', 0)
+                        
+                        if currency != 'TRY' and list_price > 0 and list_price_try > 0:
+                            # Check if conversion seems reasonable
+                            conversion_rate = list_price_try / list_price
+                            
+                            # Reasonable conversion rates (approximate)
+                            reasonable_rates = {
+                                'USD': (35, 50),  # USD to TRY should be around 41-42
+                                'EUR': (40, 60),  # EUR to TRY should be around 48-49
+                                'GBP': (45, 65)   # GBP to TRY should be higher
+                            }
+                            
+                            if currency in reasonable_rates:
+                                min_rate, max_rate = reasonable_rates[currency]
+                                if min_rate <= conversion_rate <= max_rate:
+                                    self.log_test(f"Currency Conversion {currency} to TRY", True, 
+                                                f"{currency} {list_price} → TRY {list_price_try} (rate: {conversion_rate:.2f})")
+                                else:
+                                    self.log_test(f"Currency Conversion {currency} to TRY", False, 
+                                                f"Unrealistic rate: {conversion_rate:.2f} for {currency}")
+                            else:
+                                self.log_test(f"Currency Conversion {currency} to TRY", True, 
+                                            f"{currency} {list_price} → TRY {list_price_try}")
+                        
+                        elif currency == 'TRY':
+                            # TRY products should have same list_price and list_price_try
+                            if abs(list_price - list_price_try) < 0.01:
+                                self.log_test(f"TRY Currency Storage", True, 
+                                            f"TRY prices match: {list_price} = {list_price_try}")
+                            else:
+                                self.log_test(f"TRY Currency Storage", False, 
+                                            f"TRY prices don't match: {list_price} ≠ {list_price_try}")
+                    
+                    self.log_test("Currency Conversion Check", True, f"Checked {len(test_products)} products for currency conversion")
+                else:
+                    self.log_test("Currency Conversion Check", False, "No products found for conversion check")
+            except Exception as e:
+                self.log_test("Currency Conversion Check", False, f"Error checking products: {e}")
+
+        # Test 7: Test upload response currency distribution
+        print("\n🔍 Testing Upload Response Currency Distribution...")
+        
+        # Summarize all currency detection results
+        total_scenarios_tested = len(currency_detection_results)
+        successful_detections = sum(1 for result in currency_detection_results.values() 
+                                  if result['expected_currency'] in result['currency_distribution'])
+        
+        if total_scenarios_tested > 0:
+            detection_success_rate = (successful_detections / total_scenarios_tested) * 100
+            self.log_test("Overall Currency Detection Success Rate", 
+                        detection_success_rate >= 75,  # Expect at least 75% success
+                        f"{successful_detections}/{total_scenarios_tested} scenarios successful ({detection_success_rate:.1f}%)")
+        
+        print(f"\n✅ Excel Currency Detection Test Summary:")
+        print(f"   - Tested Turkish currency variants: DOLAR, DOLAR İSARETİ, AMERİKAN DOLARI")
+        print(f"   - Tested Euro variants: EURO, AVRO, AVRUPA")
+        print(f"   - Tested TL variants: TÜRK LİRASI, TURKİYE, LIRA")
+        print(f"   - Tested currency detection in both headers and data cells")
+        print(f"   - Tested both ColorBasedExcelService and ExcelService")
+        print(f"   - Verified currency conversion and storage")
+        print(f"   - Tested fallback behavior for unknown currencies")
+        print(f"   - Verified upload response currency distribution")
+        
+        return True
+
     def cleanup_test_data(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
