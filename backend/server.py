@@ -2626,8 +2626,9 @@ async def update_package(package_id: str, package: PackageCreate):
 async def delete_package(package_id: str):
     """Delete a package and its products"""
     try:
-        # Delete package products first
+        # Delete package products and supplies first
         await db.package_products.delete_many({"package_id": package_id})
+        await db.package_supplies.delete_many({"package_id": package_id})
         
         # Delete package
         result = await db.packages.delete_one({"id": package_id})
