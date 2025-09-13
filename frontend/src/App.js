@@ -2912,6 +2912,7 @@ function App() {
                                   </TableHead>
                                   <TableHead className="w-80">Ürün</TableHead>
                                   <TableHead className="w-32">Firma</TableHead>
+                                  <TableHead className="w-28">Marka</TableHead>
                                   <TableHead className="w-28">Liste Fiyatı</TableHead>
                                   {showDiscountedPrices && <TableHead className="w-28">İndirimli Fiyat</TableHead>}
                                   <TableHead className="w-24">Para Birimi</TableHead>
