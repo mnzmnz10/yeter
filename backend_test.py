@@ -2011,6 +2011,7 @@ class KaravanAPITester:
                 except Exception as e:
                     self.log_test("Get Current State", False, f"Error: {e}")
             
+            is_favorite_prev = current_favorite  # Initialize for loop
             for i in range(3):
                 success, response = self.run_test(
                     f"Rapid Toggle {i+1}",
@@ -2024,7 +2025,6 @@ class KaravanAPITester:
                         toggle_response = response.json()
                         is_favorite = toggle_response.get('is_favorite')
                         # Expected state should alternate from current state
-                        expected = not current_favorite if i == 0 else not is_favorite_prev
                         if i == 0:
                             expected = not current_favorite
                         else:
