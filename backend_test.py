@@ -3630,6 +3630,264 @@ class KaravanAPITester:
         
         return True
 
+    def test_excel_discount_functionality(self):
+        """Test Excel upload discount functionality comprehensively"""
+        print("\n🔍 Testing Excel Upload Discount Functionality...")
+        
+        # Step 1: Create a test company for discount testing
+        discount_company_name = f"Discount Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Discount Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": discount_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Discount Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            discount_company_id = company_data.get('id')
+            if not discount_company_id:
+                self.log_test("Discount Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(discount_company_id)
+        except Exception as e:
+            self.log_test("Discount Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Step 2: Create test Excel data with various prices
+        test_excel_data = {
+            'Product Name': ['Solar Panel 100W', 'Inverter 2000W', 'Battery 100Ah', 'Charge Controller 30A'],
+            'List Price': [100.00, 250.00, 150.00, 75.50],
+            'Currency': ['USD', 'USD', 'EUR', 'EUR']
+        }
+        
+        df = pd.DataFrame(test_excel_data)
+        excel_buffer = BytesIO()
+        df.to_excel(excel_buffer, index=False)
+        excel_buffer.seek(0)
+        
+        # Test 3: Test discount parameter validation
+        print("\n🔍 Testing Discount Parameter Validation...")
+        
+        # Test invalid discount values
+        invalid_discounts = ["-5", "150", "abc", ""]
+        for invalid_discount in invalid_discounts:
+            excel_buffer.seek(0)
+            files = {'file': ('discount_test.xlsx', excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+            data = {'discount': invalid_discount}
+            
+            try:
+                url = f"{self.base_url}/companies/{discount_company_id}/upload-excel"
+                response = requests.post(url, files=files, data=data, timeout=30)
+                
+                if invalid_discount in ["-5", "150", "abc"]:
+                    # These should fail with 400
+                    if response.status_code == 400:
+                        self.log_test(f"Invalid Discount Rejection - '{invalid_discount}'", True, f"Correctly rejected with 400")
+                    else:
+                        self.log_test(f"Invalid Discount Rejection - '{invalid_discount}'", False, f"Expected 400, got {response.status_code}")
+                elif invalid_discount == "":
+                    # Empty discount should default to 0 and succeed
+                    if response.status_code == 200:
+                        self.log_test(f"Empty Discount Handling", True, f"Empty discount handled correctly")
+                    else:
+                        self.log_test(f"Empty Discount Handling", False, f"Expected 200, got {response.status_code}")
+                        
+            except Exception as e:
+                self.log_test(f"Discount Validation Test - '{invalid_discount}'", False, f"Exception: {e}")
+        
+        # Test 4: Test valid discount values and calculations
+        print("\n🔍 Testing Discount Calculations...")
+        
+        discount_test_cases = [
+            {"discount": "0", "description": "No discount"},
+            {"discount": "20", "description": "20% discount"},
+            {"discount": "15.5", "description": "15.5% decimal discount"},
+            {"discount": "50", "description": "50% discount"},
+            {"discount": "100", "description": "100% discount (free)"}
+        ]
+        
+        for test_case in discount_test_cases:
+            discount_value = test_case["discount"]
+            description = test_case["description"]
+            
+            excel_buffer.seek(0)
+            files = {'file': ('discount_test.xlsx', excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+            data = {'discount': discount_value, 'currency': 'USD'}
+            
+            try:
+                url = f"{self.base_url}/companies/{discount_company_id}/upload-excel"
+                response = requests.post(url, files=files, data=data, timeout=30)
+                
+                if response.status_code == 200:
+                    self.log_test(f"Discount Upload - {description}", True, f"Upload successful with {discount_value}% discount")
+                    
+                    # Verify the discount was applied correctly by checking products
+                    products_response = requests.get(f"{self.base_url}/products", timeout=30)
+                    if products_response.status_code == 200:
+                        products = products_response.json()
+                        
+                        # Find our test products
+                        test_products = [p for p in products if p.get('company_id') == discount_company_id]
+                        
+                        if test_products:
+                            # Check discount calculation for first product (100 USD)
+                            test_product = next((p for p in test_products if 'Solar Panel' in p.get('name', '')), None)
+                            if test_product:
+                                original_price = 100.00
+                                expected_discounted_price = original_price * (1 - float(discount_value) / 100)
+                                
+                                list_price = test_product.get('list_price', 0)
+                                discounted_price = test_product.get('discounted_price')
+                                
+                                # Verify list price is original price
+                                if abs(list_price - original_price) < 0.01:
+                                    self.log_test(f"List Price Preservation - {description}", True, f"List price: ${list_price}")
+                                else:
+                                    self.log_test(f"List Price Preservation - {description}", False, f"Expected ${original_price}, got ${list_price}")
+                                
+                                # Verify discounted price calculation
+                                if float(discount_value) > 0:
+                                    if discounted_price and abs(discounted_price - expected_discounted_price) < 0.01:
+                                        self.log_test(f"Discount Calculation - {description}", True, f"${original_price} → ${discounted_price} ({discount_value}% off)")
+                                    else:
+                                        self.log_test(f"Discount Calculation - {description}", False, f"Expected ${expected_discounted_price}, got ${discounted_price}")
+                                else:
+                                    # No discount case
+                                    if discounted_price is None:
+                                        self.log_test(f"No Discount Case - {description}", True, f"No discounted price set when discount is 0%")
+                                    else:
+                                        self.log_test(f"No Discount Case - {description}", False, f"Discounted price should be None when discount is 0%, got ${discounted_price}")
+                                
+                                # Verify TRY conversion
+                                list_price_try = test_product.get('list_price_try')
+                                discounted_price_try = test_product.get('discounted_price_try')
+                                
+                                if list_price_try and list_price_try > 0:
+                                    self.log_test(f"TRY Conversion List Price - {description}", True, f"List price TRY: {list_price_try}")
+                                else:
+                                    self.log_test(f"TRY Conversion List Price - {description}", False, f"Invalid TRY conversion: {list_price_try}")
+                                
+                                if float(discount_value) > 0:
+                                    if discounted_price_try and discounted_price_try > 0:
+                                        self.log_test(f"TRY Conversion Discounted Price - {description}", True, f"Discounted price TRY: {discounted_price_try}")
+                                    else:
+                                        self.log_test(f"TRY Conversion Discounted Price - {description}", False, f"Invalid discounted TRY conversion: {discounted_price_try}")
+                            else:
+                                self.log_test(f"Test Product Not Found - {description}", False, "Could not find Solar Panel test product")
+                        else:
+                            self.log_test(f"Products Verification - {description}", False, "No test products found after upload")
+                    else:
+                        self.log_test(f"Products Fetch - {description}", False, f"Failed to fetch products: {products_response.status_code}")
+                        
+                else:
+                    self.log_test(f"Discount Upload - {description}", False, f"Upload failed with status {response.status_code}: {response.text[:200]}")
+                    
+            except Exception as e:
+                self.log_test(f"Discount Test - {description}", False, f"Exception: {e}")
+        
+        # Test 5: Test discount with different currencies
+        print("\n🔍 Testing Discount with Currency Selection...")
+        
+        currency_discount_tests = [
+            {"currency": "USD", "discount": "25", "expected_original": 100.00},
+            {"currency": "EUR", "discount": "30", "expected_original": 100.00},
+            {"currency": "TRY", "discount": "10", "expected_original": 100.00}
+        ]
+        
+        for test_case in currency_discount_tests:
+            currency = test_case["currency"]
+            discount = test_case["discount"]
+            expected_original = test_case["expected_original"]
+            
+            # Create currency-specific test data
+            currency_test_data = {
+                'Product Name': [f'Test Product {currency}'],
+                'List Price': [expected_original],
+                'Currency': [currency]
+            }
+            
+            df_currency = pd.DataFrame(currency_test_data)
+            excel_buffer_currency = BytesIO()
+            df_currency.to_excel(excel_buffer_currency, index=False)
+            excel_buffer_currency.seek(0)
+            
+            files = {'file': ('currency_discount_test.xlsx', excel_buffer_currency.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+            data = {'discount': discount, 'currency': currency}
+            
+            try:
+                url = f"{self.base_url}/companies/{discount_company_id}/upload-excel"
+                response = requests.post(url, files=files, data=data, timeout=30)
+                
+                if response.status_code == 200:
+                    self.log_test(f"Currency + Discount Upload - {currency}", True, f"{discount}% discount with {currency} currency")
+                    
+                    # Verify currency and discount combination
+                    products_response = requests.get(f"{self.base_url}/products", timeout=30)
+                    if products_response.status_code == 200:
+                        products = products_response.json()
+                        test_product = next((p for p in products if f'Test Product {currency}' in p.get('name', '')), None)
+                        
+                        if test_product:
+                            product_currency = test_product.get('currency')
+                            list_price = test_product.get('list_price', 0)
+                            discounted_price = test_product.get('discounted_price')
+                            
+                            # Verify currency is correct
+                            if product_currency == currency:
+                                self.log_test(f"Currency Assignment - {currency}", True, f"Product currency: {product_currency}")
+                            else:
+                                self.log_test(f"Currency Assignment - {currency}", False, f"Expected {currency}, got {product_currency}")
+                            
+                            # Verify discount calculation
+                            expected_discounted = expected_original * (1 - float(discount) / 100)
+                            if discounted_price and abs(discounted_price - expected_discounted) < 0.01:
+                                self.log_test(f"Currency Discount Calculation - {currency}", True, f"{expected_original} {currency} → {discounted_price} {currency}")
+                            else:
+                                self.log_test(f"Currency Discount Calculation - {currency}", False, f"Expected {expected_discounted}, got {discounted_price}")
+                        else:
+                            self.log_test(f"Currency Test Product - {currency}", False, f"Test product not found")
+                else:
+                    self.log_test(f"Currency + Discount Upload - {currency}", False, f"Upload failed: {response.status_code}")
+                    
+            except Exception as e:
+                self.log_test(f"Currency Discount Test - {currency}", False, f"Exception: {e}")
+        
+        # Test 6: Test edge cases
+        print("\n🔍 Testing Discount Edge Cases...")
+        
+        # Test with very small discount
+        excel_buffer.seek(0)
+        files = {'file': ('edge_test.xlsx', excel_buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+        data = {'discount': '0.1', 'currency': 'USD'}
+        
+        try:
+            url = f"{self.base_url}/companies/{discount_company_id}/upload-excel"
+            response = requests.post(url, files=files, data=data, timeout=30)
+            
+            if response.status_code == 200:
+                self.log_test("Small Discount Edge Case", True, "0.1% discount handled correctly")
+            else:
+                self.log_test("Small Discount Edge Case", False, f"Failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("Small Discount Edge Case", False, f"Exception: {e}")
+        
+        print(f"\n✅ Excel Discount Functionality Test Summary:")
+        print(f"   - Tested discount parameter validation (0-100 range)")
+        print(f"   - Tested discount calculation accuracy")
+        print(f"   - Verified list_price preservation (original Excel price)")
+        print(f"   - Verified discounted_price calculation")
+        print(f"   - Tested TRY currency conversion for both prices")
+        print(f"   - Tested discount integration with currency selection")
+        print(f"   - Tested edge cases and decimal precision")
+        
+        return True
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
