@@ -1052,6 +1052,30 @@ function App() {
     }
   };
 
+  const updateProductStock = async (productId, stockQuantity) => {
+    try {
+      const formData = new FormData();
+      formData.append('stock_quantity', stockQuantity);
+
+      const response = await axios.post(`${API}/products/${productId}/stock`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (response.data.success) {
+        // Reload products to show updated stock
+        await loadProducts();
+        toast.success(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error updating product stock:', error);
+      if (error.response?.data?.detail) {
+        toast.error(error.response.data.detail);
+      } else {
+        toast.error('Stok güncellenirken hata oluştu');
+      }
+    }
+  };
+
   const loadAllProductsForPackageEditing = async () => {
     try {
       console.log('Loading products for package editing...');
