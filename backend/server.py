@@ -1924,92 +1924,11 @@ class PDFQuoteGenerator:
 # ===== PDF QUOTE ENDPOINT =====
 # ===== PACKAGE PDF GENERATOR =====
 
-class PDFPackageGenerator:
+class PDFPackageGenerator(PDFQuoteGenerator):
+    """Paket PDF oluşturucu - Teklif taslağını kullanan"""
+    
     def __init__(self):
-        self.setup_fonts()
-        self.styles = getSampleStyleSheet()
-        self.setup_styles()
-    
-    def setup_fonts(self):
-        """Türkçe karakter desteği için font kurulumu"""
-        self.montserrat_available = False
-        self.montserrat_bold_available = False
-        
-        try:
-            font_dir = Path(__file__).parent / 'fonts'
-            
-            # Montserrat Regular font
-            montserrat_regular_path = font_dir / 'Montserrat-Regular.ttf'
-            if montserrat_regular_path.exists():
-                pdfmetrics.registerFont(TTFont('Montserrat', str(montserrat_regular_path), subfontIndex=0))
-                self.montserrat_available = True
-                logger.info("Montserrat Regular font loaded for packages")
-            
-            # Montserrat Bold font
-            montserrat_bold_path = font_dir / 'Montserrat-Bold.ttf'
-            if montserrat_bold_path.exists():
-                pdfmetrics.registerFont(TTFont('Montserrat-Bold', str(montserrat_bold_path), subfontIndex=0))
-                self.montserrat_bold_available = True
-                logger.info("Montserrat Bold font loaded for packages")
-                
-        except Exception as e:
-            logger.warning(f"Font loading failed for packages: {e}")
-    
-    def setup_styles(self):
-        """PDF stilleri kurulumu"""
-        font_name = 'Montserrat' if self.montserrat_available else 'Helvetica'
-        font_bold = 'Montserrat-Bold' if self.montserrat_bold_available else 'Helvetica-Bold'
-        
-        # Ana başlık stili
-        self.title_style = ParagraphStyle(
-            'PackageTitle',
-            parent=self.styles['Title'],
-            fontName=font_bold,
-            fontSize=24,
-            alignment=TA_CENTER,
-            spaceAfter=20,
-            textColor=colors.HexColor('#2563eb')
-        )
-        
-        # Alt başlık stili
-        self.subtitle_style = ParagraphStyle(
-            'PackageSubtitle',
-            parent=self.styles['Normal'],
-            fontName=font_bold,
-            fontSize=16,
-            alignment=TA_CENTER,
-            spaceAfter=15,
-            textColor=colors.HexColor('#64748b')
-        )
-        
-        # Normal metin stili
-        self.normal_style = ParagraphStyle(
-            'PackageNormal',
-            parent=self.styles['Normal'],
-            fontName=font_name,
-            fontSize=10,
-            alignment=TA_LEFT,
-            spaceAfter=6
-        )
-        
-        # Tablo başlık stili
-        self.table_header_style = ParagraphStyle(
-            'PackageTableHeader',
-            parent=self.styles['Normal'],
-            fontName=font_bold,
-            fontSize=10,
-            alignment=TA_CENTER,
-            textColor=colors.white
-        )
-        
-        # Tablo içerik stili
-        self.table_content_style = ParagraphStyle(
-            'PackageTableContent',
-            parent=self.styles['Normal'],
-            fontName=font_name,
-            fontSize=9,
-            alignment=TA_LEFT
-        )
+        super().__init__()  # PDFQuoteGenerator'dan miras al
 
     def _format_price_modern(self, price):
         """Modern format ile fiyat gösterimi"""
