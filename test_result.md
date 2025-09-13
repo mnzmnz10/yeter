@@ -57,8 +57,8 @@
 ##   test_priority: "high_first"  # or "sequential" or "stuck_first"
 ##
 ## agent_communication:
-##     -agent: "main"  # or "testing" or "user"
-##     -message: "Communication message between agents"
+##     -agent: "main"
+##     -message: "BACKEND STARTUP ISSUES SUCCESSFULLY RESOLVED: Fixed duplicate startup events, uvicorn import/run placement, and code structure issues. Backend now starts correctly with Sarf Malzemeleri category creation. Ready for comprehensive testing of package editing functionality and supply system integration."
 
 # Protocol Guidelines for Main agent
 #
