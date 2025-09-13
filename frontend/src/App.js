@@ -1168,6 +1168,48 @@ function App() {
         await loadPackageWithProducts(selectedPackageForEdit.id);
       }
     } catch (error) {
+  const loadSupplyProducts = async () => {
+    try {
+      const response = await axios.get(`${API}/products/supplies`);
+      setSupplyProducts(response.data);
+    } catch (error) {
+      console.error('Error loading supply products:', error);
+      toast.error('Sarf malzemesi ürünleri yüklenemedi');
+    }
+  };
+
+  const updateSupplyQuantity = async (supplyId, newQuantity) => {
+    if (!selectedPackageForEdit || newQuantity <= 0) return;
+    
+    try {
+      const response = await axios.put(`${API}/packages/${selectedPackageForEdit.id}/supplies/${supplyId}`, null, {
+        params: { quantity: newQuantity }
+      });
+      
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await loadPackageWithProducts(selectedPackageForEdit.id);
+      }
+    } catch (error) {
+      console.error('Error updating supply quantity:', error);
+      toast.error('Sarf malzemesi adeti güncellenemedi');
+    }
+  };
+
+  const removeSupplyFromPackage = async (supplyId) => {
+    if (!selectedPackageForEdit) return;
+    
+    try {
+      const response = await axios.delete(`${API}/packages/${selectedPackageForEdit.id}/supplies/${supplyId}`);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await loadPackageWithProducts(selectedPackageForEdit.id);
+      }
+    } catch (error) {
+      console.error('Error removing supply:', error);
+      toast.error('Sarf malzemesi çıkarılamadı');
+    }
+  };
       console.error('Error adding supplies to package:', error);
       toast.error('Sarf malzemeleri pakete eklenemedi');
     }
