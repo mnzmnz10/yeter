@@ -4437,7 +4437,7 @@ function App() {
             <Button 
               onClick={editingPackage ? updatePackage : createPackage}
               className="bg-teal-600 hover:bg-teal-700"
-              disabled={!packageForm.name || !packageForm.sale_price}
+              disabled={!packageForm.name}
             >
               {editingPackage ? 'Güncelle' : 'Oluştur'}
             </Button>
