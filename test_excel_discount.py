@@ -110,11 +110,12 @@ class ExcelDiscountTester:
             discount = test_case["discount"]
             expected_discounted = test_case["expected_discounted"]
             
-            # Create test data
+            # Create test data in 4-column format
             test_data = {
-                'Product Name': [f'Discount Test Product {i+1}'],
-                'List Price': [original_price],
-                'Currency': ['USD']
+                'Ürün Adı': [f'Discount Test Solar Panel {i+1}'],
+                'Liste Fiyatı': [original_price],
+                'İskonto': [0],
+                'Net Fiyat': [original_price]
             }
             
             df = pd.DataFrame(test_data)
