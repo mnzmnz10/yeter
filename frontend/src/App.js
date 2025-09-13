@@ -912,6 +912,103 @@ function App() {
   const [showPackageProductsDialog, setShowPackageProductsDialog] = useState(false);
   const [selectedPackageForProducts, setSelectedPackageForProducts] = useState(null);
   const [packageSelectedProducts, setPackageSelectedProducts] = useState(new Map());
+  // Package management functions
+  const loadPackages = async () => {
+    try {
+      const response = await axios.get(`${API}/packages`);
+      setPackages(response.data);
+    } catch (error) {
+      console.error('Error loading packages:', error);
+      toast.error('Paketler yüklenemedi');
+    }
+  };
+
+  const createPackage = async () => {
+    try {
+      const response = await axios.post(`${API}/packages`, {
+        name: packageForm.name,
+        description: packageForm.description,
+        sale_price: parseFloat(packageForm.sale_price) || 0,
+        image_url: packageForm.image_url || null
+      });
+      
+      if (response.data) {
+        toast.success('Paket başarıyla oluşturuldu');
+        setShowPackageDialog(false);
+        setPackageForm({ name: '', description: '', sale_price: '', image_url: '' });
+        await loadPackages();
+      }
+    } catch (error) {
+      console.error('Error creating package:', error);
+      toast.error('Paket oluşturulamadı');
+    }
+  };
+
+  const updatePackage = async () => {
+    try {
+      const response = await axios.put(`${API}/packages/${editingPackage}`, {
+        name: packageForm.name,
+        description: packageForm.description,
+        sale_price: parseFloat(packageForm.sale_price) || 0,
+        image_url: packageForm.image_url || null
+      });
+      
+      if (response.data) {
+        toast.success('Paket başarıyla güncellendi');
+        setShowPackageDialog(false);
+        setEditingPackage(null);
+        setPackageForm({ name: '', description: '', sale_price: '', image_url: '' });
+        await loadPackages();
+      }
+    } catch (error) {
+      console.error('Error updating package:', error);
+      toast.error('Paket güncellenemedi');
+    }
+  };
+
+  const deletePackage = async (packageId) => {
+    if (!window.confirm('Bu paketi silmek istediğinizden emin misiniz?')) return;
+    
+    try {
+      await axios.delete(`${API}/packages/${packageId}`);
+      toast.success('Paket başarıyla silindi');
+      await loadPackages();
+    } catch (error) {
+      console.error('Error deleting package:', error);
+      toast.error('Paket silinemedi');
+    }
+  };
+
+  const startEditPackage = (pkg) => {
+    setEditingPackage(pkg.id);
+    setPackageForm({
+      name: pkg.name,
+      description: pkg.description || '',
+      sale_price: pkg.sale_price.toString(),
+      image_url: pkg.image_url || ''
+    });
+    setShowPackageDialog(true);
+  };
+
+  const addProductsToPackage = async (packageId, selectedProducts) => {
+    try {
+      const products = Array.from(selectedProducts.entries()).map(([productId, quantity]) => ({
+        product_id: productId,
+        quantity: quantity
+      }));
+      
+      const response = await axios.post(`${API}/packages/${packageId}/products`, products);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        setShowPackageProductsDialog(false);
+        setPackageSelectedProducts(new Map());
+        await loadPackages();
+      }
+    } catch (error) {
+      console.error('Error adding products to package:', error);
+      toast.error('Ürünler pakete eklenemedi');
+    }
+  };
   const [showPackageDiscountedPrices, setShowPackageDiscountedPrices] = useState(false);
 
   const calculateQuoteTotals = useMemo(() => {
