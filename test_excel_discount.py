@@ -34,11 +34,12 @@ class ExcelDiscountTester:
         """Test discount parameter validation"""
         print("\n🔍 Testing Discount Parameter Validation...")
         
-        # Create test Excel data
+        # Create test Excel data in 4-column format (ELEKTROZİRVE format)
         test_data = {
-            'Product Name': ['Test Product'],
-            'List Price': [100.00],
-            'Currency': ['USD']
+            'Ürün Adı': ['Test Solar Panel Product'],
+            'Liste Fiyatı': [100.00],
+            'İskonto': [0],
+            'Net Fiyat': [100.00]
         }
         
         df = pd.DataFrame(test_data)
