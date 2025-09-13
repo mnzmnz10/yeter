@@ -1801,6 +1801,24 @@ function App() {
                       <Save className="w-4 h-4 mr-2" />
                       Değişiklikleri Kaydet
                     </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => downloadPackagePDF(selectedPackageForEdit.id, false)}
+                      disabled={!packageWithProducts || packageWithProducts.products.length === 0}
+                      className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF (Fiyatsız)
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => downloadPackagePDF(selectedPackageForEdit.id, true)}
+                      disabled={!packageWithProducts || packageWithProducts.products.length === 0}
+                      className="border-green-200 text-green-700 hover:bg-green-50"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF (Fiyatlı)
+                    </Button>
                   </div>
                 </div>
 
