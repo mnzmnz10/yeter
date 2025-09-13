@@ -1235,10 +1235,6 @@ function App() {
       toast.error('Sarf malzemesi çıkarılamadı');
     }
   };
-      console.error('Error adding supplies to package:', error);
-      toast.error('Sarf malzemeleri pakete eklenemedi');
-    }
-  };
 
   const [showPackageDiscountedPrices, setShowPackageDiscountedPrices] = useState(false);
 
