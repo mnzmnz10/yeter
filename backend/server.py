@@ -2630,6 +2630,67 @@ async def toggle_product_favorite(product_id: str):
         logger.error(f"Error toggling product favorite: {e}")
         raise HTTPException(status_code=500, detail="Favori durumu güncellenemedi")
 
+@api_router.post("/products/{product_id}/favorite")
+async def toggle_product_favorite(product_id: str):
+    """Toggle favorite status of a product"""
+    try:
+        # Get current product
+        product = await db.products.find_one({"id": product_id})
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        # Toggle favorite status
+        new_favorite_status = not product.get("is_favorite", False)
+        
+        update_data = {"is_favorite": new_favorite_status}
+        
+        # If removing from favorites, clear stock quantity
+        if not new_favorite_status:
+            update_data["stock_quantity"] = None
+        
+        await db.products.update_one(
+            {"id": product_id},
+            {"$set": update_data}
+        )
+        
+        return {"success": True, "is_favorite": new_favorite_status}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error toggling product favorite: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/products/{product_id}/stock")
+async def update_product_stock(product_id: str, stock_quantity: int = Form(...)):
+    """Update stock quantity for a favorite product"""
+    try:
+        # Get current product
+        product = await db.products.find_one({"id": product_id})
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        # Check if product is favorite
+        if not product.get("is_favorite", False):
+            raise HTTPException(status_code=400, detail="Stok sadece favori ürünler için takip edilir")
+        
+        # Update stock quantity
+        await db.products.update_one(
+            {"id": product_id},
+            {"$set": {"stock_quantity": stock_quantity}}
+        )
+        
+        return {
+            "success": True, 
+            "message": "Stok miktarı güncellendi",
+            "stock_quantity": stock_quantity
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating product stock: {e}")
+        raise HTTPException(status_code=500, detail="Stok güncellenirken hata oluştu")
 @api_router.get("/products/favorites", response_model=List[Product])
 async def get_favorite_products():
     """Get all favorite products"""
