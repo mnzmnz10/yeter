@@ -3024,7 +3024,14 @@ function App() {
                                         )}
                                       </TableCell>
                                       <TableCell className="w-32">
-                                        <Badge variant="outline" className="truncate" title={company?.name || 'Unknown'}>{company?.name || 'Unknown'}</Badge>
+                                        <div className="space-y-1">
+                                          <Badge variant="outline" className="truncate" title={company?.name || 'Unknown'}>{company?.name || 'Unknown'}</Badge>
+                                          {product.brand && (
+                                            <div className="text-xs text-slate-500 truncate" title={`Marka: ${product.brand}`}>
+                                              📦 {product.brand}
+                                            </div>
+                                          )}
+                                        </div>
                                       </TableCell>
                                       <TableCell className="w-28">
                                         {isEditing ? (
