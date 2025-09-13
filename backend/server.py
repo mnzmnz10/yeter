@@ -2644,9 +2644,14 @@ async def create_package(package: PackageCreate):
 
 @api_router.get("/packages", response_model=List[Package])
 async def get_packages():
-    """Get all packages"""
+    """Get all packages sorted with pinned packages first"""
     try:
-        packages = await db.packages.find({}).sort("created_at", -1).to_list(None)
+        # Get packages sorted by pin status (pinned first) then by creation date (newest first)
+        packages = await db.packages.find({}).sort([
+            ("is_pinned", -1),  # Pinned packages first (True = -1 comes before False = 0)
+            ("created_at", -1)   # Then by creation date, newest first
+        ]).to_list(None)
+        
         return [Package(**package) for package in packages]
     except Exception as e:
         logger.error(f"Error getting packages: {e}")
