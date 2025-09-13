@@ -641,8 +641,8 @@ class ColorBasedExcelService:
                 column_mapping['product_name'] = col_idx
             elif color_category == 'BLUE':  # Mavi = Ürün Açıklaması  
                 column_mapping['description'] = col_idx
-            elif color_category == 'YELLOW':  # Sarı = Firma
-                column_mapping['company'] = col_idx
+            elif color_category == 'YELLOW':  # Sarı = Marka (eskiden Firma)
+                column_mapping['brand'] = col_idx
             elif color_category == 'GREEN':  # Yeşil = Liste Fiyatı
                 column_mapping['list_price'] = col_idx
                 # Header yoksa varsayılan TRY (log için)
