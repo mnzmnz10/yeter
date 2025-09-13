@@ -2953,7 +2953,7 @@ async def upload_excel(company_id: str, file: UploadFile = File(...), currency: 
                     update_data = {
                         "list_price": product_data['list_price'],
                         "discounted_price": product_data.get('discounted_price'),
-                        "currency": product_data['currency'],
+                        "currency": final_currency,
                         "list_price_try": float(list_price_try),
                         "discounted_price_try": float(discounted_price_try) if discounted_price_try else None,
                         "updated_at": datetime.now(timezone.utc)
