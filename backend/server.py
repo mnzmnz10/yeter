@@ -219,9 +219,6 @@ class PackageSupplyCreate(BaseModel):
     product_id: str
     quantity: int = 1
     note: Optional[str] = None
-    labor_cost: float = 0  # İşçilik maliyeti
-    products: List[Dict[str, Any]]  # Product objects with ID and quantity
-    notes: Optional[str] = None
 
 class QuoteResponse(BaseModel):
     id: str
