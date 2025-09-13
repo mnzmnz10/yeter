@@ -28,6 +28,7 @@ function App() {
   const [uploadCompanyName, setUploadCompanyName] = useState(''); // Excel yükleme için manuel firma adı
   const [useExistingCompany, setUseExistingCompany] = useState(true); // Mevcut firma mı yoksa yeni mi
   const [uploadFile, setUploadFile] = useState(null);
+  const [uploadCurrency, setUploadCurrency] = useState('USD'); // Excel yükleme için para birimi
   const [stats, setStats] = useState({
     totalCompanies: 0,
     totalProducts: 0
