@@ -160,10 +160,10 @@ class CurrencySelectionTester:
         try:
             # Create Excel with mixed currency indicators in content but override with EUR
             mixed_currency_data = {
-                'Product Name': ['USD Product Override Test', 'TRY Product Override Test'],
-                'List Price USD': [100.00, 200.00],  # Headers suggest USD
-                'List Price TL': [2750.00, 5500.00],  # Headers suggest TRY
-                'Description': ['Product with USD in header but EUR override', 'Product with TRY in header but EUR override']
+                'Ürün Adı': ['USD Product Override Test', 'TRY Product Override Test'],
+                'Liste Fiyatı': [100.00, 200.00],  # Will be overridden to EUR
+                'İndirimli Fiyat': [85.00, 170.00],
+                'Açıklama': ['Product with USD in header but EUR override', 'Product with TRY in header but EUR override']
             }
             
             df = pd.DataFrame(mixed_currency_data)
