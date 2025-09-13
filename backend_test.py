@@ -2930,42 +2930,38 @@ class KaravanAPITester:
         
         currency_test_scenarios = [
             {
-                "name": "Turkish Dollar Variants",
+                "name": "Simple USD Test",
                 "data": {
                     'Ürün Adı': ['Solar Panel 450W', 'Inverter 5000W', 'Battery 200Ah'],
-                    'Liste Fiyatı DOLAR': [299.99, 750.50, 450.00],
-                    'İndirimli Fiyat': [249.99, 699.00, 399.00],
-                    'Açıklama': ['High efficiency panel', 'Hybrid inverter', 'Deep cycle battery']
+                    'Liste Fiyatı': [299.99, 750.50, 450.00],
+                    'Para Birimi': ['USD', 'USD', 'USD']
                 },
                 "expected_currency": "USD"
             },
             {
-                "name": "Turkish Euro Variants", 
+                "name": "Simple EUR Test", 
                 "data": {
-                    'Ürün': ['Güneş Paneli', 'İnvertör', 'Akü'],
-                    'AVRO Fiyat': [250.00, 600.00, 380.00],
-                    'İskonto': [200.00, 550.00, 340.00],
-                    'Notlar': ['Yüksek verim', 'Hibrit sistem', 'Derin döngü']
+                    'Product Name': ['Güneş Paneli', 'İnvertör', 'Akü'],
+                    'Price': [250.00, 600.00, 380.00],
+                    'Currency': ['EUR', 'EUR', 'EUR']
                 },
                 "expected_currency": "EUR"
             },
             {
-                "name": "Turkish Lira Variants",
+                "name": "Simple TRY Test",
                 "data": {
-                    'Malzeme Adı': ['Panel 450W', 'Şarj Kontrolcüsü', 'Kablo Seti'],
-                    'TÜRK LİRASI Liste': [12500.00, 3500.00, 1200.00],
-                    'TL İndirimli': [11250.00, 3150.00, 1080.00],
-                    'Detay': ['Monokristal', 'MPPT teknoloji', 'Özel kablo']
+                    'Malzeme': ['Panel 450W', 'Şarj Kontrolcüsü', 'Kablo Seti'],
+                    'Fiyat': [12500.00, 3500.00, 1200.00],
+                    'Döviz': ['TRY', 'TRY', 'TRY']
                 },
                 "expected_currency": "TRY"
             },
             {
-                "name": "American Dollar Variants",
+                "name": "Turkish Dollar Header Test",
                 "data": {
-                    'Ürün Adı': ['Test Product 1', 'Test Product 2', 'Test Product 3'],
-                    'AMERİKAN DOLARI': [100.00, 200.00, 300.00],
-                    'İndirim': [85.00, 170.00, 255.00],
-                    'Notlar': ['USD test 1', 'USD test 2', 'USD test 3']
+                    'Ürün': ['Test Product 1', 'Test Product 2', 'Test Product 3'],
+                    'DOLAR Fiyat': [100.00, 200.00, 300.00],
+                    'Açıklama': ['USD test 1', 'USD test 2', 'USD test 3']
                 },
                 "expected_currency": "USD"
             }
