@@ -2828,7 +2828,7 @@ async def add_products_to_package(package_id: str, products: List[PackageProduct
         raise HTTPException(status_code=500, detail="Favori ürünler getirilemedi")
 
 @api_router.post("/companies/{company_id}/upload-excel")  
-async def upload_excel(company_id: str, file: UploadFile = File(...), currency: str = Form(None)):
+async def upload_excel(company_id: str, file: UploadFile = File(...), currency: str = Form(None), discount: str = Form("0")):
     """Upload Excel file for a company with smart update system"""
     try:
         # Verify company exists
