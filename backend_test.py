@@ -3024,9 +3024,9 @@ class KaravanAPITester:
         print("\n🔍 Testing Currency Detection in Data Cells...")
         
         data_cell_scenario = {
-            'Ürün': ['Product with USD in cell', 'Product with EUR in cell', 'Product with TL in cell'],
-            'Fiyat': ['100 DOLAR', '85 EURO', '4200 TL'],
-            'Açıklama': ['Contains USD reference', 'Contains EUR reference', 'Contains TRY reference']
+            'Product Name': ['Solar Panel', 'Inverter', 'Battery'],
+            'Price': [100.00, 200.00, 300.00],
+            'Currency Info': ['USD', 'EUR', 'TRY']
         }
         
         try:
