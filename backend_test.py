@@ -3327,6 +3327,346 @@ class KaravanAPITester:
         
         return True
 
+    def test_package_copy_functionality(self):
+        """Comprehensive test for package copy system"""
+        print("\n🔍 Testing Package Copy Functionality...")
+        
+        # Step 1: Create a test company for package testing
+        test_company_name = f"Package Copy Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Package Copy Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": test_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Package Copy Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            test_company_id = company_data.get('id')
+            if not test_company_id:
+                self.log_test("Package Copy Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(test_company_id)
+        except Exception as e:
+            self.log_test("Package Copy Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Step 2: Create test products for the package
+        test_products = [
+            {
+                "name": "Solar Panel 450W - Package Test",
+                "company_id": test_company_id,
+                "list_price": 299.99,
+                "discounted_price": 249.99,
+                "currency": "USD",
+                "description": "High efficiency solar panel for package testing"
+            },
+            {
+                "name": "Inverter 5000W - Package Test", 
+                "company_id": test_company_id,
+                "list_price": 750.50,
+                "discounted_price": 699.00,
+                "currency": "EUR",
+                "description": "Hybrid solar inverter for package testing"
+            },
+            {
+                "name": "Battery 200Ah - Package Test",
+                "company_id": test_company_id,
+                "list_price": 8750.00,
+                "discounted_price": 8250.00,
+                "currency": "TRY",
+                "description": "Deep cycle battery for package testing"
+            }
+        ]
+        
+        created_product_ids = []
+        
+        for product_data in test_products:
+            success, response = self.run_test(
+                f"Create Package Test Product: {product_data['name'][:30]}...",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        self.log_test(f"Package Test Product Created - {product_data['name'][:20]}...", True, f"ID: {product_id}")
+                    else:
+                        self.log_test(f"Package Test Product Creation - {product_data['name'][:20]}...", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Package Test Product Creation - {product_data['name'][:20]}...", False, f"Error parsing: {e}")
+
+        if len(created_product_ids) < 3:
+            self.log_test("Package Copy Test Products", False, f"Only {len(created_product_ids)} products created, need at least 3")
+            return False
+
+        # Step 3: Create supplies products (from Sarf Malzemeleri category)
+        supplies_products = [
+            {
+                "name": "Kablo Bağlantı Malzemesi",
+                "company_id": test_company_id,
+                "list_price": 25.50,
+                "currency": "TRY",
+                "description": "Kablo bağlantı malzemesi",
+                "category_id": "sarf-malzemeleri-category"
+            },
+            {
+                "name": "Vida ve Somun Seti",
+                "company_id": test_company_id,
+                "list_price": 15.75,
+                "currency": "TRY",
+                "description": "Montaj için vida ve somun seti",
+                "category_id": "sarf-malzemeleri-category"
+            }
+        ]
+        
+        created_supply_ids = []
+        
+        for supply_data in supplies_products:
+            success, response = self.run_test(
+                f"Create Package Test Supply: {supply_data['name'][:30]}...",
+                "POST",
+                "products",
+                200,
+                data=supply_data
+            )
+            
+            if success and response:
+                try:
+                    supply_response = response.json()
+                    supply_id = supply_response.get('id')
+                    if supply_id:
+                        created_supply_ids.append(supply_id)
+                        self.created_products.append(supply_id)
+                        self.log_test(f"Package Test Supply Created - {supply_data['name'][:20]}...", True, f"ID: {supply_id}")
+                    else:
+                        self.log_test(f"Package Test Supply Creation - {supply_data['name'][:20]}...", False, "No supply ID returned")
+                except Exception as e:
+                    self.log_test(f"Package Test Supply Creation - {supply_data['name'][:20]}...", False, f"Error parsing: {e}")
+
+        # Step 4: Create original package (FAMILY4100 equivalent)
+        original_package_data = {
+            "name": "FAMILY4100",
+            "description": "Complete solar energy system package for family use",
+            "sale_price": 15000.00,
+            "image_url": "https://example.com/family4100.jpg"
+        }
+        
+        success, response = self.run_test(
+            "Create Original Package (FAMILY4100)",
+            "POST",
+            "packages",
+            200,
+            data=original_package_data
+        )
+        
+        original_package_id = None
+        if success and response:
+            try:
+                package_response = response.json()
+                original_package_id = package_response.get('id')
+                if original_package_id:
+                    self.log_test("Original Package Created", True, f"FAMILY4100 ID: {original_package_id}")
+                else:
+                    self.log_test("Original Package Creation", False, "No package ID returned")
+                    return False
+            except Exception as e:
+                self.log_test("Original Package Creation", False, f"Error parsing: {e}")
+                return False
+        else:
+            return False
+
+        # Step 5: Add products to the original package
+        package_products_data = [
+            {"product_id": created_product_ids[0], "quantity": 2},
+            {"product_id": created_product_ids[1], "quantity": 1},
+            {"product_id": created_product_ids[2], "quantity": 1}
+        ]
+        
+        success, response = self.run_test(
+            "Add Products to Original Package",
+            "POST",
+            f"packages/{original_package_id}/products",
+            200,
+            data={"products": package_products_data}
+        )
+        
+        if success and response:
+            try:
+                add_products_response = response.json()
+                if add_products_response.get('success'):
+                    self.log_test("Package Products Added", True, f"Added {len(package_products_data)} products to package")
+                else:
+                    self.log_test("Package Products Added", False, "Failed to add products to package")
+            except Exception as e:
+                self.log_test("Package Products Addition", False, f"Error parsing: {e}")
+
+        # Step 6: Add supplies to the original package
+        if created_supply_ids:
+            package_supplies_data = [
+                {"product_id": created_supply_ids[0], "quantity": 5},
+                {"product_id": created_supply_ids[1], "quantity": 3}
+            ]
+            
+            success, response = self.run_test(
+                "Add Supplies to Original Package",
+                "POST",
+                f"packages/{original_package_id}/supplies",
+                200,
+                data={"supplies": package_supplies_data}
+            )
+            
+            if success and response:
+                try:
+                    add_supplies_response = response.json()
+                    if add_supplies_response.get('success'):
+                        self.log_test("Package Supplies Added", True, f"Added {len(package_supplies_data)} supplies to package")
+                    else:
+                        self.log_test("Package Supplies Added", False, "Failed to add supplies to package")
+                except Exception as e:
+                    self.log_test("Package Supplies Addition", False, f"Error parsing: {e}")
+
+        # Step 7: Test Package Copy Endpoint - Valid Copy
+        print("\n🔍 Testing Package Copy Endpoint...")
+        
+        # Use form data for the copy request as per the backend implementation
+        copy_url = f"{self.base_url}/packages/{original_package_id}/copy"
+        copy_data = {"new_name": "FAMILY4100_COPY_TEST"}
+        
+        try:
+            response = requests.post(copy_url, data=copy_data, timeout=30)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                try:
+                    response_data = response.json()
+                    details += f" | Response: {json.dumps(response_data, indent=2)[:200]}..."
+                except:
+                    details += f" | Response: {response.text[:100]}..."
+            else:
+                details += f" | Expected: 200"
+                try:
+                    error_data = response.json()
+                    details += f" | Error: {error_data}"
+                except:
+                    details += f" | Error: {response.text[:100]}"
+
+            self.log_test("Copy Package - Valid Request", success, details)
+            
+        except Exception as e:
+            self.log_test("Copy Package - Valid Request", False, f"Exception: {str(e)}")
+            response = None
+            success = False
+        
+        copied_package_id = None
+        if success and response:
+            try:
+                copy_response = response.json()
+                if copy_response.get('success'):
+                    copied_package_id = copy_response.get('new_package_id')
+                    original_name = copy_response.get('original_package_name')
+                    new_name = copy_response.get('new_package_name')
+                    copied_products = copy_response.get('copied_products', 0)
+                    copied_supplies = copy_response.get('copied_supplies', 0)
+                    
+                    self.log_test("Package Copy Success", True, f"Copied '{original_name}' to '{new_name}'")
+                    self.log_test("Package Copy Statistics", True, f"Products: {copied_products}, Supplies: {copied_supplies}")
+                    
+                    if copied_package_id:
+                        self.log_test("New Package ID Generated", True, f"New ID: {copied_package_id}")
+                    else:
+                        self.log_test("New Package ID Generated", False, "No new package ID returned")
+                        
+                else:
+                    self.log_test("Package Copy Success", False, "Copy operation failed")
+            except Exception as e:
+                self.log_test("Package Copy Response", False, f"Error parsing: {e}")
+
+        # Step 8: Test Copy Validation - Duplicate Name
+        print("\n🔍 Testing Package Copy Validation...")
+        
+        duplicate_copy_data = {"new_name": "FAMILY4100_COPY_TEST"}  # Same name as before
+        
+        try:
+            duplicate_response = requests.post(copy_url, data=duplicate_copy_data, timeout=30)
+            duplicate_success = duplicate_response.status_code == 400  # Should return 400 error
+            
+            if duplicate_success and duplicate_response:
+                try:
+                    error_response = duplicate_response.json()
+                    if "Bu isimde bir paket zaten mevcut" in error_response.get('detail', ''):
+                        self.log_test("Duplicate Name Rejection", True, "Correctly rejected duplicate name")
+                    else:
+                        self.log_test("Duplicate Name Rejection", False, f"Unexpected error message: {error_response.get('detail')}")
+                except Exception as e:
+                    self.log_test("Duplicate Name Error Response", False, f"Error parsing: {e}")
+            else:
+                self.log_test("Duplicate Name Rejection", False, f"Expected 400, got {duplicate_response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Duplicate Name Test", False, f"Exception: {str(e)}")
+
+        # Step 9: Test Copy Validation - Non-existent Package
+        fake_package_id = str(uuid.uuid4())
+        fake_copy_url = f"{self.base_url}/packages/{fake_package_id}/copy"
+        fake_copy_data = {"new_name": "FAKE_PACKAGE_COPY"}
+        
+        try:
+            fake_response = requests.post(fake_copy_url, data=fake_copy_data, timeout=30)
+            fake_success = fake_response.status_code == 404  # Should return 404 error
+            
+            if fake_success and fake_response:
+                try:
+                    error_response = fake_response.json()
+                    if "Package not found" in error_response.get('detail', ''):
+                        self.log_test("Non-existent Package Rejection", True, "Correctly rejected non-existent package")
+                    else:
+                        self.log_test("Non-existent Package Rejection", False, f"Unexpected error message: {error_response.get('detail')}")
+                except Exception as e:
+                    self.log_test("Non-existent Package Error Response", False, f"Error parsing: {e}")
+            else:
+                self.log_test("Non-existent Package Rejection", False, f"Expected 404, got {fake_response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Non-existent Package Test", False, f"Exception: {str(e)}")
+
+        # Step 10: Test Copy Validation - Empty Name
+        empty_name_data = {"new_name": ""}
+        
+        try:
+            empty_response = requests.post(copy_url, data=empty_name_data, timeout=30)
+            empty_success = empty_response.status_code in [400, 422]  # Should return validation error
+            
+            if empty_success:
+                self.log_test("Empty Name Rejection", True, "Correctly rejected empty name")
+            else:
+                self.log_test("Empty Name Rejection", False, f"Expected 400/422, got {empty_response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Empty Name Test", False, f"Exception: {str(e)}")
+
+        print(f"\n✅ Package Copy Functionality Test Summary:")
+        print(f"   - Created test company and products")
+        print(f"   - Created original package (FAMILY4100) with products and supplies")
+        print(f"   - Tested package copy endpoint with valid data")
+        print(f"   - Tested validation (duplicate names, non-existent packages, empty names)")
+        print(f"   - Verified copy operation response format and statistics")
+        
+        return True
+
     def cleanup_test_data(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
