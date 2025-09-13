@@ -989,6 +989,31 @@ class ExcelService:
         return products
     
     @staticmethod
+    def detect_currency_from_text(text: str, fallback_currency: str = 'USD') -> str:
+        """Detect currency from any text (header, cell value, etc.)"""
+        if not text:
+            return fallback_currency
+            
+        text = str(text).upper().strip()
+        
+        # Dolar kontrolü - gelişmiş
+        dollar_keywords = ['$', 'DOLAR', 'DOLLAR', 'USD', 'DOLAR İSARETİ', 'DOLAR IŞARETI', 'AMERİKAN DOLARI', 'AMERIKAN DOLARI']
+        if any(keyword in text for keyword in dollar_keywords):
+            return 'USD'
+        
+        # Euro kontrolü - gelişmiş
+        euro_keywords = ['€', 'EURO', 'EUR', 'AVRO', 'AVRUPA']
+        if any(keyword in text for keyword in euro_keywords):
+            return 'EUR'
+        
+        # TL kontrolü - gelişmiş
+        tl_keywords = ['₺', 'TL', 'TRY', 'TÜRK', 'LIRA', 'TÜRK LİRASI', 'TURK LIRASI', 'TURKİYE', 'TURKIYE']
+        if any(keyword in text for keyword in tl_keywords):
+            return 'TRY'
+            
+        return fallback_currency
+
+    @staticmethod
     def _parse_general_format(df) -> List[Dict[str, Any]]:
         """Genel format parsing"""
         products = []
