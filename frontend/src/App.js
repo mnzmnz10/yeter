@@ -1948,10 +1948,15 @@ function App() {
                         </Button>
                       </div>
                       {packageWithProducts && showPackageDiscountedPrices && (
-                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg space-y-2">
                           <div className="text-sm text-amber-800">
-                            <strong>İndirimli Fiyat Toplamı:</strong> ₺ {formatPrice(packageWithProducts.total_discounted_price || 0)}
+                            <strong>Ürünler Toplamı:</strong> ₺ {formatPrice(packageWithProducts.total_discounted_price || 0)}
                           </div>
+                          {packageWithProducts.supplies && packageWithProducts.supplies.length > 0 && (
+                            <div className="text-sm text-amber-800">
+                              <strong>Sarf Malzemeleri dahil:</strong> ₺ {formatPrice(packageWithProducts.total_discounted_price_with_supplies || 0)}
+                            </div>
+                          )}
                         </div>
                       )}
                       <div>
