@@ -491,16 +491,19 @@ backend:
         comment: "COMPREHENSIVE IMPROVED WHATSAPP SHARE WITH PDF DOWNLOAD TESTING COMPLETED SUCCESSFULLY: ✅ CRITICAL SUCCESS - New shareViaWhatsAppWithPDF() function working perfectly in quote editing interface, replacing old generateWhatsAppShareUrl() approach, ✅ STEP 1 VERIFIED - PDF file downloads automatically to user's device (0.18s response time), filename verification passed with .pdf extension, ✅ STEP 2 VERIFIED - WhatsApp opens after 1-second delay (actual: 1.20s), timing verification passed, ✅ STEP 3 VERIFIED - Improved Turkish message contains all expected elements: 'Merhaba! [Quote Name] teklifinin PDF dosyasını paylaşıyorum. PDF dosyası cihazınıza indirildi, lütfen WhatsApp'ta dosya ekl"
 
   - task: "Make Sale Price Optional for Package Creation and Editing"
-    implemented: true
-    working: "NA"
-    file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    implemented: false
+    working: false
+    file: "/app/backend/server.py and /app/frontend/src/App.js"
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "SALE PRICE OPTIONAL FEATURE IMPLEMENTED: Modified line 2025 in App.js to remove the || !packageForm.sale_price condition from the disabled prop of the package form submit button. Now the button is only disabled when packageForm.name is empty, making the sale price field optional for package creation and editing. Users can now create and update packages without specifying a sale price. Implementation ready for testing."eme butonunu kullanarak paylaşın.', ✅ STEP 4 VERIFIED - Toast message displays correctly: 'PDF indirildi! WhatsApp Web açılıyor - dosyayı manuel olarak ekleyin.', ✅ EDITING INTERFACE FUNCTIONALITY CONFIRMED - WhatsApp button found and working in editing interface, ✅ DEVICE DETECTION WORKING - Correctly opens WhatsApp Web for desktop users, ✅ OLD VS NEW BEHAVIOR CONFIRMED - OLD: Only link sharing with PDF URL, NEW: PDF download + manual attachment instruction, ✅ PERFORMANCE EXCELLENT - PDF download starts immediately, WhatsApp opens with proper 1-second delay, toast notifications appear correctly. Test Results: 100% success rate - all expected behaviors verified in editing interface. The improved WhatsApp share functionality with PDF download is production-ready and provides significantly better user experience."
+        comment: "SALE PRICE OPTIONAL FEATURE IMPLEMENTED: Modified line 2025 in App.js to remove the || !packageForm.sale_price condition from the disabled prop of the package form submit button. Now the button is only disabled when packageForm.name is empty, making the sale price field optional for package creation and editing. Users can now create and update packages without specifying a sale price. Implementation ready for testing."
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL BACKEND ISSUE IDENTIFIED - FRONTEND CHANGE INSUFFICIENT: ✅ FRONTEND CHANGE VERIFIED - App.js line 2025 correctly modified to remove || !packageForm.sale_price condition from submit button disabled prop, ❌ BACKEND MODELS REQUIRE MANDATORY SALE_PRICE - Package and PackageCreate models in server.py lines 197 and 205 define sale_price: Decimal as required field, ❌ PACKAGE CREATION WITHOUT SALE_PRICE FAILS - POST /api/packages returns 422 error: 'Field required' when sale_price is omitted, ❌ PACKAGE CREATION WITH NULL SALE_PRICE FAILS - POST /api/packages returns 422 error: 'Decimal input should be an integer, float, string or Decimal object' when sale_price is null, ❌ PACKAGE UPDATE TO REMOVE SALE_PRICE FAILS - PUT /api/packages/{id} returns same 422 Decimal validation error when trying to set sale_price to null, ✅ PACKAGE CREATION WITH VALID SALE_PRICE WORKS - Packages with numeric sale_price values create and update successfully, ❌ COMPREHENSIVE TEST RESULTS - 68.8% success rate (11/16 tests passed): Frontend validation removed but backend validation blocks optional sale_price functionality. REQUIRED BACKEND CHANGES: 1) Change Package.sale_price from 'Decimal' to 'Optional[Decimal] = None', 2) Change PackageCreate.sale_price from 'Decimal' to 'Optional[Decimal] = None', 3) Update package creation/update endpoints to handle None values, 4) Ensure database operations accept null sale_price values. The feature is NOT functional until backend models are updated to make sale_price optional."
 
   - task: "Improved WhatsApp Share with PDF Download Feature"
     implemented: true
