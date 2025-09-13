@@ -2029,35 +2029,7 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         buffer.seek(0)
         return buffer
     
-    def _create_package_info_section(self, package_data):
-        """Paket bilgi satırı - sadece tarih"""
-        from datetime import datetime
-        from reportlab.platypus import Table as PDFTable
-        
-        # Tarih
-        now = datetime.now()
-        date_str = now.strftime('%d.%m.%Y')
-        
-        # Sadece tarih bilgisi
-        info_data = [
-            ["Tarih:", date_str]
-        ]
-        
-        # Tablo oluştur
-        info_table = PDFTable(info_data, colWidths=[3*cm, 6*cm])
-        info_table.setStyle(TableStyle([
-            ('FONTNAME', (0, 0), (-1, -1), self.get_font_name()),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#4A5568')),
-            ('TEXTCOLOR', (1, 0), (1, -1), colors.HexColor('#2D3748')),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-            ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ]))
-        
-        return info_table
+    # _create_package_info_section removed - date moved to top-right
     
     def _create_package_products_table(self, products, include_prices=True):
         """Paket ürünleri tablosu - teklif stilinde"""
