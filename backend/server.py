@@ -2762,6 +2762,84 @@ async def update_package(package_id: str, package: PackageCreate):
         logger.error(f"Error updating package: {e}")
         raise HTTPException(status_code=500, detail="Paket güncellenemedi")
 
+@api_router.post("/packages/{package_id}/copy")
+async def copy_package(package_id: str, new_name: str = Form(...)):
+    """Copy a package with all its products and supplies"""
+    try:
+        # Get original package
+        original_package = await db.packages.find_one({"id": package_id})
+        if not original_package:
+            raise HTTPException(status_code=404, detail="Package not found")
+        
+        # Check if new name already exists
+        existing_package = await db.packages.find_one({"name": new_name})
+        if existing_package:
+            raise HTTPException(status_code=400, detail="Bu isimde bir paket zaten mevcut")
+        
+        # Create new package with copied data
+        new_package_id = str(uuid.uuid4())
+        new_package = {
+            "id": new_package_id,
+            "name": new_name,
+            "description": original_package.get("description", ""),
+            "sale_price": original_package.get("sale_price", "0"),
+            "image_url": original_package.get("image_url"),
+            "created_at": datetime.now(timezone.utc)
+        }
+        
+        await db.packages.insert_one(new_package)
+        logger.info(f"Created package copy: {new_name} (ID: {new_package_id})")
+        
+        # Copy package products
+        original_products = await db.package_products.find({"package_id": package_id}).to_list(length=None)
+        if original_products:
+            copied_products = []
+            for product in original_products:
+                copied_product = {
+                    "id": str(uuid.uuid4()),
+                    "package_id": new_package_id,
+                    "product_id": product["product_id"],
+                    "quantity": product["quantity"],
+                    "created_at": datetime.now(timezone.utc)
+                }
+                copied_products.append(copied_product)
+            
+            await db.package_products.insert_many(copied_products)
+            logger.info(f"Copied {len(copied_products)} products to new package")
+        
+        # Copy package supplies
+        original_supplies = await db.package_supplies.find({"package_id": package_id}).to_list(length=None)
+        if original_supplies:
+            copied_supplies = []
+            for supply in original_supplies:
+                copied_supply = {
+                    "id": str(uuid.uuid4()),
+                    "package_id": new_package_id,
+                    "product_id": supply["product_id"],
+                    "quantity": supply["quantity"],
+                    "created_at": datetime.now(timezone.utc)
+                }
+                copied_supplies.append(copied_supply)
+            
+            await db.package_supplies.insert_many(copied_supplies)
+            logger.info(f"Copied {len(copied_supplies)} supplies to new package")
+        
+        return {
+            "success": True, 
+            "message": f"Paket başarıyla kopyalandı: {new_name}",
+            "new_package_id": new_package_id,
+            "original_package_name": original_package["name"],
+            "new_package_name": new_name,
+            "copied_products": len(original_products) if original_products else 0,
+            "copied_supplies": len(original_supplies) if original_supplies else 0
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error copying package: {e}")
+        raise HTTPException(status_code=500, detail="Paket kopyalanırken hata oluştu")
+
 @api_router.delete("/packages/{package_id}")
 async def delete_package(package_id: str):
     """Delete a package and its products"""
