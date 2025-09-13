@@ -552,18 +552,24 @@ class ColorBasedExcelService:
         if not cell_value:
             return 'TRY'
             
-        text = str(cell_value).upper()
+        text = str(cell_value).upper().strip()
         
-        # Dolar kontrolü
-        if any(keyword in text for keyword in ['$', 'DOLAR', 'DOLLAR', 'USD']):
+        # Dolar kontrolüne daha fazla varyant ekle
+        dollar_keywords = ['$', 'DOLAR', 'DOLLAR', 'USD', 'DOLAR İSARETİ', 'DOLAR IŞARETI', 'AMERİKAN DOLARI', 'AMERIKAN DOLARI']
+        if any(keyword in text for keyword in dollar_keywords):
             return 'USD'
-        # Euro kontrolü  
-        elif any(keyword in text for keyword in ['€', 'EURO', 'EUR']):
+        
+        # Euro kontrolüne daha fazla varyant ekle  
+        euro_keywords = ['€', 'EURO', 'EUR', 'AVRO', 'AVRUPA']
+        if any(keyword in text for keyword in euro_keywords):
             return 'EUR'
-        # TL kontrolü
-        elif any(keyword in text for keyword in ['₺', 'TL', 'TRY', 'TÜRK', 'LIRA']):
+        
+        # TL kontrolüne daha fazla varyant ekle
+        tl_keywords = ['₺', 'TL', 'TRY', 'TÜRK', 'LIRA', 'TÜRK LİRASI', 'TURK LIRASI', 'TURKİYE', 'TURKIYE']
+        if any(keyword in text for keyword in tl_keywords):
             return 'TRY'
-        # Varsayılan TRY
+            
+        # Varsayılan olarak TRY
         else:
             return 'TRY'
 
