@@ -2921,18 +2921,27 @@ async def upload_excel(company_id: str, file: UploadFile = File(...), currency: 
                 # Use user-selected currency if provided, otherwise use detected currency
                 final_currency = user_selected_currency if user_selected_currency else product_data.get('currency', 'USD')
                 
+                # Apply discount if specified
+                original_list_price = Decimal(str(product_data['list_price']))
+                list_price = original_list_price  # Liste fiyatı orijinal fiyat olarak kalır
+                
+                # Calculate discounted price based on user discount percentage
+                discounted_price = None
+                if discount_percentage > 0:
+                    # İskonto yüzdesi varsa, orijinal fiyattan indirim yap
+                    discount_amount = original_list_price * (Decimal(str(discount_percentage)) / Decimal('100'))
+                    discounted_price = original_list_price - discount_amount
+                    logger.info(f"Applied {discount_percentage}% discount: {original_list_price} -> {discounted_price}")
+                elif product_data.get('discounted_price'):
+                    # Excel'de zaten indirimli fiyat varsa onu kullan
+                    discounted_price = Decimal(str(product_data['discounted_price']))
+                
                 # Convert prices to TRY
-                list_price_try = await currency_service.convert_to_try(
-                    Decimal(str(product_data['list_price'])), 
-                    final_currency
-                )
+                list_price_try = await currency_service.convert_to_try(list_price, final_currency)
                 
                 discounted_price_try = None
-                if product_data.get('discounted_price'):
-                    discounted_price_try = await currency_service.convert_to_try(
-                        Decimal(str(product_data['discounted_price'])), 
-                        final_currency
-                    )
+                if discounted_price:
+                    discounted_price_try = await currency_service.convert_to_try(discounted_price, final_currency)
                 
                 # Count currency distribution (use final currency)
                 currency = final_currency
