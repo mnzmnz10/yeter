@@ -2010,7 +2010,7 @@ function App() {
                       className="border-blue-200 text-blue-700 hover:bg-blue-50"
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      PDF (Fiyatsız)
+                      PDF (Satış Fiyatlı)
                     </Button>
                     <Button
                       variant="outline"
