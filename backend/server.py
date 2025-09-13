@@ -622,6 +622,7 @@ class ColorBasedExcelService:
         column_mapping = {
             'product_name': -1,
             'description': -1, 
+            'brand': -1,  # Yeni: Sarı = Marka
             'company': -1,
             'list_price': -1,
             'discounted_price': -1,
