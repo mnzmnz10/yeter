@@ -1731,16 +1731,7 @@ function App() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      {favoriteProducts.length > 0 && (
-                        <div className="mt-3 space-y-2">
-                          <div className="text-sm font-medium text-amber-700">Son Favoriler:</div>
-                          {favoriteProducts.slice(0, 3).map((product) => (
-                            <div key={product.id} className="text-xs text-amber-600 truncate">
-                              {product.name}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      {/* Removed favorites list - only showing count now */}
                     </CardContent>
                   </Card>
                   
