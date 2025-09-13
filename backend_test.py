@@ -3918,24 +3918,15 @@ class KaravanAPITester:
         return True
 
 def main():
-    """Main test runner - Focus on Package System Testing"""
-    print("🚀 Starting Karavan Backend API Tests - TESTING PACKAGE SYSTEM")
+    """Main test runner - Focus on Package PDF Features Testing"""
+    print("🚀 Starting Package PDF Features Test")
     print("=" * 80)
     
     tester = KaravanAPITester()
     
     try:
-        # Test 1: Root endpoint
-        tester.test_root_endpoint()
-        
-        # Test 2: MAIN FOCUS - Package System Testing
-        tester.test_package_system_comprehensive()
-        
-        # Test 3: Exchange rates (to ensure currency conversion works)
-        tester.test_exchange_rates_comprehensive()
-        
-        # Test 4: Products management (to verify package integration)
-        tester.test_products_management()
+        # Test Package PDF Features (as requested)
+        tester.test_package_pdf_features_comprehensive()
         
     except KeyboardInterrupt:
         print("\n⚠️  Tests interrupted by user")
@@ -3947,7 +3938,7 @@ def main():
         
         # Final summary
         print("\n" + "=" * 80)
-        print("🏁 FINAL TEST SUMMARY - PACKAGE SYSTEM TESTING")
+        print("🏁 FINAL TEST SUMMARY - PACKAGE PDF FEATURES")
         print("=" * 80)
         print(f"Total Tests Run: {tester.tests_run}")
         print(f"Tests Passed: {tester.tests_passed}")
@@ -3955,10 +3946,10 @@ def main():
         print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%" if tester.tests_run > 0 else "No tests run")
         
         if tester.tests_passed == tester.tests_run:
-            print("🎉 ALL TESTS PASSED! Package system is working correctly.")
+            print("🎉 ALL TESTS PASSED! Package PDF features are working correctly.")
             return 0
         else:
-            print("⚠️  PACKAGE SYSTEM ISSUES IDENTIFIED. Review the test results above.")
+            print("⚠️  PACKAGE PDF ISSUES IDENTIFIED. Review the test results above.")
             return 1
 
 if __name__ == "__main__":
