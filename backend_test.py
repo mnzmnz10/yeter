@@ -2656,6 +2656,246 @@ class KaravanAPITester:
         
         return True
 
+    def test_backend_startup_and_supplies_system(self):
+        """Test backend startup issues and Sarf Malzemeleri (Supplies) system"""
+        print("\n🔍 Testing Backend Startup & Sarf Malzemeleri System...")
+        
+        # Test 1: Backend Service Status
+        success, response = self.run_test(
+            "Backend Service Running on Port 8001",
+            "GET",
+            "",
+            200
+        )
+        
+        if success:
+            self.log_test("Backend Service Status", True, "Backend is running and responding")
+        
+        # Test 2: Check Sarf Malzemeleri Category Creation
+        success, response = self.run_test(
+            "Get Categories - Check Sarf Malzemeleri",
+            "GET",
+            "categories",
+            200
+        )
+        
+        supplies_category_found = False
+        supplies_category_non_deletable = False
+        
+        if success and response:
+            try:
+                categories = response.json()
+                for category in categories:
+                    if category.get('name') == 'Sarf Malzemeleri':
+                        supplies_category_found = True
+                        if category.get('is_deletable') == False:
+                            supplies_category_non_deletable = True
+                        self.log_test("Sarf Malzemeleri Category Found", True, f"ID: {category.get('id')}, Color: {category.get('color')}")
+                        break
+                
+                if not supplies_category_found:
+                    self.log_test("Sarf Malzemeleri Category Found", False, "Category not found in list")
+                
+                if supplies_category_non_deletable:
+                    self.log_test("Sarf Malzemeleri Non-Deletable", True, "Category correctly marked as non-deletable")
+                else:
+                    self.log_test("Sarf Malzemeleri Non-Deletable", False, "Category should be non-deletable")
+                    
+            except Exception as e:
+                self.log_test("Categories Response Parsing", False, f"Error: {e}")
+        
+        # Test 3: Test GET /api/products/supplies endpoint
+        success, response = self.run_test(
+            "Get Products from Supplies Category",
+            "GET",
+            "products/supplies",
+            200
+        )
+        
+        if success and response:
+            try:
+                supplies_products = response.json()
+                if isinstance(supplies_products, list):
+                    self.log_test("Supplies Products Endpoint", True, f"Found {len(supplies_products)} supply products")
+                    
+                    # Check if products are from Sarf Malzemeleri category
+                    for product in supplies_products[:3]:  # Check first 3 products
+                        if product.get('category_id') == 'sarf-malzemeleri-category':
+                            self.log_test("Supply Product Category Validation", True, f"Product '{product.get('name', 'Unknown')}' correctly in supplies category")
+                        else:
+                            self.log_test("Supply Product Category Validation", False, f"Product '{product.get('name', 'Unknown')}' not in supplies category")
+                else:
+                    self.log_test("Supplies Products Format", False, "Response is not a list")
+            except Exception as e:
+                self.log_test("Supplies Products Parsing", False, f"Error: {e}")
+        
+        # Test 4: Test that supplies category cannot be deleted
+        if supplies_category_found:
+            success, response = self.run_test(
+                "Attempt to Delete Supplies Category",
+                "DELETE",
+                "categories/sarf-malzemeleri-category",
+                400  # Should fail with 400 or 403
+            )
+            
+            if not success and response and response.status_code in [400, 403, 422]:
+                self.log_test("Supplies Category Delete Protection", True, f"Deletion correctly prevented (Status: {response.status_code})")
+            else:
+                self.log_test("Supplies Category Delete Protection", False, "Category deletion should be prevented")
+        
+        return True
+
+    def test_package_system_focused(self):
+        """Focused test for Package System functionality based on review request"""
+        print("\n🔍 Testing Package System Core Functionality...")
+        
+        # Test 1: Get all packages
+        success, response = self.run_test(
+            "Get All Packages",
+            "GET",
+            "packages",
+            200
+        )
+        
+        existing_packages = []
+        if success and response:
+            try:
+                packages = response.json()
+                existing_packages = packages
+                self.log_test("Packages List", True, f"Found {len(packages)} existing packages")
+            except Exception as e:
+                self.log_test("Packages List Parsing", False, f"Error: {e}")
+        
+        # Test 2: Create a test package
+        package_data = {
+            "name": f"Test Package {datetime.now().strftime('%H%M%S')}",
+            "description": "Test package for comprehensive testing",
+            "sale_price": 15000.50,
+            "image_url": "https://example.com/test-package.jpg"
+        }
+        
+        success, response = self.run_test(
+            "Create Test Package",
+            "POST",
+            "packages",
+            200,
+            data=package_data
+        )
+        
+        created_package_id = None
+        if success and response:
+            try:
+                package_response = response.json()
+                created_package_id = package_response.get('id')
+                if created_package_id:
+                    self.log_test("Package Creation", True, f"Package ID: {created_package_id}")
+                    
+                    # Validate package structure
+                    required_fields = ['id', 'name', 'description', 'sale_price', 'created_at']
+                    missing_fields = [field for field in required_fields if field not in package_response]
+                    
+                    if not missing_fields:
+                        self.log_test("Package Structure", True, "All required fields present")
+                    else:
+                        self.log_test("Package Structure", False, f"Missing fields: {missing_fields}")
+                else:
+                    self.log_test("Package Creation", False, "No package ID returned")
+            except Exception as e:
+                self.log_test("Package Creation Response", False, f"Error: {e}")
+        
+        if not created_package_id:
+            self.log_test("Package System Tests", False, "Cannot continue without created package")
+            return False
+        
+        # Test 3: Get package with products and supplies
+        success, response = self.run_test(
+            "Get Package with Products",
+            "GET",
+            f"packages/{created_package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                package_details = response.json()
+                required_fields = ['id', 'name', 'products', 'supplies', 'total_discounted_price']
+                missing_fields = [field for field in required_fields if field not in package_details]
+                
+                if not missing_fields:
+                    self.log_test("Package Details Structure", True, "Package includes products and supplies arrays")
+                else:
+                    self.log_test("Package Details Structure", False, f"Missing fields: {missing_fields}")
+            except Exception as e:
+                self.log_test("Package Details Parsing", False, f"Error: {e}")
+        
+        # Test 4: Package PDF Generation - With Prices
+        if created_package_id:
+            try:
+                pdf_url = f"{self.base_url}/packages/{created_package_id}/pdf-with-prices"
+                pdf_response = requests.get(pdf_url, timeout=30)
+                
+                if pdf_response.status_code == 200:
+                    content_type = pdf_response.headers.get('content-type', '')
+                    if 'application/pdf' in content_type and pdf_response.content.startswith(b'%PDF'):
+                        pdf_size = len(pdf_response.content)
+                        self.log_test("Package PDF with Prices", True, f"PDF generated successfully, size: {pdf_size} bytes")
+                    else:
+                        self.log_test("Package PDF with Prices", False, f"Invalid PDF response: {content_type}")
+                else:
+                    self.log_test("Package PDF with Prices", False, f"HTTP {pdf_response.status_code}")
+            except Exception as e:
+                self.log_test("Package PDF with Prices", False, f"Error: {e}")
+        
+        # Test 5: Package PDF Generation - Without Prices
+        if created_package_id:
+            try:
+                pdf_url = f"{self.base_url}/packages/{created_package_id}/pdf-without-prices"
+                pdf_response = requests.get(pdf_url, timeout=30)
+                
+                if pdf_response.status_code == 200:
+                    content_type = pdf_response.headers.get('content-type', '')
+                    if 'application/pdf' in content_type and pdf_response.content.startswith(b'%PDF'):
+                        pdf_size = len(pdf_response.content)
+                        self.log_test("Package PDF without Prices", True, f"PDF generated successfully, size: {pdf_size} bytes")
+                    else:
+                        self.log_test("Package PDF without Prices", False, f"Invalid PDF response: {content_type}")
+                else:
+                    self.log_test("Package PDF without Prices", False, f"HTTP {pdf_response.status_code}")
+            except Exception as e:
+                self.log_test("Package PDF without Prices", False, f"Error: {e}")
+        
+        # Test 6: Update package
+        if created_package_id:
+            update_data = {
+                "name": f"Updated Test Package {datetime.now().strftime('%H%M%S')}",
+                "sale_price": 18000.75
+            }
+            
+            success, response = self.run_test(
+                "Update Package",
+                "PUT",
+                f"packages/{created_package_id}",
+                200,
+                data=update_data
+            )
+            
+            if success:
+                self.log_test("Package Update", True, "Package updated successfully")
+        
+        # Test 7: Delete package
+        if created_package_id:
+            success, response = self.run_test(
+                "Delete Package",
+                "DELETE",
+                f"packages/{created_package_id}",
+                200
+            )
+            
+            if success:
+                self.log_test("Package Deletion", True, "Package deleted successfully")
+        
+        return True
+
     def cleanup_test_data(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
