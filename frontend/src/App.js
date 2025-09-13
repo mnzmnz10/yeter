@@ -1689,10 +1689,7 @@ function App() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            setSelectedPackageForProducts(pkg);
-                            setShowPackageProductsDialog(true);
-                          }}
+                          onClick={() => startEditPackage(pkg)}
                           className="flex-1"
                         >
                           <Package className="w-4 h-4 mr-1" />
