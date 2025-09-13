@@ -1922,6 +1922,327 @@ class PDFQuoteGenerator:
         return self._format_price_modern(price)
 
 # ===== PDF QUOTE ENDPOINT =====
+# ===== PACKAGE PDF GENERATOR =====
+
+class PDFPackageGenerator:
+    def __init__(self):
+        self.setup_fonts()
+        self.styles = getSampleStyleSheet()
+        self.setup_styles()
+    
+    def setup_fonts(self):
+        """Türkçe karakter desteği için font kurulumu"""
+        self.montserrat_available = False
+        self.montserrat_bold_available = False
+        
+        try:
+            font_dir = Path(__file__).parent / 'fonts'
+            
+            # Montserrat Regular font
+            montserrat_regular_path = font_dir / 'Montserrat-Regular.ttf'
+            if montserrat_regular_path.exists():
+                pdfmetrics.registerFont(TTFont('Montserrat', str(montserrat_regular_path), subfontIndex=0))
+                self.montserrat_available = True
+                logger.info("Montserrat Regular font loaded for packages")
+            
+            # Montserrat Bold font
+            montserrat_bold_path = font_dir / 'Montserrat-Bold.ttf'
+            if montserrat_bold_path.exists():
+                pdfmetrics.registerFont(TTFont('Montserrat-Bold', str(montserrat_bold_path), subfontIndex=0))
+                self.montserrat_bold_available = True
+                logger.info("Montserrat Bold font loaded for packages")
+                
+        except Exception as e:
+            logger.warning(f"Font loading failed for packages: {e}")
+    
+    def setup_styles(self):
+        """PDF stilleri kurulumu"""
+        font_name = 'Montserrat' if self.montserrat_available else 'Helvetica'
+        font_bold = 'Montserrat-Bold' if self.montserrat_bold_available else 'Helvetica-Bold'
+        
+        # Ana başlık stili
+        self.title_style = ParagraphStyle(
+            'PackageTitle',
+            parent=self.styles['Title'],
+            fontName=font_bold,
+            fontSize=24,
+            alignment=TA_CENTER,
+            spaceAfter=20,
+            textColor=colors.HexColor('#2563eb')
+        )
+        
+        # Alt başlık stili
+        self.subtitle_style = ParagraphStyle(
+            'PackageSubtitle',
+            parent=self.styles['Normal'],
+            fontName=font_bold,
+            fontSize=16,
+            alignment=TA_CENTER,
+            spaceAfter=15,
+            textColor=colors.HexColor('#64748b')
+        )
+        
+        # Normal metin stili
+        self.normal_style = ParagraphStyle(
+            'PackageNormal',
+            parent=self.styles['Normal'],
+            fontName=font_name,
+            fontSize=10,
+            alignment=TA_LEFT,
+            spaceAfter=6
+        )
+        
+        # Tablo başlık stili
+        self.table_header_style = ParagraphStyle(
+            'PackageTableHeader',
+            parent=self.styles['Normal'],
+            fontName=font_bold,
+            fontSize=10,
+            alignment=TA_CENTER,
+            textColor=colors.white
+        )
+        
+        # Tablo içerik stili
+        self.table_content_style = ParagraphStyle(
+            'PackageTableContent',
+            parent=self.styles['Normal'],
+            fontName=font_name,
+            fontSize=9,
+            alignment=TA_LEFT
+        )
+
+    def _format_price_modern(self, price):
+        """Modern format ile fiyat gösterimi"""
+        if price is None or price == 0:
+            return "0,00"
+        
+        # Format price with Turkish decimal comma
+        formatted = f"{float(price):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+        return formatted
+
+    def generate_package_pdf_with_prices(self, package_data, products, include_prices=True):
+        """Paket PDF'i oluştur - fiyatlı veya fiyatsız"""
+        buffer = io.BytesIO()
+        
+        # PDF document oluştur
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=2*cm,
+            leftMargin=2*cm,
+            topMargin=2*cm,
+            bottomMargin=2*cm
+        )
+        
+        # PDF içeriği
+        story = []
+        
+        # Başlık
+        story.append(Paragraph("PAKET BİLGİSİ", self.title_style))
+        story.append(Spacer(1, 20))
+        
+        # Paket bilgileri
+        story.append(Paragraph(f"<b>Paket Adı:</b> {package_data.get('name', '')}", self.normal_style))
+        if package_data.get('description'):
+            story.append(Paragraph(f"<b>Açıklama:</b> {package_data.get('description', '')}", self.normal_style))
+        
+        story.append(Spacer(1, 20))
+        
+        # Ürün listesi tablosu
+        if include_prices:
+            # Fiyatlı liste
+            table_data = [
+                [
+                    Paragraph("<b>Ürün Adı</b>", self.table_header_style),
+                    Paragraph("<b>Adet</b>", self.table_header_style),
+                    Paragraph("<b>Birim Fiyat</b>", self.table_header_style),
+                    Paragraph("<b>Toplam</b>", self.table_header_style)
+                ]
+            ]
+            
+            total_amount = 0
+            for product in products:
+                quantity = product.get('quantity', 1)
+                unit_price = float(product.get('list_price_try', 0))
+                line_total = unit_price * quantity
+                total_amount += line_total
+                
+                table_data.append([
+                    Paragraph(product.get('name', ''), self.table_content_style),
+                    Paragraph(str(quantity), self.table_content_style),
+                    Paragraph(f"₺ {self._format_price_modern(unit_price)}", self.table_content_style),
+                    Paragraph(f"₺ {self._format_price_modern(line_total)}", self.table_content_style)
+                ])
+            
+            # Toplam satırı
+            table_data.append([
+                Paragraph("<b>TOPLAM</b>", self.table_header_style),
+                Paragraph("", self.table_header_style),
+                Paragraph("", self.table_header_style),
+                Paragraph(f"<b>₺ {self._format_price_modern(total_amount)}</b>", self.table_header_style)
+            ])
+            
+            col_widths = [8*cm, 2*cm, 3*cm, 3*cm]
+        else:
+            # Fiyatsız liste
+            table_data = [
+                [
+                    Paragraph("<b>Ürün Adı</b>", self.table_header_style),
+                    Paragraph("<b>Adet</b>", self.table_header_style)
+                ]
+            ]
+            
+            for product in products:
+                quantity = product.get('quantity', 1)
+                table_data.append([
+                    Paragraph(product.get('name', ''), self.table_content_style),
+                    Paragraph(str(quantity), self.table_content_style)
+                ])
+            
+            col_widths = [12*cm, 3*cm]
+        
+        # Tablo oluştur
+        table = Table(table_data, colWidths=col_widths, repeatRows=1)
+        table.setStyle(TableStyle([
+            # Başlık stili
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563eb')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Montserrat-Bold' if self.montserrat_bold_available else 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            
+            # İçerik stili
+            ('FONTNAME', (0, 1), (-1, -1), 'Montserrat' if self.montserrat_available else 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('ALIGN', (0, 1), (0, -1), 'LEFT'),  # Ürün adları sola hizalı
+            ('ALIGN', (1, 1), (-1, -1), 'CENTER'),  # Diğer kolonlar orta hizalı
+            
+            # Kenarlık
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            
+            # Satır renkleri (zebra pattern)
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')])
+        ]))
+        
+        # Toplam satırı özel stil (fiyatlı listede)
+        if include_prices:
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (-4, -1), (-1, -1), colors.HexColor('#e2e8f0')),
+                ('FONTNAME', (-4, -1), (-1, -1), 'Montserrat-Bold' if self.montserrat_bold_available else 'Helvetica-Bold'),
+                ('FONTSIZE', (-4, -1), (-1, -1), 10)
+            ]))
+        
+        story.append(table)
+        story.append(Spacer(1, 30))
+        
+        # Satış fiyatı
+        if not include_prices:
+            # Elle girilen satış fiyatı
+            sale_price = package_data.get('sale_price', 0)
+            story.append(Paragraph(f"<b>Satış Fiyatı: ₺ {self._format_price_modern(sale_price)}</b>", self.subtitle_style))
+        
+        story.append(Spacer(1, 20))
+        
+        # Tarih
+        from datetime import datetime
+        now = datetime.now()
+        story.append(Paragraph(f"Tarih: {now.strftime('%d.%m.%Y')}", self.normal_style))
+        
+        # PDF oluştur
+        doc.build(story)
+        buffer.seek(0)
+        return buffer
+
+# ===== PACKAGE PDF ENDPOINTS =====
+
+@app.get("/api/packages/{package_id}/pdf-with-prices")
+async def download_package_pdf_with_prices(package_id: str):
+    """Paket PDF'i indir - ürün isimleri ve liste fiyatları ile"""
+    try:
+        # Paket ve ürünleri getir
+        package = await db.packages.find_one({"id": package_id})
+        if not package:
+            raise HTTPException(status_code=404, detail="Paket bulunamadı")
+        
+        # Paket ürünlerini getir
+        package_products = await db.package_products.find({"package_id": package_id}).to_list(None)
+        
+        # Ürün detaylarını al
+        products = []
+        for pp in package_products:
+            product = await db.products.find_one({"id": pp["product_id"]})
+            if product:
+                product_data = {
+                    "name": product["name"],
+                    "quantity": pp["quantity"],
+                    "list_price_try": product.get("list_price_try", 0)
+                }
+                products.append(product_data)
+        
+        # PDF oluştur
+        generator = PDFPackageGenerator()
+        pdf_buffer = generator.generate_package_pdf_with_prices(package, products, include_prices=True)
+        
+        # Dosya adı
+        safe_name = "".join(c for c in package["name"] if c.isalnum() or c in (' ', '-', '_')).strip()
+        filename = f"paket_{safe_name}_fiyatli.pdf"
+        
+        return StreamingResponse(
+            io.BytesIO(pdf_buffer.read()),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating package PDF with prices: {e}")
+        raise HTTPException(status_code=500, detail="PDF oluşturulamadı")
+
+@app.get("/api/packages/{package_id}/pdf-without-prices")
+async def download_package_pdf_without_prices(package_id: str):
+    """Paket PDF'i indir - sadece ürün isimleri ile"""
+    try:
+        # Paket ve ürünleri getir
+        package = await db.packages.find_one({"id": package_id})
+        if not package:
+            raise HTTPException(status_code=404, detail="Paket bulunamadı")
+        
+        # Paket ürünlerini getir
+        package_products = await db.package_products.find({"package_id": package_id}).to_list(None)
+        
+        # Ürün detaylarını al
+        products = []
+        for pp in package_products:
+            product = await db.products.find_one({"id": pp["product_id"]})
+            if product:
+                product_data = {
+                    "name": product["name"],
+                    "quantity": pp["quantity"]
+                }
+                products.append(product_data)
+        
+        # PDF oluştur
+        generator = PDFPackageGenerator()
+        pdf_buffer = generator.generate_package_pdf_with_prices(package, products, include_prices=False)
+        
+        # Dosya adı
+        safe_name = "".join(c for c in package["name"] if c.isalnum() or c in (' ', '-', '_')).strip()
+        filename = f"paket_{safe_name}_liste.pdf"
+        
+        return StreamingResponse(
+            io.BytesIO(pdf_buffer.read()),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating package PDF without prices: {e}")
+        raise HTTPException(status_code=500, detail="PDF oluşturulamadı")
+
 
 @app.get("/api/quotes/{quote_id}/pdf")
 async def download_quote_pdf(quote_id: str):
