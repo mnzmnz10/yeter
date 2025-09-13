@@ -355,7 +355,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Package PDF Generation Features"
+    - "Backend Startup Issues Fixed"
+    - "Sarf Malzemeleri Category Creation"
+    - "Package System Functionality"
   stuck_tasks:
     - "Quote Editing Functionality - Update Instead of Duplicate Creation"
   test_all: false
