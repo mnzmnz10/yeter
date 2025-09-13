@@ -2019,7 +2019,7 @@ function App() {
                       className="border-green-200 text-green-700 hover:bg-green-50"
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      PDF (Fiyatlı)
+                      PDF (Ürün Fiyatlı)
                     </Button>
                   </div>
                 </div>
