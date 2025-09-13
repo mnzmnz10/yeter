@@ -3131,6 +3131,7 @@ async def upload_excel(company_id: str, file: UploadFile = File(...), currency: 
                         "id": str(uuid.uuid4()),
                         "name": product_data['name'],
                         "company_id": target_company_id,
+                        "brand": product_data.get('brand', ''),  # Marka alanı
                         "description": product_data.get('description'),
                         "image_url": None,
                         "list_price": float(list_price),
