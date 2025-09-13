@@ -2427,6 +2427,24 @@ async def remove_supply_from_package(package_id: str, supply_id: str):
         
         return {"success": True, "message": "Kategori silindi"}
     except HTTPException:
+@api_router.get("/products/supplies")
+async def get_supply_products():
+    """Get products from 'Sarf Malzemeleri' category only"""
+    try:
+        # Get Sarf Malzemeleri category
+        supplies_category = await db.categories.find_one({"name": "Sarf Malzemeleri"})
+        if not supplies_category:
+            return []
+        
+        # Get products from supplies category
+        products = await db.products.find({
+            "category_id": supplies_category["id"]
+        }).sort("name", 1).to_list(None)
+        
+        return [Product(**product) for product in products]
+    except Exception as e:
+        logger.error(f"Error getting supply products: {e}")
+        raise HTTPException(status_code=500, detail="Sarf malzemesi ürünleri getirilemedi")
         raise
     except Exception as e:
         logger.error(f"Error deleting category: {e}")
