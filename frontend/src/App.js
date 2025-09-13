@@ -1014,6 +1014,9 @@ function App() {
         setExpandedCategories(new Set([categories[0].id]));
       }
       
+      // Load supply products
+      await loadSupplyProducts();
+      
     } catch (error) {
       console.error('Error loading package with products:', error);
       toast.error('Paket detayları yüklenemedi');
