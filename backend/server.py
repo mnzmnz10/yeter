@@ -2863,6 +2863,18 @@ async def upload_excel(company_id: str, file: UploadFile = File(...), currency: 
             user_selected_currency = currency.upper()
             logger.info(f"User selected currency override: {user_selected_currency}")
         
+        # Handle discount percentage
+        discount_percentage = 0.0
+        try:
+            if discount and discount.strip():
+                discount_percentage = float(discount)
+                if discount_percentage < 0 or discount_percentage > 100:
+                    raise ValueError("Discount must be between 0 and 100")
+                logger.info(f"User selected discount: {discount_percentage}%")
+        except ValueError as e:
+            logger.error(f"Invalid discount value: {discount}, error: {e}")
+            raise HTTPException(status_code=400, detail=f"Geçersiz iskonto değeri: {discount}")
+        
         # Get current exchange rates
         await currency_service.get_exchange_rates()
         
