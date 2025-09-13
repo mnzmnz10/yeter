@@ -2131,12 +2131,12 @@ function App() {
                 <div className="grid grid-cols-1 gap-6">
 
                   {/* Package Products */}
-                  <Card>
-                    <CardHeader>
+                  <Card className="bg-teal-50 border-teal-200">
+                    <CardHeader className="bg-teal-100/50">
                       <div className="flex justify-between items-center">
                         <div>
-                          <CardTitle className="text-xl">Paket Ürünleri</CardTitle>
-                          <CardDescription>
+                          <CardTitle className="text-xl text-teal-900">📦 Paket Ürünleri</CardTitle>
+                          <CardDescription className="text-teal-700">
                             {packageWithProducts ? 
                               `${packageWithProducts.products.length} ürün seçili` : 
                               'Ürünler yükleniyor...'
