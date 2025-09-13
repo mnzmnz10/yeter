@@ -2008,7 +2008,7 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         return buffer
     
     def _create_package_info_section(self, package_data):
-        """Paket bilgi satırı"""
+        """Paket bilgi satırı - sadece tarih"""
         from datetime import datetime
         from reportlab.platypus import Table as PDFTable
         
@@ -2016,10 +2016,9 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         now = datetime.now()
         date_str = now.strftime('%d.%m.%Y')
         
-        # Paket bilgileri
+        # Sadece tarih bilgisi
         info_data = [
-            ["Tarih:", date_str],
-            ["Açıklama:", package_data.get('description', '-') or '-']
+            ["Tarih:", date_str]
         ]
         
         # Tablo oluştur
