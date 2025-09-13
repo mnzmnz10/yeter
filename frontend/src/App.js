@@ -3190,20 +3190,34 @@ function App() {
                         <h4 className="font-semibold text-blue-900">
                           Seçili Ürünler ({selectedProducts.size} çeşit, {calculateQuoteTotals.totalQuantity} adet)
                         </h4>
-                        {/* Teklif İndirimli Fiyat Toggle Butonu */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowQuoteDiscountedPrices(!showQuoteDiscountedPrices)}
-                          className="p-1 ml-2"
-                          title={showQuoteDiscountedPrices ? "İndirimli fiyatları gizle" : "İndirimli fiyatları göster"}
-                        >
-                          {showQuoteDiscountedPrices ? (
-                            <EyeOff className="w-3 h-3" />
-                          ) : (
-                            <Eye className="w-3 h-3" />
+                        <div className="flex items-center gap-2">
+                          {selectedProducts.size > 0 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={clearSelection}
+                              className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200"
+                              title="Seçimi Temizle"
+                            >
+                              <X className="w-3 h-3 mr-1" />
+                              <span className="text-xs">Temizle</span>
+                            </Button>
                           )}
-                        </Button>
+                          {/* Teklif İndirimli Fiyat Toggle Butonu */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowQuoteDiscountedPrices(!showQuoteDiscountedPrices)}
+                            className="p-1"
+                            title={showQuoteDiscountedPrices ? "İndirimli fiyatları gizle" : "İndirimli fiyatları göster"}
+                          >
+                            {showQuoteDiscountedPrices ? (
+                              <EyeOff className="w-3 h-3" />
+                            ) : (
+                              <Eye className="w-3 h-3" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
                       <div className="grid gap-2">
                         {getSelectedProductsData().slice(0, 5).map((product) => {
