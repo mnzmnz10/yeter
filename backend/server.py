@@ -1147,6 +1147,7 @@ class ExcelService:
                 if product_name and len(product_name) > 3 and list_price > 0:
                     product = {
                         'name': product_name,
+                        'brand': brand,  # Yeni: marka alanı
                         'list_price': list_price,
                         'currency': currency,
                         'discounted_price': discounted_price
