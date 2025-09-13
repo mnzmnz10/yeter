@@ -2078,16 +2078,7 @@ function App() {
                         rows="2"
                       />
                     </div>
-                    {packageForm.image_url && (
-                      <div className="mt-4">
-                        <img 
-                          src={packageForm.image_url} 
-                          alt="Paket görseli"
-                          className="w-full h-32 object-cover rounded-lg border"
-                          onError={(e) => {e.target.style.display = 'none'}}
-                        />
-                      </div>
-                    )}
+                    {/* Image preview removed to save space */}
                   </CardContent>
                 </Card>
 
