@@ -1685,6 +1685,230 @@ function App() {
                         <span className="text-sm text-slate-600">Satış Fiyatı:</span>
                         <span className="font-bold text-teal-600">₺ {formatPrice(pkg.sale_price)}</span>
                       </div>
+          {/* Package Edit Page */}
+          <TabsContent value="package-edit" className="space-y-6">
+            {selectedPackageForEdit && (
+              <>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">Paket Düzenle: {selectedPackageForEdit.name}</h2>
+                    <p className="text-slate-600 mt-1">Paket bilgilerini düzenleyin ve ürünleri yönetin</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setActiveTab('packages')}
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Geri Dön
+                    </Button>
+                    <Button
+                      onClick={updatePackage}
+                      className="bg-teal-600 hover:bg-teal-700"
+                      disabled={!packageForm.name || !packageForm.sale_price}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Değişiklikleri Kaydet
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Package Information */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Paket Bilgileri</CardTitle>
+                      <CardDescription>Paket temel bilgilerini düzenleyin</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="edit-package-name">Paket Adı</Label>
+                        <Input
+                          id="edit-package-name"
+                          value={packageForm.name}
+                          onChange={(e) => setPackageForm({...packageForm, name: e.target.value})}
+                          placeholder="Paket adı"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-package-description">Açıklama</Label>
+                        <Input
+                          id="edit-package-description"
+                          value={packageForm.description}
+                          onChange={(e) => setPackageForm({...packageForm, description: e.target.value})}
+                          placeholder="Paket açıklaması"
+                        />
+                      </div>
+                      <div className="flex gap-2 items-end">
+                        <div className="flex-1">
+                          <Label htmlFor="edit-package-price">Satış Fiyatı (₺)</Label>
+                          <Input
+                            id="edit-package-price"
+                            type="number"
+                            step="0.01"
+                            value={packageForm.sale_price}
+                            onChange={(e) => setPackageForm({...packageForm, sale_price: e.target.value})}
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowPackageDiscountedPrices(!showPackageDiscountedPrices)}
+                          className="p-2"
+                          title={showPackageDiscountedPrices ? "Satış fiyatını göster" : "İndirimli fiyat toplamını göster"}
+                        >
+                          {showPackageDiscountedPrices ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                      {packageWithProducts && showPackageDiscountedPrices && (
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                          <div className="text-sm text-amber-800">
+                            <strong>İndirimli Fiyat Toplamı:</strong> ₺ {formatPrice(packageWithProducts.total_discounted_price || 0)}
+                          </div>
+                        </div>
+                      )}
+                      <div>
+                        <Label htmlFor="edit-package-image">Görsel URL</Label>
+                        <Input
+                          id="edit-package-image"
+                          value={packageForm.image_url}
+                          onChange={(e) => setPackageForm({...packageForm, image_url: e.target.value})}
+                          placeholder="https://example.com/image.jpg"
+                        />
+                      </div>
+                      {packageForm.image_url && (
+                        <div>
+                          <img 
+                            src={packageForm.image_url} 
+                            alt="Paket görseli"
+                            className="w-full h-32 object-cover rounded-lg border"
+                            onError={(e) => {e.target.style.display = 'none'}}
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Package Products */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <CardTitle>Paket Ürünleri</CardTitle>
+                          <CardDescription>
+                            {packageWithProducts ? 
+                              `${packageWithProducts.products.length} ürün` : 
+                              'Ürünler yükleniyor...'
+                            }
+                          </CardDescription>
+                        </div>
+                        <Button
+                          onClick={addProductsToPackage}
+                          className="bg-teal-600 hover:bg-teal-700"
+                          disabled={packageSelectedProducts.size === 0}
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          Ürünleri Kaydet
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {loadingPackageProducts ? (
+                        <div className="text-center py-8">
+                          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2 text-teal-600" />
+                          <p className="text-slate-600">Ürünler yükleniyor...</p>
+                        </div>
+                      ) : packageWithProducts ? (
+                        <div className="space-y-3">
+                          {packageWithProducts.products.length > 0 && (
+                            <div className="mb-4">
+                              <h4 className="font-medium text-slate-800 mb-2">Mevcut Ürünler:</h4>
+                              <div className="space-y-2">
+                                {packageWithProducts.products.map((product) => (
+                                  <div key={product.id} className="border rounded-lg p-3 bg-slate-50">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex-1">
+                                        <div className="font-medium">{product.name}</div>
+                                        <div className="text-sm text-slate-500">
+                                          Adet: {product.quantity} • ₺ {formatPrice(product.list_price_try || 0)}
+                                        </div>
+                                      </div>
+                                      <Badge variant="outline">{product.quantity}x</Badge>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="border-t pt-4">
+                            <h4 className="font-medium text-slate-800 mb-3">Ürün Ekle/Çıkar:</h4>
+                            <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto">
+                              {products.map((product) => {
+                                const company = companies.find(c => c.id === product.company_id);
+                                const isSelected = packageSelectedProducts.has(product.id);
+                                const quantity = packageSelectedProducts.get(product.id) || 1;
+                                
+                                return (
+                                  <div key={product.id} className={`border rounded-lg p-2 ${isSelected ? 'border-teal-300 bg-teal-50' : 'border-gray-200'}`}>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={(e) => {
+                                          const newSelected = new Map(packageSelectedProducts);
+                                          if (e.target.checked) {
+                                            newSelected.set(product.id, 1);
+                                          } else {
+                                            newSelected.delete(product.id);
+                                          }
+                                          setPackageSelectedProducts(newSelected);
+                                        }}
+                                        className="rounded border-gray-300"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="font-medium text-sm truncate">{product.name}</div>
+                                        <div className="text-xs text-slate-500">
+                                          {company?.name || 'Unknown'} • ₺ {formatPrice(product.list_price_try || 0)}
+                                        </div>
+                                      </div>
+                                      {isSelected && (
+                                        <Input
+                                          type="number"
+                                          min="1"
+                                          value={quantity}
+                                          onChange={(e) => {
+                                            const newSelected = new Map(packageSelectedProducts);
+                                            newSelected.set(product.id, parseInt(e.target.value) || 1);
+                                            setPackageSelectedProducts(newSelected);
+                                          }}
+                                          className="w-16 h-8 text-sm"
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                          <p className="text-slate-600">Paket detayları yüklenemedi</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </>
+            )}
+          </TabsContent>
                       <div className="flex gap-2 mt-3">
                         <Button
                           variant="outline"
