@@ -3407,44 +3407,4 @@ async def shutdown_db_client():
 
 if __name__ == "__main__":
     import uvicorn
-# Initialize Sarf Malzemeleri Category
-async def create_supplies_category():
-    """Create default 'Sarf Malzemeleri' category if it doesn't exist"""
-    try:
-        # Check if supplies category already exists
-        existing_category = await db.categories.find_one({"name": "Sarf Malzemeleri"})
-        if not existing_category:
-            supplies_category = {
-                "id": "sarf-malzemeleri-category",
-                "name": "Sarf Malzemeleri",
-                "description": "Üretimde kullanılan sarf malzemeleri (tutkal, vida, kablo vb.)",
-                "color": "#f97316",  # Orange color
-                "created_at": datetime.now(timezone.utc),
-                "is_deletable": False  # Prevent deletion
-            }
-            
-            await db.categories.insert_one(supplies_category)
-            logger.info("Sarf Malzemeleri category created successfully")
-            return True
-        else:
-            # Update existing category to make it non-deletable
-            await db.categories.update_one(
-                {"name": "Sarf Malzemeleri"},
-                {"$set": {"is_deletable": False, "color": "#f97316"}}
-            )
-            logger.info("Sarf Malzemeleri category updated to non-deletable")
-            return True
-    except Exception as e:
-        logger.error(f"Error creating supplies category: {e}")
-        return False
-
-# Create supplies category on startup
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database and create default categories"""
-    try:
-        await create_supplies_category()
-        logger.info("Application startup completed")
-    except Exception as e:
-        logger.error(f"Startup error: {e}")
     uvicorn.run(app, host="0.0.0.0", port=8001)
