@@ -2112,6 +2112,10 @@ async def create_package(package: PackageCreate):
         package_data["id"] = str(uuid.uuid4())
         package_data["created_at"] = datetime.now(timezone.utc)
         
+        # Convert Decimal to float for MongoDB compatibility
+        if "sale_price" in package_data and package_data["sale_price"] is not None:
+            package_data["sale_price"] = float(package_data["sale_price"])
+        
         result = await db.packages.insert_one(package_data)
         if result.inserted_id:
             created_package = await db.packages.find_one({"id": package_data["id"]})
