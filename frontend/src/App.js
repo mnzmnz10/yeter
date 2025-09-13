@@ -2469,6 +2469,25 @@ function App() {
                     </p>
                   </div>
 
+                  {/* İskonto Yüzdesi */}
+                  <div>
+                    <Label htmlFor="discount-input">İskonto Yüzdesi (%)</Label>
+                    <Input
+                      id="discount-input"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={uploadDiscount}
+                      onChange={(e) => setUploadDiscount(e.target.value)}
+                      placeholder="Örn: 20 (20% iskonto için)"
+                      className="w-full"
+                    />
+                    <p className="text-sm text-slate-500 mt-1">
+                      İsteğe bağlı. Girdiğiniz yüzde kadar iskonto uygulanır (Liste fiyatı: orijinal, İndirimli fiyat: iskontolu)
+                    </p>
+                  </div>
+
                   <div>
                     <Label htmlFor="file-upload">Excel Dosyası</Label>
                     <Input
