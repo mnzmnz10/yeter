@@ -66,12 +66,12 @@ class CurrencySelectionTester:
             print(f"\n🔍 Testing Excel Upload with Currency: {test_currency}")
             
             try:
-                # Create sample Excel data
+                # Create sample Excel data with proper column names
                 sample_data = {
-                    'Product Name': [f'Test Product {test_currency} 1', f'Test Product {test_currency} 2', f'Test Product {test_currency} 3'],
-                    'List Price': [100.50, 250.75, 89.99],
-                    'Discounted Price': [85.50, 200.00, 75.99],
-                    'Description': [f'Test product 1 in {test_currency}', f'Test product 2 in {test_currency}', f'Test product 3 in {test_currency}']
+                    'Ürün Adı': [f'Test Product {test_currency} 1', f'Test Product {test_currency} 2', f'Test Product {test_currency} 3'],
+                    'Liste Fiyatı': [100.50, 250.75, 89.99],
+                    'İndirimli Fiyat': [85.50, 200.00, 75.99],
+                    'Açıklama': [f'Test product 1 in {test_currency}', f'Test product 2 in {test_currency}', f'Test product 3 in {test_currency}']
                 }
                 
                 df = pd.DataFrame(sample_data)
