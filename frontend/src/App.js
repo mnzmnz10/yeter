@@ -162,7 +162,8 @@ function App() {
         loadCategories(),
         loadExchangeRates(),
         fetchQuotes(),
-        loadFavoriteProducts()
+        loadFavoriteProducts(),
+        loadPackages()
       ]);
     } catch (error) {
       console.error('Error loading initial data:', error);
