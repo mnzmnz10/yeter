@@ -668,7 +668,8 @@ class ColorBasedExcelService:
                 # Extract data based on column mapping
                 product_name = ""
                 description = ""
-                detected_company = company_name
+                brand = ""  # Yeni: marka alanı
+                detected_company = company_name  # Firma adı Excel yüklerken belirtilen firma
                 list_price = 0
                 discounted_price = None
                 
