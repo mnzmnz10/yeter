@@ -1205,7 +1205,7 @@ function App() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      toast.success(`PDF ${withPrices ? '(fiyatlı)' : '(liste)'} başarıyla indirildi`);
+      toast.success(`PDF ${withPrices ? '(Ürün Fiyatlı)' : '(Satış Fiyatlı)'} başarıyla indirildi`);
       
     } catch (error) {
       console.error('Error downloading package PDF:', error);
