@@ -2422,6 +2422,28 @@ async def remove_supply_from_package(package_id: str, supply_id: str):
     except Exception as e:
         logger.error(f"Error removing supply from package: {e}")
         raise HTTPException(status_code=500, detail="Sarf malzemesi paketten çıkarılamadı")
+
+@api_router.put("/packages/{package_id}/supplies/{supply_id}")
+async def update_supply_quantity(package_id: str, supply_id: str, quantity: int):
+    """Sarf malzemesi adetini güncelle"""
+    try:
+        if quantity <= 0:
+            raise HTTPException(status_code=400, detail="Adet 1'den küçük olamaz")
+        
+        result = await db.package_supplies.update_one(
+            {"id": supply_id, "package_id": package_id},
+            {"$set": {"quantity": quantity}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Sarf malzemesi bulunamadı")
+        
+        return {"success": True, "message": "Sarf malzemesi adeti güncellendi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating supply quantity: {e}")
+        raise HTTPException(status_code=500, detail="Sarf malzemesi adeti güncellenemedi")
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Kategori bulunamadı")
         
