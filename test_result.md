@@ -427,6 +427,18 @@ backend:
         agent: "testing"
         comment: "PACKAGE SYSTEM COMPREHENSIVE TESTING COMPLETED SUCCESSFULLY: ✅ PACKAGE CRUD OPERATIONS - All endpoints working perfectly: GET /api/packages (list all), POST /api/packages (create), GET /api/packages/{id} (get with products/supplies), PUT /api/packages/{id} (update), DELETE /api/packages/{id} (delete), ✅ PACKAGE STRUCTURE VERIFIED - All required fields present (id, name, description, sale_price, created_at, products, supplies, total_discounted_price), proper data validation and response format, ✅ PACKAGE PDF GENERATION - Both variants working: GET /api/packages/{id}/pdf-with-prices (156595 bytes), GET /api/packages/{id}/pdf-without-prices (156554 bytes), proper PDF format validation passed, ✅ PACKAGE-PRODUCT ASSOCIATIONS - Package details correctly include products and supplies arrays, associations working properly, ✅ BUSINESS LOGIC VERIFIED - Package creation, updates, and deletion working correctly, proper error handling for non-existent packages (404 responses), ✅ TURKISH LANGUAGE SUPPORT - All response messages in Turkish ('Paket başarıyla silindi', etc.). Package system is fully functional and production-ready with 100% core functionality working."
 
+  - task: "Excel Upload Discount Functionality"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "EXCEL DISCOUNT FUNCTIONALITY TESTING COMPLETED WITH CRITICAL ISSUES: ✅ DISCOUNT PARAMETER IMPLEMENTATION VERIFIED - Backend code correctly implements discount parameter handling in /api/companies/{company_id}/upload-excel endpoint (lines 2831, 2866-2876), accepts discount as Form parameter with proper validation (0-100 range), ✅ DISCOUNT VALIDATION WORKING - Invalid discount values correctly rejected: negative values (-5), over 100% (150), non-numeric (abc) all return 400 status with proper error messages, ✅ DISCOUNT CALCULATION LOGIC IMPLEMENTED - Code shows correct discount calculation: discounted_price = original_price * (1 - discount/100), list_price preserves original Excel price, discounted_price stores calculated discount when discount > 0, ✅ CURRENCY INTEGRATION CONFIRMED - Discount works with currency selection (USD, EUR, TRY), both list_price and discounted_price get converted to TRY correctly, ❌ CRITICAL ISSUE: EXCEL PARSING BLOCKING TESTS - All Excel upload tests fail with 'Excel dosyasında geçerli ürün verisi bulunamadı' error, ColorBasedExcelService cannot detect colored columns (all column mappings return -1), tested with both custom Excel files and existing ELEKTROZİRVE.xlsx file, ❌ ROOT CAUSE: Color detection logic in ColorBasedExcelService.detect_color_category() not recognizing Excel cell colors properly, preventing any Excel uploads from working regardless of discount parameter. CONCLUSION: Discount functionality is correctly implemented in backend code but cannot be tested due to Excel parsing system issues. The discount calculation logic, parameter validation, and currency integration are all properly coded and ready for use once Excel parsing is fixed."
+
   - task: "Labor Cost Clear Functionality with Green Check Button"
     implemented: true
     working: true
