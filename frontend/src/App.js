@@ -914,6 +914,8 @@ function App() {
   const [packageSelectedProducts, setPackageSelectedProducts] = useState(new Map());
   const [packageWithProducts, setPackageWithProducts] = useState(null);
   const [loadingPackageProducts, setLoadingPackageProducts] = useState(false);
+  const [packageProductSearch, setPackageProductSearch] = useState('');
+  const [expandedCategories, setExpandedCategories] = useState(new Set());
   // Package management functions
   const loadPackages = async () => {
     try {
