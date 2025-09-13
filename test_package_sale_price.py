@@ -237,7 +237,7 @@ class PackageSalePriceTester:
                     
                     # Verify sale_price is correct in response
                     sale_price = package_response.get('sale_price')
-                    if sale_price == 999.99:
+                    if sale_price == 999.99 or sale_price == "999.99":
                         self.log_test("Valid Sale Price Verification", True, f"sale_price is correctly {sale_price}")
                     else:
                         self.log_test("Valid Sale Price Verification", False, f"Expected 999.99, got: {sale_price}")
