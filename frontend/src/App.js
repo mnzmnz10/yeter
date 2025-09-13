@@ -2098,10 +2098,10 @@ function App() {
                     <CardHeader>
                       <div className="flex justify-between items-center">
                         <div>
-                          <CardTitle>Paket Ürünleri</CardTitle>
+                          <CardTitle className="text-xl">Paket Ürünleri</CardTitle>
                           <CardDescription>
                             {packageWithProducts ? 
-                              `${packageWithProducts.products.length} ürün` : 
+                              `${packageWithProducts.products.length} ürün seçili` : 
                               'Ürünler yükleniyor...'
                             }
                           </CardDescription>
