@@ -1931,53 +1931,122 @@ function App() {
                           )}
                           
                           <div className="border-t pt-4">
-                            <h4 className="font-medium text-slate-800 mb-3">Ürün Ekle/Çıkar:</h4>
-                            <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto">
-                              {products.map((product) => {
-                                const company = companies.find(c => c.id === product.company_id);
-                                const isSelected = packageSelectedProducts.has(product.id);
-                                const quantity = packageSelectedProducts.get(product.id) || 1;
-                                
-                                return (
-                                  <div key={product.id} className={`border rounded-lg p-2 ${isSelected ? 'border-teal-300 bg-teal-50' : 'border-gray-200'}`}>
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="font-medium text-slate-800">Ürün Ekle/Çıkar:</h4>
+                              <div className="text-xs text-slate-500">
+                                {packageSelectedProducts.size} seçildi
+                              </div>
+                            </div>
+                            
+                            {/* Search Input */}
+                            <div className="mb-4">
+                              <div className="relative">
+                                <Input
+                                  type="text"
+                                  placeholder="Ürün ara..."
+                                  value={packageProductSearch}
+                                  onChange={(e) => handleProductSearch(e.target.value)}
+                                  className="pr-8"
+                                />
+                                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Products by Categories */}
+                            <div className="max-h-96 overflow-y-auto space-y-3">
+                              {Object.entries(getFilteredAndGroupedProducts()).map(([categoryId, categoryData]) => (
+                                <div key={categoryId} className="border rounded-lg">
+                                  {/* Category Header */}
+                                  <div 
+                                    className="flex items-center justify-between p-3 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => toggleCategoryExpansion(categoryId)}
+                                  >
                                     <div className="flex items-center gap-2">
-                                      <input
-                                        type="checkbox"
-                                        checked={isSelected}
-                                        onChange={(e) => {
-                                          const newSelected = new Map(packageSelectedProducts);
-                                          if (e.target.checked) {
-                                            newSelected.set(product.id, 1);
-                                          } else {
-                                            newSelected.delete(product.id);
-                                          }
-                                          setPackageSelectedProducts(newSelected);
-                                        }}
-                                        className="rounded border-gray-300"
+                                      <div 
+                                        className="w-3 h-3 rounded-full"
+                                        style={{ backgroundColor: categoryData.color }}
                                       />
-                                      <div className="flex-1 min-w-0">
-                                        <div className="font-medium text-sm truncate">{product.name}</div>
-                                        <div className="text-xs text-slate-500">
-                                          {company?.name || 'Unknown'} • ₺ {formatPrice(product.list_price_try || 0)}
-                                        </div>
-                                      </div>
-                                      {isSelected && (
-                                        <Input
-                                          type="number"
-                                          min="1"
-                                          value={quantity}
-                                          onChange={(e) => {
-                                            const newSelected = new Map(packageSelectedProducts);
-                                            newSelected.set(product.id, parseInt(e.target.value) || 1);
-                                            setPackageSelectedProducts(newSelected);
-                                          }}
-                                          className="w-16 h-8 text-sm"
-                                        />
-                                      )}
+                                      <span className="font-medium text-sm">{categoryData.name}</span>
+                                      <Badge variant="secondary" className="text-xs">
+                                        {categoryData.products.length}
+                                      </Badge>
+                                    </div>
+                                    <div className={`transition-transform ${expandedCategories.has(categoryId) ? 'rotate-180' : ''}`}>
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                      </svg>
                                     </div>
                                   </div>
-                                );
-                              })}
+
+                                  {/* Category Products */}
+                                  {expandedCategories.has(categoryId) && (
+                                    <div className="p-2 space-y-2">
+                                      {categoryData.products.map((product) => {
+                                        const company = companies.find(c => c.id === product.company_id);
+                                        const isSelected = packageSelectedProducts.has(product.id);
+                                        const quantity = packageSelectedProducts.get(product.id) || 1;
+                                        
+                                        return (
+                                          <div key={product.id} className={`border rounded-lg p-2 ${isSelected ? 'border-teal-300 bg-teal-50' : 'border-gray-200'}`}>
+                                            <div className="flex items-center gap-2">
+                                              <input
+                                                type="checkbox"
+                                                checked={isSelected}
+                                                onChange={(e) => {
+                                                  const newSelected = new Map(packageSelectedProducts);
+                                                  if (e.target.checked) {
+                                                    newSelected.set(product.id, 1);
+                                                  } else {
+                                                    newSelected.delete(product.id);
+                                                  }
+                                                  setPackageSelectedProducts(newSelected);
+                                                }}
+                                                className="rounded border-gray-300"
+                                              />
+                                              <div className="flex-1 min-w-0">
+                                                <div className="font-medium text-sm truncate">{product.name}</div>
+                                                <div className="text-xs text-slate-500">
+                                                  {company?.name || 'Unknown'} • ₺ {formatPrice(product.list_price_try || 0)}
+                                                </div>
+                                              </div>
+                                              {isSelected && (
+                                                <Input
+                                                  type="number"
+                                                  min="1"
+                                                  value={quantity}
+                                                  onChange={(e) => {
+                                                    const newSelected = new Map(packageSelectedProducts);
+                                                    newSelected.set(product.id, parseInt(e.target.value) || 1);
+                                                    setPackageSelectedProducts(newSelected);
+                                                  }}
+                                                  className="w-16 h-8 text-sm"
+                                                />
+                                              )}
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                              
+                              {Object.keys(getFilteredAndGroupedProducts()).length === 0 && (
+                                <div className="text-center py-8">
+                                  <div className="text-slate-400 mb-2">
+                                    <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                  </div>
+                                  <p className="text-slate-500 text-sm">
+                                    {packageProductSearch ? 'Arama kriterine uygun ürün bulunamadı' : 'Henüz ürün yok'}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
