@@ -981,15 +981,38 @@ function App() {
     }
   };
 
+  const loadPackageWithProducts = async (packageId) => {
+    setLoadingPackageProducts(true);
+    try {
+      const response = await axios.get(`${API}/packages/${packageId}`);
+      setPackageWithProducts(response.data);
+      
+      // Set selected products from package
+      const selectedMap = new Map();
+      response.data.products.forEach(product => {
+        selectedMap.set(product.id, product.quantity);
+      });
+      setPackageSelectedProducts(selectedMap);
+      
+    } catch (error) {
+      console.error('Error loading package with products:', error);
+      toast.error('Paket detayları yüklenemedi');
+      setPackageWithProducts(null);
+    } finally {
+      setLoadingPackageProducts(false);
+    }
+  };
+
   const startEditPackage = (pkg) => {
-    setEditingPackage(pkg.id);
+    setSelectedPackageForEdit(pkg);
     setPackageForm({
       name: pkg.name,
       description: pkg.description || '',
       sale_price: pkg.sale_price.toString(),
       image_url: pkg.image_url || ''
     });
-    setShowPackageDialog(true);
+    setActiveTab('package-edit');
+    loadPackageWithProducts(pkg.id);
   };
 
   const addProductsToPackage = async (packageId, selectedProducts) => {
