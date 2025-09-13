@@ -2448,6 +2448,24 @@ function App() {
                     </div>
                   )}
 
+                  {/* Para Birimi Seçimi */}
+                  <div>
+                    <Label htmlFor="currency-select">Para Birimi</Label>
+                    <select
+                      id="currency-select"
+                      value={uploadCurrency}
+                      onChange={(e) => setUploadCurrency(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="USD">🇺🇸 USD - Amerikan Doları</option>
+                      <option value="EUR">🇪🇺 EUR - Euro</option>
+                      <option value="TRY">🇹🇷 TRY - Türk Lirası</option>
+                    </select>
+                    <p className="text-sm text-slate-500 mt-1">
+                      Excel dosyasındaki fiyatların hangi para biriminde olduğunu seçin
+                    </p>
+                  </div>
+
                   <div>
                     <Label htmlFor="file-upload">Excel Dosyası</Label>
                     <Input
