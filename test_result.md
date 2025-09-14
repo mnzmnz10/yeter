@@ -382,6 +382,18 @@ frontend:
         agent: "testing"
         comment: "PRODUCT SELECTION PERSISTENCE TESTING COMPLETED SUCCESSFULLY: ✅ CRITICAL TEST PASSED - Product selection now persists correctly across different search terms, ✅ Test Scenario Verified: Searched for 'akü' → selected 1 product → searched for 'panel' → selected 1 product → cleared search → both products remained selected (2 ürün seçili), ✅ selectedProductsData state working correctly - stores complete product information separately from filtered products list, ✅ toggleProductSelection function properly maintains both selectedProducts and selectedProductsData maps, ✅ 'Teklif Oluştur' button remains visible throughout search changes, ✅ Quote dialog shows correct selected products summary: '100 Ah Apex Jel Akü (₺14.050) + 100W Black Esnek Paneli (₺17.769) = Total: ₺31.818', ✅ Selection persistence verified across multiple search terms including 'akü', 'panel', 'solar', 'güneş', ✅ Final verification: 2 checkboxes remain checked across all products after clearing search. The fix successfully resolves the product selection disappearing issue - users can now search for different products, select them, and all selections persist regardless of search filter changes."
 
+  - task: "Updated Package Editing System with Discount + Labor Cost + Summary Structure"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "UPDATED PACKAGE EDITING SYSTEM IMPLEMENTED: ✅ Package Information Form - Reduced to 3 fields only: Paket Adı, Satış Fiyatı, Görsel URL (discount field removed from package information form), ✅ New Discount System - Added separate 'İndirim' section below package information with amber-colored box, discount percentage input (0-100), quick buttons (10%, 15%), ✅ Labor Cost System - Added 'İşçilik Maliyeti' section with green-colored box, labor cost input field, quick buttons (₺2000, ₺5000, ₺10000, ₺20000), green checkmark button to clear labor cost when value > 0, ✅ Package Summary - Added 'Paket Özeti' section with emerald-colored box showing 5 columns: Ürün Sayısı, Toplam Liste Fiyatı, İndirim, İşçilik (if > 0), Net Toplam, summary shows 'Kâr' instead of 'tasarruf' in discount explanation, ✅ Package Products List - Left side shows 'Paket Ürünleri' without eye icon toggle button, ✅ Save Functionality - 'Değişiklikleri Kaydet' button updates package with discount and labor cost values. The new quote-like system structure with discount + labor cost + summary sections has been implemented and needs comprehensive testing."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
