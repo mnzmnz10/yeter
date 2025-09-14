@@ -4905,6 +4905,116 @@ function App() {
         </DialogContent>
       </Dialog>
 
+      {/* Category Group Create/Edit Dialog */}
+      <Dialog open={showCategoryGroupDialog} onOpenChange={setShowCategoryGroupDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editingCategoryGroup ? 'Kategori Grubunu Düzenle' : 'Yeni Kategori Grubu'}
+            </DialogTitle>
+            <DialogDescription>
+              Kategorilerinizi mantıksal gruplar halinde düzenleyin
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="group-name">Grup Adı</Label>
+                <Input
+                  id="group-name"
+                  value={categoryGroupForm.name}
+                  onChange={(e) => setCategoryGroupForm({...categoryGroupForm, name: e.target.value})}
+                  placeholder="Örn: Enerji Grubu"
+                />
+              </div>
+              <div>
+                <Label htmlFor="group-color">Renk</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="group-color"
+                    type="color"
+                    value={categoryGroupForm.color}
+                    onChange={(e) => setCategoryGroupForm({...categoryGroupForm, color: e.target.value})}
+                    className="w-16"
+                  />
+                  <Input
+                    value={categoryGroupForm.color}
+                    onChange={(e) => setCategoryGroupForm({...categoryGroupForm, color: e.target.value})}
+                    placeholder="#6B7280"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="group-description">Açıklama (Opsiyonel)</Label>
+              <Input
+                id="group-description"
+                value={categoryGroupForm.description}
+                onChange={(e) => setCategoryGroupForm({...categoryGroupForm, description: e.target.value})}
+                placeholder="Grup açıklaması"
+              />
+            </div>
+            <div>
+              <Label>Kategoriler</Label>
+              <div className="mt-2 space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3">
+                {categories.map((category) => (
+                  <div key={category.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`category-${category.id}`}
+                      checked={categoryGroupForm.category_ids.includes(category.id)}
+                      onChange={(e) => {
+                        const newCategoryIds = e.target.checked
+                          ? [...categoryGroupForm.category_ids, category.id]
+                          : categoryGroupForm.category_ids.filter(id => id !== category.id);
+                        setCategoryGroupForm({
+                          ...categoryGroupForm,
+                          category_ids: newCategoryIds
+                        });
+                      }}
+                      className="rounded border-gray-300"
+                    />
+                    <label 
+                      htmlFor={`category-${category.id}`}
+                      className="flex items-center gap-2 flex-1 cursor-pointer"
+                    >
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      <span className="text-sm">{category.name}</span>
+                    </label>
+                  </div>
+                ))}
+                {categories.length === 0 && (
+                  <p className="text-sm text-slate-500">Henüz kategori bulunmuyor</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowCategoryGroupDialog(false);
+                setEditingCategoryGroup(null);
+                setCategoryGroupForm({ name: '', description: '', color: '#6B7280', category_ids: [] });
+              }}
+            >
+              İptal
+            </Button>
+            <Button 
+              onClick={editingCategoryGroup ? updateCategoryGroup : createCategoryGroup}
+              disabled={!categoryGroupForm.name.trim()}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {editingCategoryGroup ? 'Güncelle' : 'Oluştur'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
         </div>
       )}
 
