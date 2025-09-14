@@ -2546,6 +2546,19 @@ function App() {
                             }
                           </CardDescription>
                         </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowPackageDiscountedPrices(!showPackageDiscountedPrices)}
+                          className="p-2"
+                          title={showPackageDiscountedPrices ? "Liste fiyatlarını göster" : "İndirimli fiyatları göster"}
+                        >
+                          {showPackageDiscountedPrices ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent>
