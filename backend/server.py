@@ -3774,6 +3774,8 @@ async def get_category_groups():
     try:
         groups = []
         async for group in db.category_groups.find():
+            # Remove MongoDB _id field
+            group.pop('_id', None)
             groups.append(group)
         return groups
     except Exception as e:
