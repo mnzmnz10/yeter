@@ -564,6 +564,7 @@ function App() {
     setEditForm({
       name: '',
       description: '',
+      brand: '', // Marka alanını temizle
       image_url: '',
       list_price: '',
       discounted_price: '',
