@@ -1204,7 +1204,7 @@ function App() {
       const response = await axios.put(`${API}/packages/${selectedPackageForEdit.id}`, {
         name: packageForm.name,
         sale_price: parseFloat(packageForm.sale_price) || 0,
-        discount_percentage: parseFloat(packageForm.discount_percentage) || 0,
+        discount_percentage: parseFloat(packageDiscount) || 0,  // packageDiscount state'ini kullan
         image_url: packageForm.image_url || null
       });
       
