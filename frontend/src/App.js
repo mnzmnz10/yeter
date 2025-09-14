@@ -4608,15 +4608,6 @@ function App() {
               />
             </div>
             <div>
-              <Label htmlFor="package-description">Açıklama (Opsiyonel)</Label>
-              <Input
-                id="package-description"
-                value={packageForm.description}
-                onChange={(e) => setPackageForm({...packageForm, description: e.target.value})}
-                placeholder="Paket açıklaması"
-              />
-            </div>
-            <div>
               <Label htmlFor="package-price">Satış Fiyatı (₺)</Label>
               <Input
                 id="package-price"
