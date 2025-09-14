@@ -1645,6 +1645,7 @@ function App() {
     if (!packageWithProducts || !packageWithProducts.products) {
       return {
         totalListPrice: 0,
+        totalDiscountedPrice: 0,
         discountAmount: 0,
         laborCost: 0,
         totalNetPrice: 0,
@@ -1660,22 +1661,32 @@ function App() {
       return sum + (price * quantity);
     }, 0);
     
-    const discountAmount = totalListPrice * (parseFloat(packageDiscount) || 0) / 100;
+    // Toplam indirimli fiyat hesapla (ürünlerin kendi indirimli fiyatları)
+    const totalDiscountedPrice = packageWithProducts.products.reduce((sum, p) => {
+      const price = parseFloat(p.discounted_price_try || p.list_price_try) || 0;
+      const quantity = p.quantity || 1;
+      return sum + (price * quantity);
+    }, 0);
+    
+    // Paket indirimi hesapla (göz ikonu toggle'ına göre hangi fiyat üzerinden)
+    const basePrice = showPackageDiscountedPrices ? totalDiscountedPrice : totalListPrice;
+    const discountAmount = basePrice * (parseFloat(packageDiscount) || 0) / 100;
     const laborCost = parseFloat(packageLaborCost) || 0;
-    const totalNetPrice = totalListPrice - discountAmount + laborCost;
+    const totalNetPrice = basePrice - discountAmount + laborCost;
     
     // Toplam ürün adedi hesapla
     const totalQuantity = packageWithProducts.products.reduce((sum, p) => sum + (p.quantity || 1), 0);
     
     return {
       totalListPrice: isNaN(totalListPrice) ? 0 : totalListPrice,
+      totalDiscountedPrice: isNaN(totalDiscountedPrice) ? 0 : totalDiscountedPrice,
       discountAmount: isNaN(discountAmount) ? 0 : discountAmount,
       laborCost: isNaN(laborCost) ? 0 : laborCost,
       totalNetPrice: isNaN(totalNetPrice) ? 0 : totalNetPrice,
       productCount: packageWithProducts.products.length,
       totalQuantity: totalQuantity
     };
-  }, [packageWithProducts, packageDiscount, packageLaborCost]);
+  }, [packageWithProducts, packageDiscount, packageLaborCost, showPackageDiscountedPrices]);
 
   const resetNewProductForm = () => {
     setNewProductForm({
