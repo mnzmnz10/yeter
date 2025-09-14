@@ -284,6 +284,23 @@ class ExchangeRate(BaseModel):
     rate_to_try: Decimal
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Authentication Models
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class LoginResponse(BaseModel):
+    success: bool
+    message: str
+    session_token: Optional[str] = None
+
+class User(BaseModel):
+    id: str
+    username: str
+    password_hash: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    is_active: bool = True
+
 # Currency conversion service
 class CurrencyService:
     def __init__(self):
