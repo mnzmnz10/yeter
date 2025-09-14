@@ -2531,15 +2531,6 @@ function App() {
                           )}
                         </Button>
                       </div>
-                      <div>
-                        <Label htmlFor="edit-package-image">Görsel URL</Label>
-                        <Input
-                          id="edit-package-image"
-                          value={packageForm.image_url}
-                          onChange={(e) => setPackageForm({...packageForm, image_url: e.target.value})}
-                          placeholder="https://example.com/image.jpg"
-                        />
-                      </div>
                     </div>
                     {packageWithProducts && showPackageDiscountedPrices && (
                       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg space-y-2 mt-4">
