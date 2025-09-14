@@ -2706,7 +2706,22 @@ function App() {
 
                     {/* Package Summary */}
                     <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-emerald-900 mb-3">Paket Özeti</h4>
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="font-semibold text-emerald-900">Paket Özeti</h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowPackageDiscountedPrices(!showPackageDiscountedPrices)}
+                          className="p-2"
+                          title={showPackageDiscountedPrices ? "Liste fiyatlarını göster" : "İndirimli fiyatları göster"}
+                        >
+                          {showPackageDiscountedPrices ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-emerald-800">
