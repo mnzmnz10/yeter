@@ -2762,29 +2762,14 @@ function App() {
                   {/* Sol Taraf - Paket Ürünleri */}
                   <Card className="bg-teal-50 border-teal-200">
                     <CardHeader className="bg-teal-100/50">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <CardTitle className="text-xl text-teal-900">📦 Paket Ürünleri</CardTitle>
-                          <CardDescription className="text-teal-700">
-                            {packageWithProducts ? 
-                              `${packageWithProducts.products.length} ürün seçili` : 
-                              'Ürünler yükleniyor...'
-                            }
-                          </CardDescription>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowPackageDiscountedPrices(!showPackageDiscountedPrices)}
-                          className="p-2"
-                          title={showPackageDiscountedPrices ? "Liste fiyatlarını göster" : "İndirimli fiyatları göster"}
-                        >
-                          {showPackageDiscountedPrices ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </Button>
+                      <div>
+                        <CardTitle className="text-xl text-teal-900">📦 Paket Ürünleri</CardTitle>
+                        <CardDescription className="text-teal-700">
+                          {packageWithProducts ? 
+                            `${packageWithProducts.products.length} ürün seçili` : 
+                            'Ürünler yükleniyor...'
+                          }
+                        </CardDescription>
                       </div>
                     </CardHeader>
                     <CardContent>
