@@ -408,7 +408,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Updated Package Editing System with Discount + Labor Cost + Summary Structure"
+    - "Quote Editing Functionality - Update Instead of Duplicate Creation"
   stuck_tasks:
     - "Quote Editing Functionality - Update Instead of Duplicate Creation"
   test_all: false
