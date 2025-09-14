@@ -550,6 +550,7 @@ function App() {
     setEditForm({
       name: product.name,
       description: product.description || '',
+      brand: product.brand || '', // Marka bilgisini yükle
       image_url: product.image_url || '',
       list_price: product.list_price.toString(),
       discounted_price: product.discounted_price ? product.discounted_price.toString() : '',
