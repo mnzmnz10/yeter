@@ -389,6 +389,92 @@ class CurrencyService:
 
 currency_service = CurrencyService()
 
+# Authentication Service
+class AuthService:
+    def __init__(self):
+        self.sessions = {}  # In-memory session storage - basit cookie based oturum
+        
+    def hash_password(self, password: str) -> str:
+        """Hash password using SHA-256"""
+        return hashlib.sha256(password.encode()).hexdigest()
+    
+    def verify_password(self, password: str, password_hash: str) -> bool:
+        """Verify password against hash"""
+        return self.hash_password(password) == password_hash
+    
+    def create_session(self, username: str) -> str:
+        """Create session token"""
+        session_token = secrets.token_urlsafe(32)
+        self.sessions[session_token] = {
+            'username': username,
+            'created_at': datetime.now(timezone.utc),
+            'expires_at': datetime.now(timezone.utc) + timedelta(hours=24)  # 24 saat oturum
+        }
+        return session_token
+    
+    def validate_session(self, session_token: str) -> Optional[str]:
+        """Validate session token and return username if valid"""
+        if not session_token or session_token not in self.sessions:
+            return None
+            
+        session = self.sessions[session_token]
+        if datetime.now(timezone.utc) > session['expires_at']:
+            # Session expired
+            del self.sessions[session_token]
+            return None
+            
+        return session['username']
+    
+    def logout(self, session_token: str) -> bool:
+        """Logout user by removing session"""
+        if session_token in self.sessions:
+            del self.sessions[session_token]
+            return True
+        return False
+
+auth_service = AuthService()
+
+# Create default admin user
+async def create_default_admin():
+    """Create default admin user if not exists"""
+    try:
+        admin_user = await db.users.find_one({"username": "karavan_admin"})
+        if not admin_user:
+            admin_user = {
+                "id": str(uuid.uuid4()),
+                "username": "karavan_admin",
+                "password_hash": auth_service.hash_password("corlukaravan.5959"),
+                "created_at": datetime.now(timezone.utc),
+                "is_active": True
+            }
+            await db.users.insert_one(admin_user)
+            logger.info("Default admin user created successfully")
+        else:
+            logger.info("Default admin user already exists")
+    except Exception as e:
+        logger.error(f"Error creating default admin user: {e}")
+
+# Authentication dependency
+async def get_current_user(session_token: Optional[str] = Cookie(None)):
+    """Get current authenticated user"""
+    if not session_token:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    username = auth_service.validate_session(session_token)
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+    
+    return username
+
+# Optional authentication dependency (doesn't require auth but returns user if authenticated)
+async def get_current_user_optional(session_token: Optional[str] = Cookie(None)):
+    """Get current authenticated user (optional)"""
+    if not session_token:
+        return None
+    
+    username = auth_service.validate_session(session_token)
+    return username
+
 # Database helper function
 async def get_db():
     """Get database connection"""
