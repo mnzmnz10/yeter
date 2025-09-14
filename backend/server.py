@@ -3793,7 +3793,9 @@ async def create_category_group(group_data: CategoryGroupCreate):
             "created_at": datetime.now(timezone.utc)
         }
         
-        await db.category_groups.insert_one(group)
+        result = await db.category_groups.insert_one(group)
+        # Remove MongoDB _id field for response
+        group.pop('_id', None)
         return {"success": True, "message": "Kategori grubu oluşturuldu", "group": group}
     except Exception as e:
         logger.error(f"Error creating category group: {e}")
