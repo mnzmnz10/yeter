@@ -2473,7 +2473,7 @@ function App() {
                     <CardDescription className="text-blue-700">Paket temel bilgilerini düzenleyin</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>
                         <Label htmlFor="edit-package-name">Paket Adı</Label>
                         <Input
@@ -2483,16 +2483,38 @@ function App() {
                           placeholder="Paket adı"
                         />
                       </div>
+                      <div>
+                        <Label htmlFor="edit-package-price">Satış Fiyatı (₺)</Label>
+                        <Input
+                          id="edit-package-price"
+                          type="number"
+                          step="0.01"
+                          value={packageForm.sale_price}
+                          onChange={(e) => setPackageForm({...packageForm, sale_price: e.target.value})}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-package-discount">İndirim (%)</Label>
+                        <Input
+                          id="edit-package-discount"
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                          value={packageForm.discount_percentage}
+                          onChange={(e) => setPackageForm({...packageForm, discount_percentage: e.target.value})}
+                          placeholder="0"
+                        />
+                      </div>
                       <div className="flex gap-2 items-end">
                         <div className="flex-1">
-                          <Label htmlFor="edit-package-price">Satış Fiyatı (₺)</Label>
+                          <Label htmlFor="edit-package-image">Görsel URL</Label>
                           <Input
-                            id="edit-package-price"
-                            type="number"
-                            step="0.01"
-                            value={packageForm.sale_price}
-                            onChange={(e) => setPackageForm({...packageForm, sale_price: e.target.value})}
-                            placeholder="0.00"
+                            id="edit-package-image"
+                            value={packageForm.image_url}
+                            onChange={(e) => setPackageForm({...packageForm, image_url: e.target.value})}
+                            placeholder="https://example.com/image.jpg"
                           />
                         </div>
                         <Button
