@@ -1467,6 +1467,18 @@ function App() {
     }
   };
 
+  // Update package form when selectedPackageForEdit changes
+  React.useEffect(() => {
+    if (selectedPackageForEdit) {
+      setPackageForm({
+        name: selectedPackageForEdit.name || '',
+        sale_price: selectedPackageForEdit.sale_price ? selectedPackageForEdit.sale_price.toString() : '',
+        discount_percentage: selectedPackageForEdit.discount_percentage || 0,
+        image_url: selectedPackageForEdit.image_url || ''
+      });
+    }
+  }, [selectedPackageForEdit]);
+
   const toggleCategoryExpansion = (categoryId) => {
     const newExpanded = new Set(expandedCategories);
     if (newExpanded.has(categoryId)) {
