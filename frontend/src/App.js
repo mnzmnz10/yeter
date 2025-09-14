@@ -2303,9 +2303,8 @@ function App() {
                   </CardContent>
                 </Card>
 
-                <div className="grid grid-cols-1 gap-6">
-
-                  {/* Package Products */}
+                <div className="grid grid-cols-2 gap-8">
+                  {/* Sol Taraf - Paket Ürünleri */}
                   <Card className="bg-teal-50 border-teal-200">
                     <CardHeader className="bg-teal-100/50">
                       <div className="flex justify-between items-center">
@@ -2318,14 +2317,6 @@ function App() {
                             }
                           </CardDescription>
                         </div>
-                        <Button
-                          onClick={addProductsToPackage}
-                          className="bg-teal-600 hover:bg-teal-700"
-                          disabled={packageSelectedProducts.size === 0}
-                        >
-                          <Save className="w-4 h-4 mr-2" />
-                          Ürünleri Kaydet
-                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent>
