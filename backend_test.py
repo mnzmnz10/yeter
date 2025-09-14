@@ -6621,6 +6621,10 @@ class KaravanAPITester:
             print("\n🎯 PRIORITY 7: Package Sale Price Optional Feature")
             self.test_package_sale_price_optional()
             
+            # PRIORITY 8: Package Discount Percentage Fix Testing (CRITICAL)
+            print("\n🎯 PRIORITY 8: Package Discount Percentage Fix")
+            self.test_package_discount_percentage_fix()
+            
         finally:
             # Always cleanup
             self.cleanup_test_data()
