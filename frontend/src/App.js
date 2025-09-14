@@ -1042,7 +1042,6 @@ function App() {
     try {
       const response = await axios.post(`${API}/packages`, {
         name: packageForm.name,
-        description: packageForm.description,
         sale_price: parseFloat(packageForm.sale_price) || 0,
         image_url: packageForm.image_url || null
       });
@@ -1050,7 +1049,7 @@ function App() {
       if (response.data) {
         toast.success('Paket başarıyla oluşturuldu');
         setShowPackageDialog(false);
-        setPackageForm({ name: '', description: '', sale_price: '', image_url: '' });
+        setPackageForm({ name: '', sale_price: '', image_url: '' });
         await loadPackages();
       }
     } catch (error) {
