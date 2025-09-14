@@ -1067,6 +1067,55 @@ function App() {
       return product ? { ...product, quantity } : null;
     }).filter(Boolean);
   }, [selectedProducts, selectedProductsData]);
+
+  // Function to group products by category groups
+  const getProductsByGroups = (selectedProducts) => {
+    const groupedProducts = {};
+    
+    selectedProducts.forEach(product => {
+      // Find which group this product's category belongs to
+      const productCategory = categories.find(cat => cat.id === product.category_id);
+      if (!productCategory) return;
+      
+      const categoryGroup = categoryGroups.find(group => 
+        group.category_ids.includes(productCategory.id)
+      );
+      
+      if (categoryGroup) {
+        // Product belongs to a group
+        if (!groupedProducts[categoryGroup.name]) {
+          groupedProducts[categoryGroup.name] = {
+            groupName: categoryGroup.name,
+            groupColor: categoryGroup.color,
+            isGroup: true,
+            products: []
+          };
+        }
+        groupedProducts[categoryGroup.name].products.push({
+          ...product,
+          categoryName: productCategory.name
+        });
+      } else {
+        // Product doesn't belong to any group, use category name
+        const categoryName = productCategory.name;
+        if (!groupedProducts[categoryName]) {
+          groupedProducts[categoryName] = {
+            groupName: categoryName,
+            groupColor: productCategory.color,
+            isGroup: false,
+            products: []
+          };
+        }
+        groupedProducts[categoryName].products.push({
+          ...product,
+          categoryName: productCategory.name
+        });
+      }
+    });
+    
+    return groupedProducts;
+  };
+
   const toggleProductFavorite = async (productId) => {
     try {
       const response = await axios.post(`${API}/products/${productId}/toggle-favorite`);
