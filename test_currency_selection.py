@@ -12,7 +12,7 @@ from io import BytesIO
 import pandas as pd
 
 class CurrencySelectionTester:
-    def __init__(self, base_url="https://entry-pass.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://ecommerce-hub-115.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

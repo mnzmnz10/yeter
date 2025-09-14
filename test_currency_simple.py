@@ -11,7 +11,7 @@ import pandas as pd
 
 def test_currency_parameter():
     """Test the currency parameter functionality"""
-    base_url = "https://entry-pass.preview.emergentagent.com/api"
+    base_url = "https://ecommerce-hub-115.preview.emergentagent.com/api"
     
     print("🔍 Testing Excel Currency Parameter Functionality...")
     

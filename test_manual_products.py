@@ -2,7 +2,7 @@ import requests
 import json
 
 # API endpoint
-API_BASE = "https://entry-pass.preview.emergentagent.com/api"
+API_BASE = "https://ecommerce-hub-115.preview.emergentagent.com/api"
 COMPANY_ID = "fdd84f9d-4276-41aa-afeb-4637879f30c3"  # Test Firma Bağlantı
 
 # Test ürünleri manuel olarak ekle

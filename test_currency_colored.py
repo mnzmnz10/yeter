@@ -51,7 +51,7 @@ def create_colored_excel(currency_test, products_data):
 
 def test_currency_with_colored_excel():
     """Test currency parameter with properly colored Excel files"""
-    base_url = "https://entry-pass.preview.emergentagent.com/api"
+    base_url = "https://ecommerce-hub-115.preview.emergentagent.com/api"
     
     print("🔍 Testing Excel Currency Selection with Colored Excel Files...")
     
