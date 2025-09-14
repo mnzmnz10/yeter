@@ -581,6 +581,7 @@ function App() {
       const updateData = {
         name: editForm.name,
         description: editForm.description || null,
+        brand: editForm.brand || null, // Marka alanını backend'e gönder
         image_url: editForm.image_url || null,
         list_price: parseFloat(editForm.list_price),
         currency: editForm.currency
