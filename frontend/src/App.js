@@ -1370,9 +1370,13 @@ function App() {
       name: pkg.name,
       description: pkg.description || '',
       sale_price: pkg.sale_price.toString(),
-      discount_percentage: pkg.discount_percentage || 0,
       image_url: pkg.image_url || ''
     });
+    
+    // Set package discount and labor cost states
+    setPackageDiscount(pkg.discount_percentage || 0);
+    setPackageLaborCost(0); // Reset labor cost for each edit
+    
     loadPackageWithProducts(pkg.id);
     
     // Load all products for package editing (without pagination)
