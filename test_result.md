@@ -452,7 +452,7 @@ backend:
 
   - task: "Package System Functionality"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -461,6 +461,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "PACKAGE SYSTEM COMPREHENSIVE TESTING COMPLETED SUCCESSFULLY: ✅ PACKAGE CRUD OPERATIONS - All endpoints working perfectly: GET /api/packages (list all), POST /api/packages (create), GET /api/packages/{id} (get with products/supplies), PUT /api/packages/{id} (update), DELETE /api/packages/{id} (delete), ✅ PACKAGE STRUCTURE VERIFIED - All required fields present (id, name, description, sale_price, created_at, products, supplies, total_discounted_price), proper data validation and response format, ✅ PACKAGE PDF GENERATION - Both variants working: GET /api/packages/{id}/pdf-with-prices (156595 bytes), GET /api/packages/{id}/pdf-without-prices (156554 bytes), proper PDF format validation passed, ✅ PACKAGE-PRODUCT ASSOCIATIONS - Package details correctly include products and supplies arrays, associations working properly, ✅ BUSINESS LOGIC VERIFIED - Package creation, updates, and deletion working correctly, proper error handling for non-existent packages (404 responses), ✅ TURKISH LANGUAGE SUPPORT - All response messages in Turkish ('Paket başarıyla silindi', etc.). Package system is fully functional and production-ready with 100% core functionality working."
+      - working: false
+        agent: "testing"
+        comment: "FAMILY 3500 PACKAGE TESTING COMPLETED WITH CRITICAL DISCOUNT ISSUES: ✅ PACKAGE CRUD OPERATIONS WORKING - All basic endpoints functional: POST /api/packages (create), GET /api/packages/{id} (get with products), PUT /api/packages/{id} (update), product association working correctly, ✅ PACKAGE CREATION WITH DISCOUNT - Package creation accepts discount_percentage field and stores it correctly (15% discount created successfully), ✅ PRODUCT PRICE CALCULATIONS ACCURATE - All products have correct TRY price conversions, total calculations working: 161,100.04 TRY total for 8 solar panels + 1 inverter + 2 batteries + 2 controllers + 1 cable kit, ✅ PACKAGE EDIT FUNCTIONALITY - Package updates work for name, description, sale_price fields, ❌ CRITICAL ISSUE: DISCOUNT_PERCENTAGE FIELD NOT PERSISTING - When retrieving packages via GET /api/packages/{id}, discount_percentage always returns 0.0 instead of stored value (15%, 20%, etc.), ❌ CRITICAL ISSUE: DISCOUNT CALCULATIONS NOT APPLIED - Backend total_discounted_price equals full price without discount applied, no discount calculation in total price, ❌ CRITICAL ISSUE: PACKAGE UPDATE DISCOUNT PERSISTENCE - PUT requests accept discount_percentage but field resets to 0.0 on retrieval, discount updates not persisting in database. ROOT CAUSE: Package model or database schema may not be properly handling discount_percentage field persistence. Core package functionality works but discount feature is completely broken."
 
   - task: "Package Copy Functionality"
     implemented: true
