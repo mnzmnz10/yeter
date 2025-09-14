@@ -4926,6 +4926,19 @@ function App() {
               />
             </div>
             <div>
+              <Label htmlFor="package-discount">İndirim Yüzdesi (%)</Label>
+              <Input
+                id="package-discount"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={packageForm.discount_percentage}
+                onChange={(e) => setPackageForm({...packageForm, discount_percentage: e.target.value})}
+                placeholder="0"
+              />
+            </div>
+            <div>
               <Label htmlFor="package-image">Görsel URL (Opsiyonel)</Label>
               <Input
                 id="package-image"
