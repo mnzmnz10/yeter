@@ -3824,11 +3824,9 @@ async def login(login_request: LoginRequest, response: JSONResponse):
         raise HTTPException(status_code=500, detail="Giriş işlemi sırasında hata oluştu")
 
 @api_router.post("/auth/logout")
-async def logout(response: JSONResponse, current_user: str = Depends(get_current_user_optional)):
+async def logout(session_token: Optional[str] = Cookie(None)):
     """User logout endpoint"""
     try:
-        session_token = response.headers.get("cookie", "").split("session_token=")[-1].split(";")[0] if "session_token=" in response.headers.get("cookie", "") else None
-        
         if session_token:
             auth_service.logout(session_token)
         
