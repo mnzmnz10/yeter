@@ -2518,6 +2518,11 @@ function App() {
                           </Button>
                         </div>
                       </CardHeader>
+                      <CardContent>
+                        {/* Content for the product addition card will go here */}
+                      </CardContent>
+                    </Card>
+                  </div>
 
                   {/* Package Supplies (Sarf Malzemeleri) */}
                   <Card className="bg-orange-50 border-orange-200">
