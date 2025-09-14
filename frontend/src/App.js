@@ -165,6 +165,76 @@ function App() {
     return availableColors[0];
   };
 
+  // Category Groups functions
+  const loadCategoryGroups = async () => {
+    try {
+      const response = await axios.get(`${API}/category-groups`);
+      setCategoryGroups(response.data);
+    } catch (error) {
+      console.error('Error loading category groups:', error);
+      toast.error('Kategori grupları yüklenemedi');
+    }
+  };
+
+  const createCategoryGroup = async () => {
+    try {
+      const response = await axios.post(`${API}/category-groups`, categoryGroupForm);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        setShowCategoryGroupDialog(false);
+        setCategoryGroupForm({ name: '', description: '', color: '#6B7280', category_ids: [] });
+        await loadCategoryGroups();
+      }
+    } catch (error) {
+      console.error('Error creating category group:', error);
+      toast.error('Kategori grubu oluşturulamadı');
+    }
+  };
+
+  const updateCategoryGroup = async () => {
+    try {
+      const response = await axios.put(`${API}/category-groups/${editingCategoryGroup.id}`, categoryGroupForm);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        setShowCategoryGroupDialog(false);
+        setEditingCategoryGroup(null);
+        setCategoryGroupForm({ name: '', description: '', color: '#6B7280', category_ids: [] });
+        await loadCategoryGroups();
+      }
+    } catch (error) {
+      console.error('Error updating category group:', error);
+      toast.error('Kategori grubu güncellenemedi');
+    }
+  };
+
+  const deleteCategoryGroup = async (groupId) => {
+    if (!window.confirm('Bu kategori grubunu silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+    
+    try {
+      const response = await axios.delete(`${API}/category-groups/${groupId}`);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await loadCategoryGroups();
+      }
+    } catch (error) {
+      console.error('Error deleting category group:', error);
+      toast.error('Kategori grubu silinemedi');
+    }
+  };
+
+  const startEditCategoryGroup = (group) => {
+    setEditingCategoryGroup(group);
+    setCategoryGroupForm({
+      name: group.name,
+      description: group.description || '',
+      color: group.color || '#6B7280',
+      category_ids: group.category_ids || []
+    });
+    setShowCategoryGroupDialog(true);
+  };
+
   // Authentication functions
   const checkAuthStatus = async () => {
     try {
