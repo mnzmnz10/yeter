@@ -178,6 +178,26 @@ class CategoryCreate(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = None
 
+class CategoryGroup(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    color: Optional[str] = "#6B7280"  # Default gray color
+    category_ids: List[str] = []  # Bu gruba dahil kategoriler
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CategoryGroupCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    color: Optional[str] = "#6B7280"
+    category_ids: List[str] = []
+
+class CategoryGroupUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
+    category_ids: Optional[List[str]] = None
+
 # Upload History Models
 class UploadHistory(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
