@@ -2306,17 +2306,6 @@ function App() {
                         )}
                       </div>
                     )}
-                    <div className="mt-4">
-                      <Label htmlFor="edit-package-description">Açıklama</Label>
-                      <textarea
-                        id="edit-package-description"
-                        value={packageForm.description}
-                        onChange={(e) => setPackageForm({...packageForm, description: e.target.value})}
-                        placeholder="Paket açıklaması"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        rows="2"
-                      />
-                    </div>
                     {/* Image preview removed to save space */}
                   </CardContent>
                 </Card>
