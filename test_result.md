@@ -58,7 +58,7 @@
 ##
 ## agent_communication:
 ##     -agent: "main"
-##     -message: "SALE PRICE OPTIONAL FEATURE IMPLEMENTED: Made the 'Satış Fiyatı' (Sale Price) field optional for package creation and editing by removing the || !packageForm.sale_price condition from the disabled prop on line 2025 of App.js. The package form submit button is now only disabled when packageForm.name is empty, allowing users to create and edit packages without specifying a sale price. Change is ready for testing."
+##     -message: "PAKET TOPLAM FİYAT ÖZETİ VE İNDİRİM ÖZELLİKLERİ UYGULANMASI: ✅ Backend'de discount_percentage field'ı mevcut ve PackageCreate/Package modellerinde doğru tanımlanmış, ✅ Frontend'de paket düzenleme sayfasında indirim alanı eklendi (satır 2520-2531), ✅ startEditPackage fonksiyonuna discount_percentage field'ı eklendi (satır 1369), ✅ updatePackage fonksiyonunda indirim değeri backend'e gönderiliyor (satır 1203), ✅ Paket düzenleme sayfasına üst kısımda 'Toplam Fiyat Özeti' kartı eklendi - ürün sayısı, toplam fiyat, indirimli toplam ve tasarruf hesaplamaları gösteriliyor (satır 2601-2650), ✅ Alt kısımdaki tekrarlanan fiyat hesaplama bölümü kaldırıldı (satır 2718-2764), ✅ Göz simgesi butonu ile liste/indirimli fiyat gösterim geçişi çalışıyor. Backend testing'de discount_percentage field'ının veritabanında saklanmama sorunu tespit edildi - bu MongoDB serialization sorunu olabilir ve çözüm gerektirir."
 
 # Protocol Guidelines for Main agent
 #
