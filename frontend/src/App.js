@@ -2207,6 +2207,97 @@ function App() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Category Groups Management */}
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Kategori Grupları</CardTitle>
+                    <CardDescription>Kategorileri mantıksal gruplar halinde düzenleyin</CardDescription>
+                  </div>
+                  <Button onClick={() => setShowCategoryGroupDialog(true)} className="bg-purple-600 hover:bg-purple-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Grup Ekle
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {categoryGroups.map((group) => (
+                    <Card key={group.id} className="border-2" style={{ borderColor: group.color }}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-4 h-4 rounded-full"
+                              style={{ backgroundColor: group.color }}
+                            />
+                            <CardTitle className="text-lg">{group.name}</CardTitle>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => startEditCategoryGroup(group)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteCategoryGroup(group.id)}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        {group.description && (
+                          <p className="text-sm text-muted-foreground">{group.description}</p>
+                        )}
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-slate-700">İçindeki Kategoriler:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {group.category_ids?.map(categoryId => {
+                              const category = categories.find(c => c.id === categoryId);
+                              return category ? (
+                                <Badge 
+                                  key={categoryId} 
+                                  variant="secondary" 
+                                  className="text-xs"
+                                  style={{ backgroundColor: category.color + '20', color: category.color }}
+                                >
+                                  {category.name}
+                                </Badge>
+                              ) : null;
+                            })}
+                            {(!group.category_ids || group.category_ids.length === 0) && (
+                              <span className="text-xs text-slate-400">Kategori seçilmemiş</span>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                
+                {categoryGroups.length === 0 && (
+                  <div className="text-center py-8">
+                    <Tags className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-slate-800 mb-2">Henüz kategori grubu yok</h3>
+                    <p className="text-slate-600 mb-4">Kategorilerinizi gruplandırmak için "Grup Ekle" butonuna tıklayın</p>
+                    <Button onClick={() => setShowCategoryGroupDialog(true)} className="bg-purple-600 hover:bg-purple-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      İlk Grubumu Oluştur
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Upload Tab */}
