@@ -15,6 +15,8 @@ import pandas as pd
 import requests
 import logging
 from io import BytesIO
+import hashlib
+import secrets
 
 from reportlab.lib.pagesizes import A4, letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
