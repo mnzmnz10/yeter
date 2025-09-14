@@ -105,6 +105,7 @@ async def startup_event():
     """Initialize database indexes and create default categories on startup"""
     await create_indexes()
     await create_supplies_category()
+    await create_default_admin()
     logger.info("Application startup completed")
 
 # Create a router with the /api prefix
