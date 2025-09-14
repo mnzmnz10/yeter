@@ -2742,9 +2742,20 @@ function App() {
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-emerald-800">
-                            ₺ {formatPrice(calculatePackageTotals.totalListPrice)}
+                            ₺ {formatPrice(
+                              showPackageDiscountedPrices 
+                                ? calculatePackageTotals.totalDiscountedPrice 
+                                : calculatePackageTotals.totalListPrice
+                            )}
                           </div>
-                          <div className="text-sm text-emerald-600">Toplam Liste Fiyatı</div>
+                          <div className="text-sm text-emerald-600">
+                            {showPackageDiscountedPrices ? "Toplam İndirimli Fiyat" : "Toplam Liste Fiyatı"}
+                          </div>
+                          {showPackageDiscountedPrices && calculatePackageTotals.totalDiscountedPrice < calculatePackageTotals.totalListPrice && (
+                            <div className="text-xs text-slate-500 line-through">
+                              ₺ {formatPrice(calculatePackageTotals.totalListPrice)}
+                            </div>
+                          )}
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-red-600">
