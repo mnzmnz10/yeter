@@ -567,6 +567,7 @@ function App() {
       name: '',
       description: '',
       brand: '', // Marka alanını temizle
+      company_id: '', // Firma alanını temizle
       image_url: '',
       list_price: '',
       discounted_price: '',
