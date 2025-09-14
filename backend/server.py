@@ -247,6 +247,7 @@ class PackageWithProducts(BaseModel):
     name: str
     description: Optional[str] = None
     sale_price: Optional[Decimal] = None
+    discount_percentage: float = 0  # Paket indirimi
     image_url: Optional[str] = None
     created_at: datetime
     products: List[Dict[str, Any]] = []
