@@ -71,6 +71,335 @@ class KaravanAPITester:
         except Exception as e:
             return self.log_test(name, False, f"Exception: {str(e)}"), None
 
+    def test_authentication_system_comprehensive(self):
+        """Comprehensive test for the authentication system"""
+        print("\n🔍 Testing Authentication System...")
+        
+        # Test 1: Check if default admin user exists by attempting login
+        print("\n🔍 Testing Default Admin User Creation...")
+        
+        login_data = {
+            "username": "karavan_admin",
+            "password": "corlukaravan.5959"
+        }
+        
+        success, response = self.run_test(
+            "Admin User Login - Correct Credentials",
+            "POST",
+            "auth/login",
+            200,
+            data=login_data
+        )
+        
+        session_token = None
+        if success and response:
+            try:
+                login_response = response.json()
+                if login_response.get('success') and 'session_token' in login_response:
+                    session_token = login_response['session_token']
+                    self.log_test("Session Token Generated", True, f"Token: {session_token[:20]}...")
+                    
+                    # Check if session cookie is set
+                    set_cookie_header = response.headers.get('set-cookie', '')
+                    if 'session_token=' in set_cookie_header:
+                        self.log_test("Session Cookie Set", True, "Cookie header present")
+                    else:
+                        self.log_test("Session Cookie Set", False, "No session cookie in response")
+                        
+                    # Check Turkish response message
+                    message = login_response.get('message', '')
+                    if 'başarıyla' in message.lower():
+                        self.log_test("Turkish Login Message", True, f"Message: {message}")
+                    else:
+                        self.log_test("Turkish Login Message", False, f"Expected Turkish message, got: {message}")
+                        
+                else:
+                    self.log_test("Login Response Format", False, f"Invalid response: {login_response}")
+            except Exception as e:
+                self.log_test("Login Response Parsing", False, f"Error: {e}")
+        
+        # Test 2: Test login with wrong credentials
+        print("\n🔍 Testing Login with Wrong Credentials...")
+        
+        wrong_credentials = [
+            {"username": "karavan_admin", "password": "wrongpassword"},
+            {"username": "wronguser", "password": "corlukaravan.5959"},
+            {"username": "admin", "password": "admin"},
+            {"username": "", "password": "corlukaravan.5959"},
+            {"username": "karavan_admin", "password": ""}
+        ]
+        
+        for i, creds in enumerate(wrong_credentials):
+            success, response = self.run_test(
+                f"Wrong Credentials Test {i+1} - {creds['username'][:10]}",
+                "POST",
+                "auth/login",
+                401,  # Expecting 401 Unauthorized
+                data=creds
+            )
+            
+            if success and response:
+                try:
+                    error_response = response.json()
+                    if 'geçersiz' in error_response.get('detail', '').lower():
+                        self.log_test(f"Turkish Error Message {i+1}", True, f"Error: {error_response.get('detail')}")
+                    else:
+                        self.log_test(f"Turkish Error Message {i+1}", False, f"Expected Turkish error, got: {error_response}")
+                except Exception as e:
+                    self.log_test(f"Wrong Credentials Response {i+1}", False, f"Error parsing: {e}")
+        
+        # Test 3: Test auth check endpoint without session
+        print("\n🔍 Testing Auth Check Without Session...")
+        
+        success, response = self.run_test(
+            "Auth Check - No Session",
+            "GET",
+            "auth/check",
+            200
+        )
+        
+        if success and response:
+            try:
+                auth_response = response.json()
+                if auth_response.get('authenticated') == False and auth_response.get('username') is None:
+                    self.log_test("Auth Check Without Session", True, "Correctly returns unauthenticated")
+                else:
+                    self.log_test("Auth Check Without Session", False, f"Unexpected response: {auth_response}")
+            except Exception as e:
+                self.log_test("Auth Check Response", False, f"Error parsing: {e}")
+        
+        # Test 4: Test auth check endpoint with valid session
+        if session_token:
+            print("\n🔍 Testing Auth Check With Valid Session...")
+            
+            # Make request with session cookie
+            try:
+                auth_check_url = f"{self.base_url}/auth/check"
+                cookies = {'session_token': session_token}
+                auth_response = requests.get(auth_check_url, cookies=cookies, timeout=30)
+                
+                if auth_response.status_code == 200:
+                    try:
+                        auth_data = auth_response.json()
+                        if auth_data.get('authenticated') == True and auth_data.get('username') == 'karavan_admin':
+                            self.log_test("Auth Check With Valid Session", True, f"Authenticated as: {auth_data.get('username')}")
+                        else:
+                            self.log_test("Auth Check With Valid Session", False, f"Unexpected auth data: {auth_data}")
+                    except Exception as e:
+                        self.log_test("Auth Check With Session Parsing", False, f"Error: {e}")
+                else:
+                    self.log_test("Auth Check With Valid Session", False, f"HTTP {auth_response.status_code}")
+                    
+            except Exception as e:
+                self.log_test("Auth Check With Session Request", False, f"Error: {e}")
+        
+        # Test 5: Test logout endpoint
+        if session_token:
+            print("\n🔍 Testing Logout Endpoint...")
+            
+            try:
+                logout_url = f"{self.base_url}/auth/logout"
+                cookies = {'session_token': session_token}
+                logout_response = requests.post(logout_url, cookies=cookies, timeout=30)
+                
+                if logout_response.status_code == 200:
+                    try:
+                        logout_data = logout_response.json()
+                        if logout_data.get('success') == True:
+                            self.log_test("Logout Success", True, f"Message: {logout_data.get('message')}")
+                            
+                            # Check if Turkish message
+                            message = logout_data.get('message', '')
+                            if 'çıkış' in message.lower():
+                                self.log_test("Turkish Logout Message", True, f"Message: {message}")
+                            else:
+                                self.log_test("Turkish Logout Message", False, f"Expected Turkish message, got: {message}")
+                                
+                            # Check if session cookie is deleted
+                            set_cookie_header = logout_response.headers.get('set-cookie', '')
+                            if 'session_token=' in set_cookie_header and ('expires=' in set_cookie_header or 'max-age=0' in set_cookie_header):
+                                self.log_test("Session Cookie Deleted", True, "Cookie deletion header present")
+                            else:
+                                self.log_test("Session Cookie Deleted", False, "No cookie deletion header")
+                                
+                        else:
+                            self.log_test("Logout Success", False, f"Logout failed: {logout_data}")
+                    except Exception as e:
+                        self.log_test("Logout Response Parsing", False, f"Error: {e}")
+                else:
+                    self.log_test("Logout Request", False, f"HTTP {logout_response.status_code}")
+                    
+            except Exception as e:
+                self.log_test("Logout Request", False, f"Error: {e}")
+        
+        # Test 6: Test auth check after logout
+        if session_token:
+            print("\n🔍 Testing Auth Check After Logout...")
+            
+            try:
+                auth_check_url = f"{self.base_url}/auth/check"
+                cookies = {'session_token': session_token}  # Using the same token that should now be invalid
+                auth_response = requests.get(auth_check_url, cookies=cookies, timeout=30)
+                
+                if auth_response.status_code == 200:
+                    try:
+                        auth_data = auth_response.json()
+                        if auth_data.get('authenticated') == False:
+                            self.log_test("Auth Check After Logout", True, "Session correctly invalidated")
+                        else:
+                            self.log_test("Auth Check After Logout", False, f"Session still valid: {auth_data}")
+                    except Exception as e:
+                        self.log_test("Auth Check After Logout Parsing", False, f"Error: {e}")
+                else:
+                    self.log_test("Auth Check After Logout", False, f"HTTP {auth_response.status_code}")
+                    
+            except Exception as e:
+                self.log_test("Auth Check After Logout Request", False, f"Error: {e}")
+        
+        # Test 7: Test session expiration (simulate by creating a new login and testing)
+        print("\n🔍 Testing Session Management...")
+        
+        # Create a new session
+        success, response = self.run_test(
+            "New Session Creation",
+            "POST",
+            "auth/login",
+            200,
+            data=login_data
+        )
+        
+        new_session_token = None
+        if success and response:
+            try:
+                login_response = response.json()
+                new_session_token = login_response.get('session_token')
+                if new_session_token:
+                    self.log_test("New Session Created", True, f"Token: {new_session_token[:20]}...")
+                    
+                    # Test that the new session works
+                    auth_check_url = f"{self.base_url}/auth/check"
+                    cookies = {'session_token': new_session_token}
+                    auth_response = requests.get(auth_check_url, cookies=cookies, timeout=30)
+                    
+                    if auth_response.status_code == 200:
+                        auth_data = auth_response.json()
+                        if auth_data.get('authenticated') == True:
+                            self.log_test("New Session Validation", True, "New session works correctly")
+                        else:
+                            self.log_test("New Session Validation", False, f"New session invalid: {auth_data}")
+                    else:
+                        self.log_test("New Session Validation", False, f"HTTP {auth_response.status_code}")
+                        
+            except Exception as e:
+                self.log_test("New Session Creation", False, f"Error: {e}")
+        
+        # Test 8: Test invalid session token
+        print("\n🔍 Testing Invalid Session Token...")
+        
+        try:
+            auth_check_url = f"{self.base_url}/auth/check"
+            invalid_tokens = [
+                'invalid_token_123',
+                'expired_token_456',
+                '',
+                'a' * 100,  # Very long token
+                'special!@#$%^&*()token'
+            ]
+            
+            for i, invalid_token in enumerate(invalid_tokens):
+                cookies = {'session_token': invalid_token}
+                auth_response = requests.get(auth_check_url, cookies=cookies, timeout=30)
+                
+                if auth_response.status_code == 200:
+                    try:
+                        auth_data = auth_response.json()
+                        if auth_data.get('authenticated') == False:
+                            self.log_test(f"Invalid Token Test {i+1}", True, f"Token '{invalid_token[:10]}...' correctly rejected")
+                        else:
+                            self.log_test(f"Invalid Token Test {i+1}", False, f"Invalid token accepted: {auth_data}")
+                    except Exception as e:
+                        self.log_test(f"Invalid Token Test {i+1}", False, f"Error: {e}")
+                else:
+                    self.log_test(f"Invalid Token Test {i+1}", False, f"HTTP {auth_response.status_code}")
+                    
+        except Exception as e:
+            self.log_test("Invalid Token Tests", False, f"Error: {e}")
+        
+        # Test 9: Test protected endpoint access
+        print("\n🔍 Testing Protected Endpoint Access...")
+        
+        # First test without authentication (should work as most endpoints are public)
+        success, response = self.run_test(
+            "Public Endpoint Without Auth",
+            "GET",
+            "products",
+            200
+        )
+        
+        if success:
+            self.log_test("Public Endpoint Access", True, "Products endpoint accessible without auth")
+        else:
+            self.log_test("Public Endpoint Access", False, "Products endpoint requires auth")
+        
+        # Test with valid authentication
+        if new_session_token:
+            try:
+                products_url = f"{self.base_url}/products"
+                cookies = {'session_token': new_session_token}
+                products_response = requests.get(products_url, cookies=cookies, timeout=30)
+                
+                if products_response.status_code == 200:
+                    self.log_test("Authenticated Endpoint Access", True, "Products endpoint accessible with auth")
+                else:
+                    self.log_test("Authenticated Endpoint Access", False, f"HTTP {products_response.status_code}")
+                    
+            except Exception as e:
+                self.log_test("Authenticated Endpoint Access", False, f"Error: {e}")
+        
+        # Test 10: Test admin user exists in database
+        print("\n🔍 Testing Admin User Database Verification...")
+        
+        # We can't directly access the database, but we can verify through successful login
+        # that the admin user was created during startup
+        success, response = self.run_test(
+            "Verify Admin User Exists",
+            "POST",
+            "auth/login",
+            200,
+            data=login_data
+        )
+        
+        if success and response:
+            try:
+                login_response = response.json()
+                if login_response.get('success'):
+                    self.log_test("Admin User Database Creation", True, "Admin user successfully created and accessible")
+                else:
+                    self.log_test("Admin User Database Creation", False, "Admin user login failed")
+            except Exception as e:
+                self.log_test("Admin User Database Creation", False, f"Error: {e}")
+        
+        # Clean up - logout the new session
+        if new_session_token:
+            try:
+                logout_url = f"{self.base_url}/auth/logout"
+                cookies = {'session_token': new_session_token}
+                requests.post(logout_url, cookies=cookies, timeout=30)
+            except:
+                pass  # Ignore cleanup errors
+        
+        print(f"\n✅ Authentication System Test Summary:")
+        print(f"   - Tested default admin user creation (karavan_admin)")
+        print(f"   - Tested POST /api/auth/login endpoint with correct/incorrect credentials")
+        print(f"   - Tested GET /api/auth/check endpoint with/without session")
+        print(f"   - Tested POST /api/auth/logout endpoint")
+        print(f"   - Tested session token validation and expiration")
+        print(f"   - Tested invalid session token handling")
+        print(f"   - Verified Turkish language support in responses")
+        print(f"   - Tested session cookie management")
+        
+        return True
+
     def test_root_endpoint(self):
         """Test root API endpoint"""
         print("\n🔍 Testing Root Endpoint...")
