@@ -1159,6 +1159,8 @@ function App() {
   const [supplySearch, setSupplySearch] = useState('');
   const [supplyProducts, setSupplyProducts] = useState([]);
   const [expandedCategories, setExpandedCategories] = useState(new Set());
+  const [showSuppliesSection, setShowSuppliesSection] = useState(false); // Sarf malzemesi bölümü açık/kapalı
+  
   // Package management functions
   const loadPackages = async () => {
     try {
