@@ -2589,7 +2589,7 @@ function App() {
                 </Card>
 
                 {/* Package discount, labor cost and summary - Similar to quotes system */}
-                {packageWithProducts && packageWithProducts.products.length > 0 && (
+                {packageWithProducts && (
                   <div className="space-y-4">
                     {/* İndirim Bölümü */}
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
