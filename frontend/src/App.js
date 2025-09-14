@@ -4643,8 +4643,6 @@ function App() {
 
       {/* Toast Notifications */}
       <Toaster />
-        </div>
-      )}
     </div>
   );
 }
