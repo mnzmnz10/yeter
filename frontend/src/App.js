@@ -1015,7 +1015,6 @@ function App() {
   const [editingPackage, setEditingPackage] = useState(null);
   const [packageForm, setPackageForm] = useState({
     name: '',
-    description: '',
     sale_price: '',
     image_url: ''
   });
