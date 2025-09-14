@@ -14,7 +14,7 @@ from io import BytesIO
 import pandas as pd
 
 class KaravanAPITester:
-    def __init__(self, base_url="https://entry-pass.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://a52144f2-9775-423f-97f8-f100773639a8.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
