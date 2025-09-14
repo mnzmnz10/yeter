@@ -2496,7 +2496,7 @@ function App() {
                     <CardDescription className="text-blue-700">Paket temel bilgilerini düzenleyin</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <Label htmlFor="edit-package-name">Paket Adı</Label>
                         <Input
@@ -2518,41 +2518,13 @@ function App() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="edit-package-discount">İndirim (%)</Label>
+                        <Label htmlFor="edit-package-image">Görsel URL</Label>
                         <Input
-                          id="edit-package-discount"
-                          type="number"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                          value={packageForm.discount_percentage}
-                          onChange={(e) => setPackageForm({...packageForm, discount_percentage: e.target.value})}
-                          placeholder="0"
+                          id="edit-package-image"
+                          value={packageForm.image_url}
+                          onChange={(e) => setPackageForm({...packageForm, image_url: e.target.value})}
+                          placeholder="https://example.com/image.jpg"
                         />
-                      </div>
-                      <div className="flex gap-2 items-end">
-                        <div className="flex-1">
-                          <Label htmlFor="edit-package-image">Görsel URL</Label>
-                          <Input
-                            id="edit-package-image"
-                            value={packageForm.image_url}
-                            onChange={(e) => setPackageForm({...packageForm, image_url: e.target.value})}
-                            placeholder="https://example.com/image.jpg"
-                          />
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowPackageDiscountedPrices(!showPackageDiscountedPrices)}
-                          className="p-2"
-                          title={showPackageDiscountedPrices ? "Satış fiyatını göster" : "İndirimli fiyat toplamını göster"}
-                        >
-                          {showPackageDiscountedPrices ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </Button>
                       </div>
                     </div>
                     {packageWithProducts && showPackageDiscountedPrices && (
