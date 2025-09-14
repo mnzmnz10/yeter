@@ -2715,54 +2715,6 @@ function App() {
                             </div>
                           )}
                           
-                          {/* Toplam Fiyat Bilgisi */}
-                          {packageWithProducts && packageWithProducts.products.length > 0 && (
-                            <div className="border-t pt-3 mt-3">
-                              <div className="bg-teal-50 p-3 rounded-lg">
-                                <h4 className="font-medium text-teal-800 mb-2">💰 Toplam Fiyat</h4>
-                                <div className="space-y-1">
-                                  {showPackageDiscountedPrices ? (
-                                    <>
-                                      <div className="flex justify-between text-sm">
-                                        <span className="text-slate-600">Liste Fiyatı:</span>
-                                        <span className="line-through text-slate-400">
-                                          ₺ {formatPrice(packageWithProducts.products.reduce((sum, p) => 
-                                            sum + ((p.list_price_try || 0) * (p.quantity || 1)), 0))}
-                                        </span>
-                                      </div>
-                                      <div className="flex justify-between text-base font-medium">
-                                        <span className="text-green-700">İndirimli Toplam:</span>
-                                        <span className="text-green-700">
-                                          ₺ {formatPrice(packageWithProducts.products.reduce((sum, p) => 
-                                            sum + (((p.discounted_price_try || p.list_price_try || 0) * (p.quantity || 1))), 0))}
-                                        </span>
-                                      </div>
-                                      {packageWithProducts.products.some(p => p.discounted_price_try) && (
-                                        <div className="flex justify-between text-sm text-green-600">
-                                          <span>Toplam Tasarruf:</span>
-                                          <span>
-                                            ₺ {formatPrice(
-                                              packageWithProducts.products.reduce((sum, p) => 
-                                                sum + (((p.list_price_try || 0) - (p.discounted_price_try || p.list_price_try || 0)) * (p.quantity || 1)), 0)
-                                            )}
-                                          </span>
-                                        </div>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <div className="flex justify-between text-base font-medium">
-                                      <span className="text-teal-800">Toplam:</span>
-                                      <span className="text-teal-800">
-                                        ₺ {formatPrice(packageWithProducts.products.reduce((sum, p) => 
-                                          sum + ((p.list_price_try || 0) * (p.quantity || 1)), 0))}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          
                           {/* Mevcut Sarf Malzemeleri */}
                           {packageWithProducts && packageWithProducts.supplies.length > 0 && (
                             <div className="border-t pt-4">
