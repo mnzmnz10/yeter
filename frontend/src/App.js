@@ -1643,26 +1643,105 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-25 to-teal-50">
-      <div className="container mx-auto p-6 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
-            <img 
-              src="/logo.png" 
-              alt="Çorlu Karavan Logo" 
-              className="w-16 h-16 object-contain"
-            />
-            <div className="flex-1">
-              <h1 className="text-4xl font-bold text-slate-800">
-                Çorlu Karavan
-              </h1>
-              <div className="flex items-center gap-3">
-                <p className="text-lg text-slate-600">Fiyat Takip Sistemi</p>
-                <span className="text-xs text-slate-400 font-light">made by Mehmet Necdet</span>
-              </div>
-            </div>
+      {/* Authentication Loading */}
+      {authLoading ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-emerald-600" />
+            <p className="text-slate-600">Yükleniyor...</p>
           </div>
         </div>
+      ) : !isAuthenticated ? (
+        /* Login Page */
+        <div className="flex items-center justify-center min-h-screen">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader className="text-center">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <img 
+                  src="/logo.png" 
+                  alt="Çorlu Karavan Logo" 
+                  className="w-12 h-12 object-contain"
+                />
+                <div>
+                  <CardTitle className="text-xl font-bold text-slate-800">
+                    Çorlu Karavan
+                  </CardTitle>
+                  <p className="text-sm text-slate-600">Fiyat Takip Sistemi</p>
+                </div>
+              </div>
+              <CardDescription>
+                Devam etmek için giriş yapın
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <Label htmlFor="username">Kullanıcı Adı</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    value={loginForm.username}
+                    onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                    placeholder="Kullanıcı adınızı girin"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="password">Şifre</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                    placeholder="Şifrenizi girin"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+                {loginError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600">{loginError}</p>
+                  </div>
+                )}
+                <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700">
+                  Giriş Yap
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        /* Main Application */
+        <div className="container mx-auto p-6 max-w-7xl">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-4">
+                <img 
+                  src="/logo.png" 
+                  alt="Çorlu Karavan Logo" 
+                  className="w-16 h-16 object-contain"
+                />
+                <div className="flex-1">
+                  <h1 className="text-4xl font-bold text-slate-800">
+                    Çorlu Karavan
+                  </h1>
+                  <div className="flex items-center gap-3">
+                    <p className="text-lg text-slate-600">Fiyat Takip Sistemi</p>
+                    <span className="text-xs text-slate-400 font-light">made by Mehmet Necdet</span>
+                  </div>
+                </div>
+              </div>
+              <Button 
+                variant="outline"
+                onClick={handleLogout}
+                className="text-slate-600 hover:text-slate-800"
+              >
+                Çıkış Yap
+              </Button>
+            </div>
+          </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
