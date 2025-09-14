@@ -2496,6 +2496,29 @@ function App() {
                     </CardContent>
                   </Card>
 
+                  {/* Sağ Taraf - Ürün Ekleme/Çıkarma */}
+                  <div className="space-y-6">
+                    {/* Kategori Ürünleri Ekleme */}
+                    <Card className="bg-slate-50 border-slate-200">
+                      <CardHeader className="bg-slate-100/50">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <CardTitle className="text-xl text-slate-900">➕ Ürün Ekle</CardTitle>
+                            <CardDescription className="text-slate-700">
+                              Pakete eklemek için ürünleri seçin
+                            </CardDescription>
+                          </div>
+                          <Button
+                            onClick={addProductsToPackage}
+                            className="bg-teal-600 hover:bg-teal-700"
+                            disabled={packageSelectedProducts.size === 0}
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            Ürünleri Kaydet ({packageSelectedProducts.size})
+                          </Button>
+                        </div>
+                      </CardHeader>
+
                   {/* Package Supplies (Sarf Malzemeleri) */}
                   <Card className="bg-orange-50 border-orange-200">
                     <CardHeader className="bg-orange-100/50">
