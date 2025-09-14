@@ -1636,6 +1636,43 @@ function App() {
     };
   }, [getSelectedProductsData, showQuoteDiscountedPrices, quoteDiscount, quoteLaborCost]);
 
+  // Package totals calculation (similar to quote totals)
+  const calculatePackageTotals = useMemo(() => {
+    if (!packageWithProducts || !packageWithProducts.products) {
+      return {
+        totalListPrice: 0,
+        discountAmount: 0,
+        laborCost: 0,
+        totalNetPrice: 0,
+        productCount: 0,
+        totalQuantity: 0
+      };
+    }
+    
+    // Toplam liste fiyatı hesapla
+    const totalListPrice = packageWithProducts.products.reduce((sum, p) => {
+      const price = parseFloat(p.list_price_try) || 0;
+      const quantity = p.quantity || 1;
+      return sum + (price * quantity);
+    }, 0);
+    
+    const discountAmount = totalListPrice * (parseFloat(packageDiscount) || 0) / 100;
+    const laborCost = parseFloat(packageLaborCost) || 0;
+    const totalNetPrice = totalListPrice - discountAmount + laborCost;
+    
+    // Toplam ürün adedi hesapla
+    const totalQuantity = packageWithProducts.products.reduce((sum, p) => sum + (p.quantity || 1), 0);
+    
+    return {
+      totalListPrice: isNaN(totalListPrice) ? 0 : totalListPrice,
+      discountAmount: isNaN(discountAmount) ? 0 : discountAmount,
+      laborCost: isNaN(laborCost) ? 0 : laborCost,
+      totalNetPrice: isNaN(totalNetPrice) ? 0 : totalNetPrice,
+      productCount: packageWithProducts.products.length,
+      totalQuantity: totalQuantity
+    };
+  }, [packageWithProducts, packageDiscount, packageLaborCost]);
+
   const resetNewProductForm = () => {
     setNewProductForm({
       name: '',
