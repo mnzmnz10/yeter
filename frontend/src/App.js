@@ -2873,22 +2873,37 @@ function App() {
 
                     {/* Sarf Malzemeleri Ekleme */}
                     <Card className="bg-orange-50 border-orange-200">
-                      <CardHeader className="bg-orange-100/50">
+                      <CardHeader 
+                        className="bg-orange-100/50 cursor-pointer hover:bg-orange-200/50 transition-colors"
+                        onClick={() => setShowSuppliesSection(!showSuppliesSection)}
+                      >
                         <div className="flex justify-between items-center">
-                          <div>
-                            <CardTitle className="text-orange-900">🔧 Sarf Malzemesi Ekle</CardTitle>
-                            <CardDescription className="text-orange-700">
-                              Maliyet hesaplaması için tik işaretiyle seçin
-                            </CardDescription>
+                          <div className="flex items-center gap-2">
+                            <div className={`transition-transform ${showSuppliesSection ? 'rotate-90' : ''}`}>
+                              <svg className="w-4 h-4 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                            <div>
+                              <CardTitle className="text-orange-900">🔧 Sarf Malzemesi Ekle</CardTitle>
+                              <CardDescription className="text-orange-700">
+                                {showSuppliesSection ? 'Tik işaretiyle seçin' : 'Genişletmek için tıklayın'}
+                              </CardDescription>
+                            </div>
                           </div>
-                          <Button
-                            onClick={addSuppliesToPackage}
-                            className="bg-orange-600 hover:bg-orange-700"
-                            disabled={packageSelectedSupplies.size === 0}
-                          >
-                            <Save className="w-4 h-4 mr-2" />
-                            Sarf Malz. Kaydet ({packageSelectedSupplies.size})
-                          </Button>
+                          {showSuppliesSection && (
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation(); // Header click'ini engellemek için
+                                addSuppliesToPackage();
+                              }}
+                              className="bg-orange-600 hover:bg-orange-700"
+                              disabled={packageSelectedSupplies.size === 0}
+                            >
+                              <Save className="w-4 h-4 mr-2" />
+                              Sarf Malz. Kaydet ({packageSelectedSupplies.size})
+                            </Button>
+                          )}
                         </div>
                       </CardHeader>
                       <CardContent>
