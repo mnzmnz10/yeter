@@ -59,6 +59,17 @@ function App() {
     category_id: ''
   });
   const [categories, setCategories] = useState([]);
+  
+  // Category Groups state
+  const [categoryGroups, setCategoryGroups] = useState([]);
+  const [showCategoryGroupDialog, setShowCategoryGroupDialog] = useState(false);
+  const [editingCategoryGroup, setEditingCategoryGroup] = useState(null);
+  const [categoryGroupForm, setCategoryGroupForm] = useState({
+    name: '',
+    description: '',
+    color: '#6B7280',
+    category_ids: []
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
