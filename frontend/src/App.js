@@ -18,6 +18,15 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function App() {
+  // Authentication states
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [loginForm, setLoginForm] = useState({
+    username: '',
+    password: ''
+  });
+  const [loginError, setLoginError] = useState('');
+  
   const [companies, setCompanies] = useState([]);
   const [products, setProducts] = useState([]);
 
