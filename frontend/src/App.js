@@ -4638,8 +4638,11 @@ function App() {
         </DialogContent>
       </Dialog>
 
-        {/* Toast Notifications */}
-        <Toaster />
+        </div>
+      )}
+
+      {/* Toast Notifications */}
+      <Toaster />
         </div>
       )}
     </div>
