@@ -152,20 +152,86 @@ function App() {
     return availableColors[0];
   };
 
+  // Authentication functions
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch(`${API}/auth/check`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setIsAuthenticated(data.authenticated);
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setIsAuthenticated(false);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginError('');
+    
+    try {
+      const response = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(loginForm)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsAuthenticated(true);
+        setLoginForm({ username: '', password: '' });
+        toast.success(data.message);
+      } else {
+        setLoginError(data.message || 'Giriş başarısız');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setLoginError('Giriş sırasında bir hata oluştu');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      setIsAuthenticated(false);
+      toast.success('Başarıyla çıkış yapıldı');
+    } catch (error) {
+      console.error('Logout error:', error);
+      setIsAuthenticated(false);
+    }
+  };
+
+  // Check authentication on component mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
   // Load initial data
   useEffect(() => {
-    loadInitialData();
-    
-    // Döviz kurlarını her 30 dakikada bir sessizce güncelle
-    const exchangeRateInterval = setInterval(() => {
-      loadExchangeRates(false, false); // Sessiz güncelleme, toast yok
-    }, 30 * 60 * 1000); // 30 dakika
+    if (isAuthenticated) {
+      loadInitialData();
+      
+      // Döviz kurlarını her 30 dakikada bir sessizce güncelle
+      const exchangeRateInterval = setInterval(() => {
+        loadExchangeRates(false, false); // Sessiz güncelleme, toast yok
+      }, 30 * 60 * 1000); // 30 dakika
 
-    // Cleanup function
-    return () => {
-      clearInterval(exchangeRateInterval);
-    };
-  }, []);
+      // Cleanup function
+      return () => {
+        clearInterval(exchangeRateInterval);
+      };
+    }
+  }, [isAuthenticated]);
 
   const loadInitialData = async () => {
     setLoading(true);
