@@ -172,7 +172,11 @@ function App() {
     e.preventDefault();
     setLoginError('');
     
+    console.log('Login attempt started with:', loginForm.username);
+    
     try {
+      console.log('Making request to:', `${API}/auth/login`);
+      
       const response = await fetch(`${API}/auth/login`, {
         method: 'POST',
         headers: {
@@ -182,18 +186,30 @@ function App() {
         body: JSON.stringify(loginForm)
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
+      console.log('Response data:', data);
       
       if (data.success) {
+        console.log('Login successful, setting authenticated state');
         setIsAuthenticated(true);
         setLoginForm({ username: '', password: '' });
         toast.success(data.message);
       } else {
+        console.log('Login failed:', data.message);
         setLoginError(data.message || 'Giriş başarısız');
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setLoginError('Giriş sırasında bir hata oluştu');
+      console.error('Login error details:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      setLoginError(`Giriş sırasında bir hata oluştu: ${error.message}`);
     }
   };
 
