@@ -1420,6 +1420,24 @@ function App() {
     }
   };
 
+  // Sarf malzemesi toggle fonksiyonu
+  const togglePackageSupply = (supplyId, supplyData) => {
+    setPackageSelectedSupplies(prev => {
+      const newMap = new Map(prev);
+      if (newMap.has(supplyId)) {
+        // Eğer zaten seçiliyse, çıkar
+        newMap.delete(supplyId);
+      } else {
+        // Eğer seçili değilse, ekle
+        newMap.set(supplyId, { 
+          ...supplyData,
+          quantity: 1 
+        });
+      }
+      return newMap;
+    });
+  };
+
   const [showPackageDiscountedPrices, setShowPackageDiscountedPrices] = useState(false);
 
   const calculateQuoteTotals = useMemo(() => {
