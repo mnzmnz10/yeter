@@ -4316,9 +4316,8 @@ function App() {
             </Dialog>
 
         </Tabs>
-      </div>
 
-      {/* Kategori Ürün Atama Dialog'u */}
+        {/* Kategori Ürün Atama Dialog'u */}
       <Dialog open={showCategoryProductDialog} onOpenChange={setShowCategoryProductDialog}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
