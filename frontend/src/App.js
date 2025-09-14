@@ -1147,6 +1147,7 @@ function App() {
   const [packageForm, setPackageForm] = useState({
     name: '',
     sale_price: '',
+    discount_percentage: 0, // Paket indirim yüzdesi
     image_url: ''
   });
   const [selectedPackageForEdit, setSelectedPackageForEdit] = useState(null);
