@@ -3175,6 +3175,12 @@ function App() {
                                               placeholder="Açıklama (opsiyonel)"
                                             />
                                             <Input
+                                              value={editForm.brand}
+                                              onChange={(e) => setEditForm({...editForm, brand: e.target.value})}
+                                              className="min-w-[200px]"
+                                              placeholder="Marka (opsiyonel)"
+                                            />
+                                            <Input
                                               value={editForm.image_url}
                                               onChange={(e) => setEditForm({...editForm, image_url: e.target.value})}
                                               className="min-w-[200px]"
