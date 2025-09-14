@@ -50,6 +50,7 @@ function App() {
   const [editForm, setEditForm] = useState({
     name: '',
     description: '',
+    brand: '', // Marka alanı eklendi
     image_url: '',
     list_price: '',
     discounted_price: '',
