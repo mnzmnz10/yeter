@@ -2637,8 +2637,9 @@ async def update_supply_quantity(package_id: str, supply_id: str, quantity: int)
         if quantity <= 0:
             raise HTTPException(status_code=400, detail="Adet 1'den küçük olamaz")
         
+        # supply_id actually refers to product_id in this context
         result = await db.package_supplies.update_one(
-            {"id": supply_id, "package_id": package_id},
+            {"product_id": supply_id, "package_id": package_id},  # Changed from "id" to "product_id"
             {"$set": {"quantity": quantity}}
         )
         
