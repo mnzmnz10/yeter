@@ -2579,7 +2579,15 @@ function App() {
                                       <div className="flex-1">
                                         <div className="font-medium">{product.name}</div>
                                         <div className="text-sm text-slate-500">
-                                          Adet: {product.quantity} • ₺ {formatPrice(product.list_price_try || 0)}
+                                          Adet: {product.quantity} • {showPackageDiscountedPrices && product.discounted_price_try ? (
+                                            <>
+                                              <span className="line-through text-slate-400">₺ {formatPrice(product.list_price_try || 0)}</span>
+                                              {' → '}
+                                              <span className="text-green-600 font-medium">₺ {formatPrice(product.discounted_price_try)}</span>
+                                            </>
+                                          ) : (
+                                            <>₺ {formatPrice(product.list_price_try || 0)}</>
+                                          )}
                                         </div>
                                       </div>
                                       <Badge variant="outline">{product.quantity}x</Badge>
