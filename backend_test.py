@@ -3996,6 +3996,411 @@ class KaravanAPITester:
         
         return True
 
+    def test_family_3500_package_functionality(self):
+        """Test FAMILY 3500 package edit and total price calculation functionality"""
+        print("\n🔍 Testing FAMILY 3500 Package Edit and Total Price Calculation...")
+        
+        # Step 1: Create test company and products for FAMILY 3500 package
+        family_company_name = f"FAMILY 3500 Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create FAMILY 3500 Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": family_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("FAMILY 3500 Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            family_company_id = company_data.get('id')
+            if not family_company_id:
+                self.log_test("FAMILY 3500 Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(family_company_id)
+        except Exception as e:
+            self.log_test("FAMILY 3500 Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Create test products for FAMILY 3500 package with realistic pricing
+        family_3500_products = [
+            {
+                "name": "Solar Panel 450W Monocrystalline",
+                "company_id": family_company_id,
+                "list_price": 299.99,
+                "discounted_price": 249.99,
+                "currency": "USD",
+                "description": "High efficiency solar panel for FAMILY 3500 system"
+            },
+            {
+                "name": "Hybrid Inverter 5000W", 
+                "company_id": family_company_id,
+                "list_price": 850.50,
+                "discounted_price": 799.00,
+                "currency": "EUR",
+                "description": "Hybrid solar inverter with battery charging capability"
+            },
+            {
+                "name": "Lithium Battery 200Ah",
+                "company_id": family_company_id,
+                "list_price": 12500.00,
+                "discounted_price": 11250.00,
+                "currency": "TRY",
+                "description": "Deep cycle lithium battery for solar energy storage"
+            },
+            {
+                "name": "MPPT Charge Controller 60A",
+                "company_id": family_company_id,
+                "list_price": 189.99,
+                "discounted_price": 159.99,
+                "currency": "USD",
+                "description": "MPPT solar charge controller with LCD display"
+            },
+            {
+                "name": "DC/AC Cable Kit",
+                "company_id": family_company_id,
+                "list_price": 4500.00,
+                "discounted_price": 3950.00,
+                "currency": "TRY",
+                "description": "Complete cable kit for solar system installation"
+            }
+        ]
+        
+        created_family_product_ids = []
+        
+        for product_data in family_3500_products:
+            success, response = self.run_test(
+                f"Create FAMILY 3500 Product: {product_data['name'][:30]}...",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_family_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        
+                        # Verify product has correct price data for calculations
+                        list_price_try = product_response.get('list_price_try')
+                        discounted_price_try = product_response.get('discounted_price_try')
+                        
+                        if list_price_try and list_price_try > 0:
+                            self.log_test(f"Product Price Data - {product_data['name'][:20]}...", True, f"List: {list_price_try} TRY, Disc: {discounted_price_try} TRY")
+                        else:
+                            self.log_test(f"Product Price Data - {product_data['name'][:20]}...", False, f"Invalid price data: {list_price_try}")
+                            
+                    else:
+                        self.log_test(f"FAMILY 3500 Product Creation - {product_data['name'][:20]}...", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"FAMILY 3500 Product Creation - {product_data['name'][:20]}...", False, f"Error parsing: {e}")
+
+        if len(created_family_product_ids) < 3:
+            self.log_test("FAMILY 3500 Test Products", False, f"Only {len(created_family_product_ids)} products created, need at least 3")
+            return False
+
+        # Step 2: Create FAMILY 3500 Package with discount_percentage field
+        print("\n🔍 Testing FAMILY 3500 Package Creation with Discount...")
+        
+        family_3500_package_data = {
+            "name": "FAMILY 3500 Solar Energy System",
+            "description": "Complete solar energy system for family homes - 3500W capacity",
+            "sale_price": 35000.00,
+            "discount_percentage": 15.0,  # 15% package discount
+            "image_url": "https://example.com/family-3500-package.jpg"
+        }
+        
+        success, response = self.run_test(
+            "Create FAMILY 3500 Package with Discount",
+            "POST",
+            "packages",
+            200,
+            data=family_3500_package_data
+        )
+        
+        family_3500_package_id = None
+        if success and response:
+            try:
+                package_response = response.json()
+                family_3500_package_id = package_response.get('id')
+                
+                # Verify discount_percentage field is present and correct
+                discount_percentage = package_response.get('discount_percentage')
+                if discount_percentage == family_3500_package_data['discount_percentage']:
+                    self.log_test("Package Discount Percentage Field", True, f"Discount: {discount_percentage}%")
+                else:
+                    self.log_test("Package Discount Percentage Field", False, f"Expected: {family_3500_package_data['discount_percentage']}%, Got: {discount_percentage}%")
+                
+                # Verify all required fields for package edit functionality
+                required_fields = ['id', 'name', 'description', 'sale_price', 'discount_percentage', 'image_url', 'created_at']
+                missing_fields = [field for field in required_fields if field not in package_response]
+                
+                if not missing_fields:
+                    self.log_test("Package Edit Fields Complete", True, "All required fields present for editing")
+                else:
+                    self.log_test("Package Edit Fields Complete", False, f"Missing fields for editing: {missing_fields}")
+                    
+            except Exception as e:
+                self.log_test("FAMILY 3500 Package Creation Response", False, f"Error parsing: {e}")
+        
+        if not family_3500_package_id:
+            self.log_test("FAMILY 3500 Package Test", False, "Cannot continue without package ID")
+            return False
+
+        # Step 3: Add products to FAMILY 3500 package
+        print("\n🔍 Testing FAMILY 3500 Package Product Association...")
+        
+        family_package_products_data = [
+            {"product_id": created_family_product_ids[0], "quantity": 8},  # 8 solar panels
+            {"product_id": created_family_product_ids[1], "quantity": 1},  # 1 inverter
+            {"product_id": created_family_product_ids[2], "quantity": 2},  # 2 batteries
+            {"product_id": created_family_product_ids[3], "quantity": 2},  # 2 charge controllers
+            {"product_id": created_family_product_ids[4], "quantity": 1}   # 1 cable kit
+        ]
+        
+        success, response = self.run_test(
+            "Add Products to FAMILY 3500 Package",
+            "POST",
+            f"packages/{family_3500_package_id}/products",
+            200,
+            data=family_package_products_data
+        )
+        
+        if success and response:
+            try:
+                add_products_response = response.json()
+                if add_products_response.get('success'):
+                    message = add_products_response.get('message', '')
+                    self.log_test("FAMILY 3500 Package Products Added", True, f"Message: {message}")
+                else:
+                    self.log_test("FAMILY 3500 Package Products Added", False, "Success flag not true")
+            except Exception as e:
+                self.log_test("FAMILY 3500 Package Products Response", False, f"Error parsing: {e}")
+
+        # Step 4: Test GET /api/packages/{package_id} endpoint with products and discount
+        print("\n🔍 Testing GET /api/packages/{package_id} with Products and Discount...")
+        
+        success, response = self.run_test(
+            "Get FAMILY 3500 Package with Products",
+            "GET",
+            f"packages/{family_3500_package_id}",
+            200
+        )
+        
+        package_total_without_discount = 0
+        package_total_with_discount = 0
+        
+        if success and response:
+            try:
+                package_with_products = response.json()
+                
+                # Verify package has discount_percentage field
+                discount_percentage = package_with_products.get('discount_percentage')
+                if discount_percentage == 15.0:
+                    self.log_test("Package Discount Percentage in GET", True, f"Discount: {discount_percentage}%")
+                else:
+                    self.log_test("Package Discount Percentage in GET", False, f"Expected: 15.0%, Got: {discount_percentage}%")
+                
+                # Verify products array with correct price data
+                products = package_with_products.get('products', [])
+                if isinstance(products, list) and len(products) > 0:
+                    self.log_test("Package Products Retrieved", True, f"Found {len(products)} products in FAMILY 3500 package")
+                    
+                    # Calculate total prices manually to verify calculations
+                    calculated_total = 0
+                    for product in products:
+                        product_name = product.get('name', 'Unknown')
+                        quantity = product.get('quantity', 0)
+                        discounted_price_try = product.get('discounted_price_try', 0) or product.get('list_price_try', 0)
+                        
+                        if discounted_price_try and quantity:
+                            product_total = float(discounted_price_try) * quantity
+                            calculated_total += product_total
+                            self.log_test(f"Product Price Calculation - {product_name[:20]}...", True, f"Qty: {quantity}, Price: {discounted_price_try} TRY, Total: {product_total} TRY")
+                        else:
+                            self.log_test(f"Product Price Data - {product_name[:20]}...", False, f"Missing price data: price={discounted_price_try}, qty={quantity}")
+                    
+                    package_total_without_discount = calculated_total
+                    self.log_test("Package Total Without Discount", True, f"Total: {package_total_without_discount} TRY")
+                    
+                    # Calculate total with package discount
+                    if discount_percentage:
+                        package_total_with_discount = calculated_total * (1 - discount_percentage / 100)
+                        self.log_test("Package Total With Discount Calculation", True, f"Total with {discount_percentage}% discount: {package_total_with_discount} TRY")
+                    
+                    # Verify backend's total_discounted_price calculation
+                    backend_total = package_with_products.get('total_discounted_price')
+                    if backend_total:
+                        backend_total_float = float(backend_total)
+                        # Allow small rounding differences
+                        if abs(backend_total_float - package_total_with_discount) < 1.0:
+                            self.log_test("Backend Total Price Calculation", True, f"Backend total: {backend_total_float} TRY matches calculated: {package_total_with_discount} TRY")
+                        else:
+                            self.log_test("Backend Total Price Calculation", False, f"Backend: {backend_total_float} TRY vs Calculated: {package_total_with_discount} TRY")
+                    else:
+                        self.log_test("Backend Total Price Calculation", False, "No total_discounted_price in response")
+                        
+                else:
+                    self.log_test("Package Products Retrieved", False, f"Invalid products array: {products}")
+                    
+            except Exception as e:
+                self.log_test("FAMILY 3500 Package GET Response", False, f"Error parsing: {e}")
+
+        # Step 5: Test package edit functionality with discount field
+        print("\n🔍 Testing FAMILY 3500 Package Edit with Discount Update...")
+        
+        updated_family_package_data = {
+            "name": "FAMILY 3500 Solar Energy System - Premium",
+            "description": "Updated premium solar energy system for family homes - 3500W capacity with extended warranty",
+            "sale_price": 38000.00,
+            "discount_percentage": 20.0,  # Updated to 20% discount
+            "image_url": "https://example.com/family-3500-premium-package.jpg"
+        }
+        
+        success, response = self.run_test(
+            "Update FAMILY 3500 Package with New Discount",
+            "PUT",
+            f"packages/{family_3500_package_id}",
+            200,
+            data=updated_family_package_data
+        )
+        
+        if success and response:
+            try:
+                updated_package_response = response.json()
+                
+                # Verify discount_percentage was updated
+                updated_discount = updated_package_response.get('discount_percentage')
+                if updated_discount == 20.0:
+                    self.log_test("Package Discount Update", True, f"Updated discount: {updated_discount}%")
+                else:
+                    self.log_test("Package Discount Update", False, f"Expected: 20.0%, Got: {updated_discount}%")
+                
+                # Verify other fields were updated
+                if updated_package_response.get('name') == updated_family_package_data['name']:
+                    self.log_test("Package Name Update", True, f"Updated name: {updated_package_response.get('name')}")
+                else:
+                    self.log_test("Package Name Update", False, f"Name not updated correctly")
+                
+                if float(updated_package_response.get('sale_price', 0)) == updated_family_package_data['sale_price']:
+                    self.log_test("Package Sale Price Update", True, f"Updated sale price: {updated_package_response.get('sale_price')}")
+                else:
+                    self.log_test("Package Sale Price Update", False, f"Sale price not updated correctly")
+                    
+            except Exception as e:
+                self.log_test("FAMILY 3500 Package Update Response", False, f"Error parsing: {e}")
+
+        # Step 6: Verify updated discount affects total price calculation
+        print("\n🔍 Testing Updated Discount Effect on Total Price...")
+        
+        success, response = self.run_test(
+            "Get Updated FAMILY 3500 Package for Price Verification",
+            "GET",
+            f"packages/{family_3500_package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                updated_package_with_products = response.json()
+                
+                # Verify discount_percentage is updated
+                final_discount = updated_package_with_products.get('discount_percentage')
+                if final_discount == 20.0:
+                    self.log_test("Final Package Discount Verification", True, f"Final discount: {final_discount}%")
+                    
+                    # Calculate new total with updated discount
+                    if package_total_without_discount > 0:
+                        expected_total_with_new_discount = package_total_without_discount * (1 - final_discount / 100)
+                        
+                        # Verify backend recalculated the total
+                        backend_updated_total = updated_package_with_products.get('total_discounted_price')
+                        if backend_updated_total:
+                            backend_updated_total_float = float(backend_updated_total)
+                            if abs(backend_updated_total_float - expected_total_with_new_discount) < 1.0:
+                                self.log_test("Updated Discount Price Calculation", True, f"New total with 20% discount: {backend_updated_total_float} TRY")
+                            else:
+                                self.log_test("Updated Discount Price Calculation", False, f"Expected: {expected_total_with_new_discount} TRY, Got: {backend_updated_total_float} TRY")
+                        else:
+                            self.log_test("Updated Discount Price Calculation", False, "No updated total_discounted_price")
+                    else:
+                        self.log_test("Updated Discount Price Calculation", False, "No base total to compare against")
+                else:
+                    self.log_test("Final Package Discount Verification", False, f"Expected: 20.0%, Got: {final_discount}%")
+                    
+            except Exception as e:
+                self.log_test("Updated Package Verification", False, f"Error parsing: {e}")
+
+        # Step 7: Test mathematical accuracy of discount calculations
+        print("\n🔍 Testing Mathematical Accuracy of Discount Calculations...")
+        
+        # Test with different discount percentages
+        test_discounts = [0, 5, 10, 15, 25, 50]
+        
+        for test_discount in test_discounts:
+            test_package_data = {
+                "name": f"FAMILY 3500 Test Discount {test_discount}%",
+                "description": f"Test package with {test_discount}% discount",
+                "sale_price": 30000.00,
+                "discount_percentage": test_discount
+            }
+            
+            success, response = self.run_test(
+                f"Update Package Discount to {test_discount}%",
+                "PUT",
+                f"packages/{family_3500_package_id}",
+                200,
+                data=test_package_data
+            )
+            
+            if success and response:
+                # Get package and verify calculation
+                success2, response2 = self.run_test(
+                    f"Verify {test_discount}% Discount Calculation",
+                    "GET",
+                    f"packages/{family_3500_package_id}",
+                    200
+                )
+                
+                if success2 and response2:
+                    try:
+                        test_package = response2.json()
+                        actual_discount = test_package.get('discount_percentage')
+                        actual_total = test_package.get('total_discounted_price')
+                        
+                        if actual_discount == test_discount and actual_total:
+                            if package_total_without_discount > 0:
+                                expected_total = package_total_without_discount * (1 - test_discount / 100)
+                                actual_total_float = float(actual_total)
+                                
+                                if abs(actual_total_float - expected_total) < 1.0:
+                                    self.log_test(f"Discount {test_discount}% Math Accuracy", True, f"Expected: {expected_total:.2f}, Got: {actual_total_float:.2f}")
+                                else:
+                                    self.log_test(f"Discount {test_discount}% Math Accuracy", False, f"Expected: {expected_total:.2f}, Got: {actual_total_float:.2f}")
+                            else:
+                                self.log_test(f"Discount {test_discount}% Math Accuracy", False, "No base total for comparison")
+                        else:
+                            self.log_test(f"Discount {test_discount}% Update", False, f"Discount not updated correctly: {actual_discount}")
+                    except Exception as e:
+                        self.log_test(f"Discount {test_discount}% Verification", False, f"Error: {e}")
+
+        print(f"\n✅ FAMILY 3500 Package Test Summary:")
+        print(f"   - Tested package creation with discount_percentage field")
+        print(f"   - Verified GET /api/packages/{{package_id}} endpoint returns package with products")
+        print(f"   - Tested package total price calculations with and without discounts")
+        print(f"   - Verified package edit functionality includes discount field")
+        print(f"   - Confirmed package products have correct price data for total calculations")
+        print(f"   - Tested mathematical accuracy of discount calculations (0%, 5%, 10%, 15%, 25%, 50%)")
+        
+        return True
+
     def cleanup_test_data(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
