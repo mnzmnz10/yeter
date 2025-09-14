@@ -552,6 +552,7 @@ function App() {
       name: product.name,
       description: product.description || '',
       brand: product.brand || '', // Marka bilgisini yükle
+      company_id: product.company_id || '', // Firma bilgisini yükle
       image_url: product.image_url || '',
       list_price: product.list_price.toString(),
       discounted_price: product.discounted_price ? product.discounted_price.toString() : '',
