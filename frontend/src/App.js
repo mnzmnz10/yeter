@@ -1366,6 +1366,7 @@ function App() {
       name: pkg.name,
       description: pkg.description || '',
       sale_price: pkg.sale_price.toString(),
+      discount_percentage: pkg.discount_percentage || 0,
       image_url: pkg.image_url || ''
     });
     loadPackageWithProducts(pkg.id);
