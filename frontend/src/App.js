@@ -332,18 +332,6 @@ function App() {
     }
   }, [isAuthenticated]);
 
-  // Update package form when selectedPackageForEdit changes
-  useEffect(() => {
-    if (selectedPackageForEdit) {
-      setPackageForm({
-        name: selectedPackageForEdit.name || '',
-        sale_price: selectedPackageForEdit.sale_price ? selectedPackageForEdit.sale_price.toString() : '',
-        discount_percentage: selectedPackageForEdit.discount_percentage || 0,
-        image_url: selectedPackageForEdit.image_url || ''
-      });
-    }
-  }, [selectedPackageForEdit]);
-
   const loadInitialData = async () => {
     setLoading(true);
     try {
