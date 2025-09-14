@@ -3243,9 +3243,27 @@ function App() {
                                         )}
                                       </TableCell>
                                       <TableCell className="w-32">
-                                        <div className="space-y-1">
-                                          <Badge variant="outline" className="truncate" title={company?.name || 'Unknown'}>{company?.name || 'Unknown'}</Badge>
-                                        </div>
+                                        {isEditing ? (
+                                          <Select 
+                                            value={editForm.company_id} 
+                                            onValueChange={(value) => setEditForm({...editForm, company_id: value})}
+                                          >
+                                            <SelectTrigger className="w-28">
+                                              <SelectValue placeholder="Firma" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {companies.map((comp) => (
+                                                <SelectItem key={comp.id} value={comp.id}>
+                                                  {comp.name}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        ) : (
+                                          <div className="space-y-1">
+                                            <Badge variant="outline" className="truncate" title={company?.name || 'Unknown'}>{company?.name || 'Unknown'}</Badge>
+                                          </div>
+                                        )}
                                       </TableCell>
                                       <TableCell className="w-28">
                                         {isEditing ? (
