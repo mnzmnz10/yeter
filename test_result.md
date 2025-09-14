@@ -402,9 +402,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Backend Startup Issues Fixed"
-    - "Sarf Malzemeleri Category Creation"
-    - "Package System Functionality"
+    - "Updated Package Editing System with Discount + Labor Cost + Summary Structure"
   stuck_tasks:
     - "Quote Editing Functionality - Update Instead of Duplicate Creation"
   test_all: false
