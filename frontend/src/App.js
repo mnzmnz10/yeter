@@ -3244,10 +3244,19 @@ function App() {
                                         </div>
                                       </TableCell>
                                       <TableCell className="w-28">
-                                        {product.brand && (
-                                          <Badge variant="secondary" className="truncate" title={product.brand}>
-                                            {product.brand}
-                                          </Badge>
+                                        {isEditing ? (
+                                          <Input
+                                            value={editForm.brand}
+                                            onChange={(e) => setEditForm({...editForm, brand: e.target.value})}
+                                            className="w-24"
+                                            placeholder="Marka"
+                                          />
+                                        ) : (
+                                          product.brand && (
+                                            <Badge variant="secondary" className="truncate" title={product.brand}>
+                                              {product.brand}
+                                            </Badge>
+                                          )
                                         )}
                                       </TableCell>
                                       <TableCell className="w-28">
