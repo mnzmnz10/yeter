@@ -51,6 +51,7 @@ function App() {
     name: '',
     description: '',
     brand: '', // Marka alanı eklendi
+    company_id: '', // Firma alanı eklendi
     image_url: '',
     list_price: '',
     discounted_price: '',
