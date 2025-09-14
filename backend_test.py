@@ -5758,6 +5758,365 @@ class KaravanAPITester:
         
         return True
 
+    def test_supply_products_comprehensive(self):
+        """Comprehensive test for supply products (sarf malzemesi) functionality"""
+        print("\n🔍 Testing Supply Products (Sarf Malzemesi) Functionality...")
+        
+        # Test 1: Check if Sarf Malzemeleri category exists
+        print("\n🔍 Testing Sarf Malzemeleri Category Existence...")
+        success, response = self.run_test(
+            "Get All Categories",
+            "GET",
+            "categories",
+            200
+        )
+        
+        sarf_category_id = None
+        if success and response:
+            try:
+                categories = response.json()
+                if isinstance(categories, list):
+                    # Look for Sarf Malzemeleri category
+                    sarf_category = next((cat for cat in categories if cat.get('name') == 'Sarf Malzemeleri'), None)
+                    if sarf_category:
+                        sarf_category_id = sarf_category.get('id')
+                        self.log_test("Sarf Malzemeleri Category Exists", True, f"Found category with ID: {sarf_category_id}")
+                        
+                        # Check category properties
+                        if sarf_category.get('is_deletable') == False:
+                            self.log_test("Sarf Malzemeleri Non-Deletable", True, "Category is protected from deletion")
+                        else:
+                            self.log_test("Sarf Malzemeleri Non-Deletable", False, "Category should be non-deletable")
+                        
+                        if sarf_category.get('color') == '#f97316':
+                            self.log_test("Sarf Malzemeleri Color", True, "Category has correct orange color")
+                        else:
+                            self.log_test("Sarf Malzemeleri Color", False, f"Expected #f97316, got {sarf_category.get('color')}")
+                            
+                        description = sarf_category.get('description', '')
+                        if 'sarf malzemeleri' in description.lower():
+                            self.log_test("Sarf Malzemeleri Description", True, f"Description: {description}")
+                        else:
+                            self.log_test("Sarf Malzemeleri Description", False, f"Description may be incorrect: {description}")
+                    else:
+                        self.log_test("Sarf Malzemeleri Category Exists", False, "Category not found")
+                else:
+                    self.log_test("Categories List Format", False, "Response is not a list")
+            except Exception as e:
+                self.log_test("Categories Parsing", False, f"Error: {e}")
+        
+        # Test 2: Test GET /api/products/supplies endpoint
+        print("\n🔍 Testing GET /api/products/supplies Endpoint...")
+        success, response = self.run_test(
+            "Get Supply Products",
+            "GET",
+            "products/supplies",
+            200
+        )
+        
+        initial_supplies_count = 0
+        if success and response:
+            try:
+                supplies = response.json()
+                if isinstance(supplies, list):
+                    initial_supplies_count = len(supplies)
+                    self.log_test("Supplies Endpoint Response", True, f"Found {initial_supplies_count} supply products")
+                    
+                    # Check structure of supply products if any exist
+                    if supplies:
+                        sample_supply = supplies[0]
+                        required_fields = ['id', 'name', 'company_id', 'list_price', 'currency', 'category_id']
+                        missing_fields = [field for field in required_fields if field not in sample_supply]
+                        
+                        if not missing_fields:
+                            self.log_test("Supply Product Structure", True, "All required fields present")
+                            
+                            # Verify category_id matches Sarf Malzemeleri
+                            if sample_supply.get('category_id') == sarf_category_id:
+                                self.log_test("Supply Product Category Assignment", True, "Product correctly assigned to Sarf Malzemeleri")
+                            else:
+                                self.log_test("Supply Product Category Assignment", False, f"Expected {sarf_category_id}, got {sample_supply.get('category_id')}")
+                        else:
+                            self.log_test("Supply Product Structure", False, f"Missing fields: {missing_fields}")
+                else:
+                    self.log_test("Supplies Endpoint Response", False, "Response is not a list")
+            except Exception as e:
+                self.log_test("Supplies Endpoint Parsing", False, f"Error: {e}")
+        
+        # Test 3: Create a test company for supply products
+        print("\n🔍 Creating Test Company for Supply Products...")
+        test_company_name = f"Sarf Malzemesi Test Şirketi {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Supply Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": test_company_name}
+        )
+        
+        supply_company_id = None
+        if success and response:
+            try:
+                company_data = response.json()
+                supply_company_id = company_data.get('id')
+                if supply_company_id:
+                    self.created_companies.append(supply_company_id)
+                    self.log_test("Supply Test Company Created", True, f"Company ID: {supply_company_id}")
+                else:
+                    self.log_test("Supply Test Company Created", False, "No company ID returned")
+            except Exception as e:
+                self.log_test("Supply Test Company Creation", False, f"Error: {e}")
+        
+        if not supply_company_id or not sarf_category_id:
+            self.log_test("Supply Products Test Prerequisites", False, "Missing company ID or category ID")
+            return False
+        
+        # Test 4: Create supply products
+        print("\n🔍 Creating Supply Products...")
+        supply_products = [
+            {
+                "name": "Güneş Paneli Montaj Vidası M8x50",
+                "company_id": supply_company_id,
+                "list_price": 2.50,
+                "currency": "TRY",
+                "description": "Paslanmaz çelik güneş paneli montaj vidası"
+            },
+            {
+                "name": "Elektrik Kablosu 4mm² Siyah",
+                "company_id": supply_company_id,
+                "list_price": 15.75,
+                "currency": "TRY",
+                "description": "Güneş enerjisi sistemi için özel kablo"
+            },
+            {
+                "name": "Silikon Conta ve Sızdırmazlık Seti",
+                "company_id": supply_company_id,
+                "list_price": 8.90,
+                "currency": "TRY",
+                "description": "Panel montajı için sızdırmazlık malzemeleri"
+            },
+            {
+                "name": "MC4 Konnektör Çifti",
+                "company_id": supply_company_id,
+                "list_price": 12.00,
+                "currency": "TRY",
+                "description": "Güneş paneli bağlantı konnektörü"
+            }
+        ]
+        
+        created_supply_product_ids = []
+        
+        for product_data in supply_products:
+            success, response = self.run_test(
+                f"Create Supply Product: {product_data['name'][:30]}...",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_supply_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        self.log_test(f"Supply Product Created - {product_data['name'][:25]}...", True, f"ID: {product_id}")
+                    else:
+                        self.log_test(f"Supply Product Creation - {product_data['name'][:25]}...", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Supply Product Creation - {product_data['name'][:25]}...", False, f"Error: {e}")
+        
+        if len(created_supply_product_ids) < 2:
+            self.log_test("Supply Products Creation", False, f"Only {len(created_supply_product_ids)} products created")
+            return False
+        
+        # Test 5: Assign products to Sarf Malzemeleri category
+        print("\n🔍 Assigning Products to Sarf Malzemeleri Category...")
+        
+        for product_id in created_supply_product_ids:
+            success, response = self.run_test(
+                f"Assign Product to Sarf Malzemeleri - {product_id[:8]}...",
+                "PUT",
+                f"products/{product_id}",
+                200,
+                data={"category_id": sarf_category_id}
+            )
+            
+            if success:
+                self.log_test(f"Product Category Assignment - {product_id[:8]}...", True, "Assigned to Sarf Malzemeleri")
+            else:
+                self.log_test(f"Product Category Assignment - {product_id[:8]}...", False, "Assignment failed")
+        
+        # Test 6: Verify supplies endpoint now returns our products
+        print("\n🔍 Verifying Supplies Endpoint After Product Assignment...")
+        success, response = self.run_test(
+            "Get Supply Products After Assignment",
+            "GET",
+            "products/supplies",
+            200
+        )
+        
+        if success and response:
+            try:
+                supplies = response.json()
+                if isinstance(supplies, list):
+                    new_supplies_count = len(supplies)
+                    expected_count = initial_supplies_count + len(created_supply_product_ids)
+                    
+                    if new_supplies_count >= expected_count:
+                        self.log_test("Supplies Count After Assignment", True, f"Found {new_supplies_count} supply products (expected ≥{expected_count})")
+                        
+                        # Verify our created products are in the list
+                        found_products = 0
+                        for supply in supplies:
+                            if supply.get('id') in created_supply_product_ids:
+                                found_products += 1
+                                
+                                # Verify category assignment
+                                if supply.get('category_id') == sarf_category_id:
+                                    self.log_test(f"Supply Product in List - {supply.get('name', 'Unknown')[:25]}...", True, "Correctly categorized")
+                                else:
+                                    self.log_test(f"Supply Product in List - {supply.get('name', 'Unknown')[:25]}...", False, "Wrong category")
+                        
+                        if found_products == len(created_supply_product_ids):
+                            self.log_test("All Created Products in Supplies List", True, f"Found all {found_products} created products")
+                        else:
+                            self.log_test("All Created Products in Supplies List", False, f"Found {found_products}/{len(created_supply_product_ids)} products")
+                    else:
+                        self.log_test("Supplies Count After Assignment", False, f"Expected ≥{expected_count}, got {new_supplies_count}")
+                else:
+                    self.log_test("Supplies Endpoint After Assignment", False, "Response is not a list")
+            except Exception as e:
+                self.log_test("Supplies Endpoint After Assignment", False, f"Error: {e}")
+        
+        # Test 7: Test complete workflow - create product and assign in one step
+        print("\n🔍 Testing Complete Workflow - Create and Assign Supply Product...")
+        
+        workflow_product = {
+            "name": "Workflow Test - Güneş Paneli Temizlik Kiti",
+            "company_id": supply_company_id,
+            "list_price": 45.00,
+            "currency": "TRY",
+            "description": "Güneş paneli temizlik ve bakım kiti",
+            "category_id": sarf_category_id  # Assign directly during creation
+        }
+        
+        success, response = self.run_test(
+            "Create Supply Product with Direct Category Assignment",
+            "POST",
+            "products",
+            200,
+            data=workflow_product
+        )
+        
+        workflow_product_id = None
+        if success and response:
+            try:
+                product_response = response.json()
+                workflow_product_id = product_response.get('id')
+                if workflow_product_id:
+                    self.created_products.append(workflow_product_id)
+                    
+                    # Verify category was assigned correctly
+                    if product_response.get('category_id') == sarf_category_id:
+                        self.log_test("Direct Category Assignment During Creation", True, "Product created with correct category")
+                    else:
+                        self.log_test("Direct Category Assignment During Creation", False, f"Expected {sarf_category_id}, got {product_response.get('category_id')}")
+                else:
+                    self.log_test("Workflow Product Creation", False, "No product ID returned")
+            except Exception as e:
+                self.log_test("Workflow Product Creation", False, f"Error: {e}")
+        
+        # Test 8: Verify workflow product appears in supplies endpoint
+        if workflow_product_id:
+            print("\n🔍 Verifying Workflow Product in Supplies Endpoint...")
+            success, response = self.run_test(
+                "Get Supplies After Workflow Test",
+                "GET",
+                "products/supplies",
+                200
+            )
+            
+            if success and response:
+                try:
+                    supplies = response.json()
+                    workflow_product_found = any(supply.get('id') == workflow_product_id for supply in supplies)
+                    
+                    if workflow_product_found:
+                        self.log_test("Workflow Product in Supplies List", True, "Product appears in supplies endpoint")
+                    else:
+                        self.log_test("Workflow Product in Supplies List", False, "Product not found in supplies list")
+                except Exception as e:
+                    self.log_test("Workflow Product Verification", False, f"Error: {e}")
+        
+        # Test 9: Test category deletion protection
+        print("\n🔍 Testing Sarf Malzemeleri Category Deletion Protection...")
+        if sarf_category_id:
+            success, response = self.run_test(
+                "Attempt to Delete Sarf Malzemeleri Category",
+                "DELETE",
+                f"categories/{sarf_category_id}",
+                400  # Should return 400 Bad Request
+            )
+            
+            if success and response:
+                try:
+                    error_response = response.json()
+                    error_detail = error_response.get('detail', '')
+                    if 'silinemez' in error_detail.lower():
+                        self.log_test("Category Deletion Protection", True, f"Correctly protected: {error_detail}")
+                    else:
+                        self.log_test("Category Deletion Protection", False, f"Unexpected error message: {error_detail}")
+                except Exception as e:
+                    self.log_test("Category Deletion Protection Response", False, f"Error parsing: {e}")
+        
+        # Test 10: Test supplies endpoint performance and sorting
+        print("\n🔍 Testing Supplies Endpoint Performance and Sorting...")
+        start_time = time.time()
+        success, response = self.run_test(
+            "Supplies Endpoint Performance Test",
+            "GET",
+            "products/supplies",
+            200
+        )
+        end_time = time.time()
+        
+        if success and response:
+            response_time = end_time - start_time
+            if response_time < 2.0:  # Should respond within 2 seconds
+                self.log_test("Supplies Endpoint Performance", True, f"Response time: {response_time:.3f}s")
+            else:
+                self.log_test("Supplies Endpoint Performance", False, f"Slow response: {response_time:.3f}s")
+            
+            try:
+                supplies = response.json()
+                if len(supplies) > 1:
+                    # Check if products are sorted by name
+                    is_sorted = all(
+                        supplies[i].get('name', '').lower() <= supplies[i+1].get('name', '').lower()
+                        for i in range(len(supplies)-1)
+                    )
+                    
+                    if is_sorted:
+                        self.log_test("Supplies Sorting", True, "Products sorted alphabetically by name")
+                    else:
+                        self.log_test("Supplies Sorting", False, "Products not properly sorted")
+            except Exception as e:
+                self.log_test("Supplies Sorting Check", False, f"Error: {e}")
+        
+        print(f"\n✅ Supply Products Test Summary:")
+        print(f"   - Verified Sarf Malzemeleri category exists and is protected")
+        print(f"   - Tested GET /api/products/supplies endpoint")
+        print(f"   - Created {len(created_supply_product_ids)} supply products")
+        print(f"   - Tested category assignment workflow")
+        print(f"   - Verified complete create-assign-retrieve workflow")
+        print(f"   - Tested category deletion protection")
+        print(f"   - Verified endpoint performance and sorting")
+        
+        return True
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
