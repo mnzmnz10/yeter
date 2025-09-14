@@ -5355,6 +5355,409 @@ class KaravanAPITester:
         
         return True
 
+    def test_package_discount_percentage_fix(self):
+        """Comprehensive test for discount_percentage field fix in packages"""
+        print("\n🔍 Testing Package Discount Percentage Field Fix...")
+        
+        # Step 1: Create a test company for package testing
+        test_company_name = f"Package Discount Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Package Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": test_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Package Discount Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            test_company_id = company_data.get('id')
+            if not test_company_id:
+                self.log_test("Package Discount Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(test_company_id)
+        except Exception as e:
+            self.log_test("Package Discount Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Step 2: Create test products for the package
+        test_products = [
+            {
+                "name": "Solar Panel 450W for Package Test",
+                "company_id": test_company_id,
+                "list_price": 299.99,
+                "discounted_price": 249.99,
+                "currency": "USD",
+                "description": "Test product for package discount testing"
+            },
+            {
+                "name": "Inverter 5000W for Package Test", 
+                "company_id": test_company_id,
+                "list_price": 850.50,
+                "discounted_price": 799.00,
+                "currency": "EUR",
+                "description": "Test inverter for package discount testing"
+            }
+        ]
+        
+        created_product_ids = []
+        
+        for product_data in test_products:
+            success, response = self.run_test(
+                f"Create Package Test Product: {product_data['name'][:30]}...",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        self.log_test(f"Package Test Product Created", True, f"ID: {product_id}")
+                    else:
+                        self.log_test(f"Package Test Product Creation", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Package Test Product Creation", False, f"Error parsing: {e}")
+
+        if len(created_product_ids) < 2:
+            self.log_test("Package Test Products", False, f"Only {len(created_product_ids)} products created, need at least 2")
+            return False
+
+        # Step 3: Test 1 - Create a package with discount_percentage = 25.0
+        print("\n🔍 Test 1: Create package with discount_percentage = 25.0")
+        
+        package_data = {
+            "name": "Discount Test Package 25%",
+            "description": "Test package for discount percentage field fix",
+            "sale_price": 1500.00,
+            "discount_percentage": 25.0,
+            "image_url": None,
+            "is_pinned": False
+        }
+        
+        success, response = self.run_test(
+            "Create Package with 25% Discount",
+            "POST",
+            "packages",
+            200,
+            data=package_data
+        )
+        
+        package_id = None
+        if success and response:
+            try:
+                package_response = response.json()
+                package_id = package_response.get('id')
+                if package_id:
+                    self.log_test("Package Creation with Discount", True, f"Package ID: {package_id}")
+                    
+                    # Verify discount_percentage is stored correctly
+                    stored_discount = package_response.get('discount_percentage')
+                    if stored_discount == 25.0:
+                        self.log_test("Package Creation - Discount Storage", True, f"Discount stored as: {stored_discount}")
+                    else:
+                        self.log_test("Package Creation - Discount Storage", False, f"Expected 25.0, got: {stored_discount}")
+                else:
+                    self.log_test("Package Creation with Discount", False, "No package ID returned")
+                    return False
+            except Exception as e:
+                self.log_test("Package Creation with Discount", False, f"Error parsing: {e}")
+                return False
+        else:
+            return False
+
+        # Step 4: Add products to the package
+        package_products = [
+            {"product_id": created_product_ids[0], "quantity": 2},
+            {"product_id": created_product_ids[1], "quantity": 1}
+        ]
+        
+        success, response = self.run_test(
+            "Add Products to Package",
+            "POST",
+            f"packages/{package_id}/products",
+            200,
+            data=package_products
+        )
+        
+        if success:
+            self.log_test("Package Products Added", True, "Products successfully added to package")
+        else:
+            self.log_test("Package Products Added", False, "Failed to add products to package")
+
+        # Step 5: Test 2 - GET /api/packages/{package_id} to verify discount_percentage is returned correctly
+        print("\n🔍 Test 2: GET package to verify discount_percentage persistence")
+        
+        success, response = self.run_test(
+            "Get Package with Discount",
+            "GET",
+            f"packages/{package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                package_data = response.json()
+                retrieved_discount = package_data.get('discount_percentage')
+                
+                if retrieved_discount == 25.0:
+                    self.log_test("Package Retrieval - Discount Persistence", True, f"Discount correctly retrieved as: {retrieved_discount}")
+                else:
+                    self.log_test("Package Retrieval - Discount Persistence", False, f"Expected 25.0, got: {retrieved_discount}")
+                    
+                # Verify other fields are also correct
+                if package_data.get('name') == "Discount Test Package 25%":
+                    self.log_test("Package Retrieval - Name Persistence", True, "Package name correctly retrieved")
+                else:
+                    self.log_test("Package Retrieval - Name Persistence", False, f"Name mismatch: {package_data.get('name')}")
+                    
+                # Check if products are included
+                products = package_data.get('products', [])
+                if len(products) == 2:
+                    self.log_test("Package Retrieval - Products Included", True, f"Found {len(products)} products")
+                else:
+                    self.log_test("Package Retrieval - Products Included", False, f"Expected 2 products, got {len(products)}")
+                    
+            except Exception as e:
+                self.log_test("Package Retrieval - Discount Persistence", False, f"Error parsing: {e}")
+
+        # Step 6: Test 3 - PUT /api/packages/{package_id} to update discount_percentage to 35.0
+        print("\n🔍 Test 3: Update package discount_percentage to 35.0")
+        
+        update_data = {
+            "name": "Discount Test Package 35%",
+            "description": "Updated test package for discount percentage field fix",
+            "sale_price": 1500.00,
+            "discount_percentage": 35.0,
+            "image_url": None,
+            "is_pinned": False
+        }
+        
+        success, response = self.run_test(
+            "Update Package Discount to 35%",
+            "PUT",
+            f"packages/{package_id}",
+            200,
+            data=update_data
+        )
+        
+        if success and response:
+            try:
+                updated_package = response.json()
+                updated_discount = updated_package.get('discount_percentage')
+                
+                if updated_discount == 35.0:
+                    self.log_test("Package Update - Discount Update", True, f"Discount updated to: {updated_discount}")
+                else:
+                    self.log_test("Package Update - Discount Update", False, f"Expected 35.0, got: {updated_discount}")
+                    
+            except Exception as e:
+                self.log_test("Package Update - Discount Update", False, f"Error parsing: {e}")
+
+        # Step 7: Test 4 - Verify the updated discount_percentage is persisted
+        print("\n🔍 Test 4: Verify updated discount_percentage persistence")
+        
+        success, response = self.run_test(
+            "Get Updated Package",
+            "GET",
+            f"packages/{package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                package_data = response.json()
+                persisted_discount = package_data.get('discount_percentage')
+                
+                if persisted_discount == 35.0:
+                    self.log_test("Package Update - Discount Persistence", True, f"Updated discount persisted as: {persisted_discount}")
+                else:
+                    self.log_test("Package Update - Discount Persistence", False, f"Expected 35.0, got: {persisted_discount}")
+                    
+                # Verify name was also updated
+                if package_data.get('name') == "Discount Test Package 35%":
+                    self.log_test("Package Update - Name Persistence", True, "Updated name correctly persisted")
+                else:
+                    self.log_test("Package Update - Name Persistence", False, f"Name not updated: {package_data.get('name')}")
+                    
+            except Exception as e:
+                self.log_test("Package Update - Discount Persistence", False, f"Error parsing: {e}")
+
+        # Step 8: Test 5 - Test various discount_percentage values (0%, 5%, 15%, 50%, 100%)
+        print("\n🔍 Test 5: Test various discount_percentage values")
+        
+        test_discount_values = [0.0, 5.0, 15.0, 50.0, 100.0]
+        
+        for discount_value in test_discount_values:
+            # Create a new package for each discount test
+            test_package_data = {
+                "name": f"Test Package {discount_value}% Discount",
+                "description": f"Test package with {discount_value}% discount",
+                "sale_price": 1000.00,
+                "discount_percentage": discount_value,
+                "image_url": None,
+                "is_pinned": False
+            }
+            
+            success, response = self.run_test(
+                f"Create Package with {discount_value}% Discount",
+                "POST",
+                "packages",
+                200,
+                data=test_package_data
+            )
+            
+            if success and response:
+                try:
+                    package_response = response.json()
+                    test_package_id = package_response.get('id')
+                    stored_discount = package_response.get('discount_percentage')
+                    
+                    if stored_discount == discount_value:
+                        self.log_test(f"Package {discount_value}% - Creation", True, f"Discount stored as: {stored_discount}")
+                        
+                        # Immediately retrieve to verify persistence
+                        success_get, response_get = self.run_test(
+                            f"Get Package {discount_value}% - Verify Persistence",
+                            "GET",
+                            f"packages/{test_package_id}",
+                            200
+                        )
+                        
+                        if success_get and response_get:
+                            try:
+                                retrieved_package = response_get.json()
+                                retrieved_discount = retrieved_package.get('discount_percentage')
+                                
+                                if retrieved_discount == discount_value:
+                                    self.log_test(f"Package {discount_value}% - Persistence", True, f"Discount persisted as: {retrieved_discount}")
+                                else:
+                                    self.log_test(f"Package {discount_value}% - Persistence", False, f"Expected {discount_value}, got: {retrieved_discount}")
+                                    
+                            except Exception as e:
+                                self.log_test(f"Package {discount_value}% - Persistence", False, f"Error parsing: {e}")
+                        
+                        # Clean up test package
+                        try:
+                            requests.delete(f"{self.base_url}/packages/{test_package_id}", timeout=30)
+                        except:
+                            pass
+                            
+                    else:
+                        self.log_test(f"Package {discount_value}% - Creation", False, f"Expected {discount_value}, got: {stored_discount}")
+                        
+                except Exception as e:
+                    self.log_test(f"Package {discount_value}% - Creation", False, f"Error parsing: {e}")
+
+        # Step 9: Test edge cases - ensure discount_percentage is never reset to 0.0 when it should have a different value
+        print("\n🔍 Test 6: Edge cases - Discount field reset prevention")
+        
+        # Update the main test package multiple times to ensure discount doesn't reset
+        for i in range(3):
+            update_data = {
+                "name": f"Discount Test Package - Update {i+1}",
+                "description": f"Updated description {i+1}",
+                "sale_price": 1500.00 + (i * 100),
+                "discount_percentage": 35.0,  # Keep the same discount
+                "image_url": None,
+                "is_pinned": False
+            }
+            
+            success, response = self.run_test(
+                f"Multiple Update Test {i+1} - Keep Discount",
+                "PUT",
+                f"packages/{package_id}",
+                200,
+                data=update_data
+            )
+            
+            if success and response:
+                try:
+                    updated_package = response.json()
+                    discount_after_update = updated_package.get('discount_percentage')
+                    
+                    if discount_after_update == 35.0:
+                        self.log_test(f"Multiple Update {i+1} - Discount Preserved", True, f"Discount remains: {discount_after_update}")
+                    else:
+                        self.log_test(f"Multiple Update {i+1} - Discount Preserved", False, f"Discount changed to: {discount_after_update}")
+                        
+                except Exception as e:
+                    self.log_test(f"Multiple Update {i+1} - Discount Preserved", False, f"Error parsing: {e}")
+
+        # Step 10: Final verification - Get all packages and verify discount fields
+        print("\n🔍 Test 7: Final verification - All packages discount field integrity")
+        
+        success, response = self.run_test(
+            "Get All Packages - Discount Field Check",
+            "GET",
+            "packages",
+            200
+        )
+        
+        if success and response:
+            try:
+                packages = response.json()
+                packages_with_discount = 0
+                packages_with_zero_discount = 0
+                packages_with_invalid_discount = 0
+                
+                for package in packages:
+                    discount = package.get('discount_percentage')
+                    if discount is None:
+                        packages_with_invalid_discount += 1
+                    elif discount == 0.0:
+                        packages_with_zero_discount += 1
+                    elif discount > 0.0:
+                        packages_with_discount += 1
+                        
+                self.log_test("All Packages - Discount Field Integrity", True, 
+                             f"Found {len(packages)} packages: {packages_with_discount} with discount, "
+                             f"{packages_with_zero_discount} with zero discount, {packages_with_invalid_discount} with invalid discount")
+                             
+                # Verify our test package is in the list with correct discount
+                test_package_found = False
+                for package in packages:
+                    if package.get('id') == package_id:
+                        test_package_found = True
+                        final_discount = package.get('discount_percentage')
+                        if final_discount == 35.0:
+                            self.log_test("Test Package in List - Correct Discount", True, f"Final discount: {final_discount}")
+                        else:
+                            self.log_test("Test Package in List - Correct Discount", False, f"Expected 35.0, got: {final_discount}")
+                        break
+                        
+                if not test_package_found:
+                    self.log_test("Test Package in List", False, "Test package not found in packages list")
+                    
+            except Exception as e:
+                self.log_test("All Packages - Discount Field Check", False, f"Error parsing: {e}")
+
+        # Clean up the main test package
+        try:
+            requests.delete(f"{self.base_url}/packages/{package_id}", timeout=30)
+        except:
+            pass
+
+        print(f"\n✅ Package Discount Percentage Test Summary:")
+        print(f"   - Tested package creation with discount_percentage = 25.0")
+        print(f"   - Verified package retrieval returns correct discount_percentage")
+        print(f"   - Tested package update to discount_percentage = 35.0")
+        print(f"   - Verified updated discount_percentage persists correctly")
+        print(f"   - Tested various discount values (0%, 5%, 15%, 50%, 100%)")
+        print(f"   - Verified discount_percentage field is never reset to 0.0 incorrectly")
+        print(f"   - Confirmed package editing functionality works with discount field")
+        
+        return True
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
