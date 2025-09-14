@@ -2571,6 +2571,84 @@ function App() {
                   </CardContent>
                 </Card>
 
+                {/* Toplam Fiyat Kartı - Her Zaman Görünür */}
+                {packageWithProducts && packageWithProducts.products.length > 0 && (
+                  <Card className="mb-6 bg-green-50 border-green-200">
+                    <CardHeader className="bg-green-100/50">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <CardTitle className="text-green-900">💰 Toplam Fiyat Özeti</CardTitle>
+                          <CardDescription className="text-green-700">Paket ürünlerinin fiyat toplamları</CardDescription>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowPackageDiscountedPrices(!showPackageDiscountedPrices)}
+                          className="p-2"
+                          title={showPackageDiscountedPrices ? "Liste fiyatlarını göster" : "İndirimli fiyatları göster"}
+                        >
+                          {showPackageDiscountedPrices ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="text-center p-3 bg-white rounded-lg border">
+                          <div className="text-sm text-slate-600 mb-1">Ürün Sayısı</div>
+                          <div className="text-xl font-bold text-slate-800">
+                            {packageWithProducts.products.length} çeşit
+                          </div>
+                          <div className="text-sm text-slate-500">
+                            {packageWithProducts.products.reduce((sum, p) => sum + (p.quantity || 1), 0)} adet
+                          </div>
+                        </div>
+                        
+                        <div className="text-center p-3 bg-white rounded-lg border">
+                          <div className="text-sm text-slate-600 mb-1">
+                            {showPackageDiscountedPrices ? "İndirimli Toplam" : "Liste Fiyatı Toplamı"}
+                          </div>
+                          <div className="text-xl font-bold text-green-700">
+                            ₺ {formatPrice(
+                              showPackageDiscountedPrices 
+                                ? packageWithProducts.products.reduce((sum, p) => 
+                                    sum + (((p.discounted_price_try || p.list_price_try || 0) * (p.quantity || 1))), 0)
+                                : packageWithProducts.products.reduce((sum, p) => 
+                                    sum + ((p.list_price_try || 0) * (p.quantity || 1)), 0)
+                            )}
+                          </div>
+                          {showPackageDiscountedPrices && packageWithProducts.products.some(p => p.discounted_price_try) && (
+                            <div className="text-sm text-green-600">
+                              ₺{formatPrice(
+                                packageWithProducts.products.reduce((sum, p) => 
+                                  sum + (((p.list_price_try || 0) - (p.discounted_price_try || p.list_price_try || 0)) * (p.quantity || 1)), 0)
+                              )} tasarruf
+                            </div>
+                          )}
+                        </div>
+                        
+                        {packageWithProducts.supplies && packageWithProducts.supplies.length > 0 && (
+                          <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+                            <div className="text-sm text-orange-700 mb-1">Sarf Malzemesi</div>
+                            <div className="text-xl font-bold text-orange-700">
+                              ₺ {formatPrice(
+                                packageWithProducts.supplies.reduce((sum, s) => 
+                                  sum + ((s.list_price_try || 0) * (s.quantity || 1)), 0)
+                              )}
+                            </div>
+                            <div className="text-sm text-orange-600">
+                              {packageWithProducts.supplies.length} çeşit
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <div className="grid grid-cols-2 gap-8">
                   {/* Sol Taraf - Paket Ürünleri */}
                   <Card className="bg-teal-50 border-teal-200">
