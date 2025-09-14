@@ -2946,6 +2946,7 @@ async def get_package_with_products(package_id: str):
             name=package["name"],
             description=package.get("description"),
             sale_price=package["sale_price"],
+            discount_percentage=package.get("discount_percentage", 0),  # İndirim yüzdesi eklendi
             image_url=package.get("image_url"),
             created_at=package["created_at"],
             products=products,
