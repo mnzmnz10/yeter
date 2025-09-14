@@ -218,6 +218,7 @@ class Package(BaseModel):
     name: str
     description: Optional[str] = None
     sale_price: Optional[Decimal] = None
+    discount_percentage: float = 0  # Paket indirimi
     image_url: Optional[str] = None
     is_pinned: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -226,6 +227,7 @@ class PackageCreate(BaseModel):
     name: str
     description: Optional[str] = None
     sale_price: Optional[Decimal] = None
+    discount_percentage: float = 0  # Paket indirimi
     image_url: Optional[str] = None
     is_pinned: bool = False
 
