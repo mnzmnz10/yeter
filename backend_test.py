@@ -6653,16 +6653,38 @@ class KaravanAPITester:
         return True
 
 def main():
-    """Main test runner - Focus on Excel Currency Detection Testing"""
-    print("🚀 Starting Excel Currency Detection Testing")
+    """Main test runner - Focus on Authentication System Testing"""
+    print("🚀 Starting Authentication System Testing")
     print("=" * 80)
     
     tester = KaravanAPITester()
     
     try:
-        # Test Excel Currency Detection functionality (as requested)
-        success = tester.run_currency_detection_tests()
-        return 0 if success else 1
+        # Test Authentication System (as requested)
+        print("\n🔍 Running Authentication System Tests...")
+        auth_success = tester.test_authentication_system_comprehensive()
+        
+        # Also test root endpoint to verify basic connectivity
+        print("\n🔍 Running Basic Connectivity Test...")
+        root_success = tester.test_root_endpoint()
+        
+        # Print final summary
+        print(f"\n" + "=" * 80)
+        print(f"📊 AUTHENTICATION TESTING SUMMARY")
+        print(f"=" * 80)
+        print(f"Total Tests Run: {tester.tests_run}")
+        print(f"Tests Passed: {tester.tests_passed}")
+        print(f"Tests Failed: {tester.tests_run - tester.tests_passed}")
+        print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%" if tester.tests_run > 0 else "No tests run")
+        
+        overall_success = auth_success and root_success
+        
+        if overall_success:
+            print(f"✅ AUTHENTICATION SYSTEM TESTING COMPLETED SUCCESSFULLY")
+        else:
+            print(f"❌ AUTHENTICATION SYSTEM TESTING COMPLETED WITH ISSUES")
+            
+        return 0 if overall_success else 1
         
     except KeyboardInterrupt:
         print("\n⚠️  Tests interrupted by user")
