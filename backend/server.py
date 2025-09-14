@@ -3764,6 +3764,86 @@ async def change_upload_currency(upload_id: str, new_currency: str):
         logger.error(f"Error changing upload currency: {e}")
         raise HTTPException(status_code=500, detail=f"Para birimi güncellenemedi: {str(e)}")
 
+# Category Groups CRUD Operations
+@api_router.get("/category-groups")
+async def get_category_groups():
+    """Get all category groups"""
+    try:
+        groups = []
+        async for group in db.category_groups.find():
+            groups.append(group)
+        return groups
+    except Exception as e:
+        logger.error(f"Error fetching category groups: {e}")
+        raise HTTPException(status_code=500, detail="Kategori grupları getirilemedi")
+
+@api_router.post("/category-groups")
+async def create_category_group(group_data: CategoryGroupCreate):
+    """Create a new category group"""
+    try:
+        group = {
+            "id": str(uuid.uuid4()),
+            "name": group_data.name,
+            "description": group_data.description,
+            "color": group_data.color or "#6B7280",
+            "category_ids": group_data.category_ids,
+            "created_at": datetime.now(timezone.utc)
+        }
+        
+        await db.category_groups.insert_one(group)
+        return {"success": True, "message": "Kategori grubu oluşturuldu", "group": group}
+    except Exception as e:
+        logger.error(f"Error creating category group: {e}")
+        raise HTTPException(status_code=500, detail="Kategori grubu oluşturulamadı")
+
+@api_router.put("/category-groups/{group_id}")
+async def update_category_group(group_id: str, group_data: CategoryGroupUpdate):
+    """Update a category group"""
+    try:
+        update_dict = {}
+        if group_data.name is not None:
+            update_dict["name"] = group_data.name
+        if group_data.description is not None:
+            update_dict["description"] = group_data.description
+        if group_data.color is not None:
+            update_dict["color"] = group_data.color
+        if group_data.category_ids is not None:
+            update_dict["category_ids"] = group_data.category_ids
+            
+        if not update_dict:
+            raise HTTPException(status_code=400, detail="Güncellenecek alan belirtilmedi")
+            
+        result = await db.category_groups.update_one(
+            {"id": group_id},
+            {"$set": update_dict}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Kategori grubu bulunamadı")
+            
+        return {"success": True, "message": "Kategori grubu güncellendi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating category group: {e}")
+        raise HTTPException(status_code=500, detail="Kategori grubu güncellenemedi")
+
+@api_router.delete("/category-groups/{group_id}")
+async def delete_category_group(group_id: str):
+    """Delete a category group"""
+    try:
+        result = await db.category_groups.delete_one({"id": group_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Kategori grubu bulunamadı")
+            
+        return {"success": True, "message": "Kategori grubu silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting category group: {e}")
+        raise HTTPException(status_code=500, detail="Kategori grubu silinemedi")
+
 # Static file serving for MongoDB Atlas migration files
 @api_router.get("/atlas-downloads")
 async def downloads_page():
