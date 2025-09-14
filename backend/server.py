@@ -3777,6 +3777,79 @@ try:
 except Exception as e:
     logger.warning(f"Could not mount static files: {e}")
 
+# Authentication Endpoints
+@api_router.post("/auth/login", response_model=LoginResponse)
+async def login(login_request: LoginRequest, response: JSONResponse):
+    """User login endpoint"""
+    try:
+        # Find user in database
+        user = await db.users.find_one({"username": login_request.username})
+        if not user:
+            raise HTTPException(status_code=401, detail="Geçersiz kullanıcı adı veya şifre")
+        
+        # Verify password
+        if not auth_service.verify_password(login_request.password, user["password_hash"]):
+            raise HTTPException(status_code=401, detail="Geçersiz kullanıcı adı veya şifre")
+        
+        # Check if user is active
+        if not user.get("is_active", True):
+            raise HTTPException(status_code=401, detail="Hesap devre dışı")
+        
+        # Create session
+        session_token = auth_service.create_session(login_request.username)
+        
+        # Set session cookie
+        response = JSONResponse(
+            content={
+                "success": True,
+                "message": "Başarıyla giriş yapıldı",
+                "session_token": session_token
+            }
+        )
+        response.set_cookie(
+            key="session_token",
+            value=session_token,
+            max_age=86400,  # 24 hours in seconds
+            httponly=True,
+            secure=False,  # Set True in production with HTTPS
+            samesite="lax"
+        )
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        raise HTTPException(status_code=500, detail="Giriş işlemi sırasında hata oluştu")
+
+@api_router.post("/auth/logout")
+async def logout(response: JSONResponse, current_user: str = Depends(get_current_user_optional)):
+    """User logout endpoint"""
+    try:
+        session_token = response.headers.get("cookie", "").split("session_token=")[-1].split(";")[0] if "session_token=" in response.headers.get("cookie", "") else None
+        
+        if session_token:
+            auth_service.logout(session_token)
+        
+        response = JSONResponse(content={"success": True, "message": "Başarıyla çıkış yapıldı"})
+        response.delete_cookie("session_token")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Logout error: {e}")
+        response = JSONResponse(content={"success": True, "message": "Çıkış yapıldı"})
+        response.delete_cookie("session_token")
+        return response
+
+@api_router.get("/auth/check")
+async def check_auth(current_user: str = Depends(get_current_user_optional)):
+    """Check authentication status"""
+    return {
+        "authenticated": current_user is not None,
+        "username": current_user
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
