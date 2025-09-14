@@ -1406,6 +1406,14 @@ function App() {
       );
     }
 
+    // Filter out supply products (products in "Sarf Malzemeleri" category)
+    const supplyCategory = categories.find(c => c.name === 'Sarf Malzemeleri');
+    if (supplyCategory) {
+      filteredProducts = filteredProducts.filter(product => 
+        product.category_id !== supplyCategory.id
+      );
+    }
+
     // Group by categories
     const grouped = {};
     filteredProducts.forEach(product => {
