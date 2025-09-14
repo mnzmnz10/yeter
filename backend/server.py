@@ -2614,8 +2614,9 @@ async def add_supplies_to_package(package_id: str, supplies: List[PackageSupplyC
 async def remove_supply_from_package(package_id: str, supply_id: str):
     """Paketten sarf malzemesi çıkar"""
     try:
+        # supply_id actually refers to product_id in this context
         result = await db.package_supplies.delete_one({
-            "id": supply_id,
+            "product_id": supply_id,  # Changed from "id" to "product_id"
             "package_id": package_id
         })
         
