@@ -4039,6 +4039,8 @@ async def update_category_group(group_id: str, group_data: CategoryGroupUpdate):
             update_dict["color"] = group_data.color
         if group_data.category_ids is not None:
             update_dict["category_ids"] = group_data.category_ids
+        if group_data.sort_order is not None:
+            update_dict["sort_order"] = group_data.sort_order
             
         if not update_dict:
             raise HTTPException(status_code=400, detail="Güncellenecek alan belirtilmedi")
