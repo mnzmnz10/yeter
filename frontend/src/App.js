@@ -1506,6 +1506,7 @@ function App() {
       name: pkg.name,
       description: pkg.description || '',
       sale_price: pkg.sale_price.toString(),
+      notes: pkg.notes || '', // Paket notlarını yükle
       image_url: pkg.image_url || ''
     });
     
