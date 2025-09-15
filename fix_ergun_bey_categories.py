@@ -9,7 +9,7 @@ import json
 import sys
 
 class ErgunBeyPackageFixer:
-    def __init__(self, base_url="https://ecommerce-hub-115.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://inventory-system-47.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.session = requests.Session()
         self.session.headers.update({'Content-Type': 'application/json'})

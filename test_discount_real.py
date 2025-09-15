@@ -6,7 +6,7 @@ Test Excel Discount with Real Excel File
 import requests
 import json
 
-BASE_URL = "https://ecommerce-hub-115.preview.emergentagent.com/api"
+BASE_URL = "https://inventory-system-47.preview.emergentagent.com/api"
 
 def create_test_company():
     """Create a test company"""

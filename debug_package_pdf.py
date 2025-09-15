@@ -7,7 +7,7 @@ import requests
 import json
 
 class PackagePDFDebugger:
-    def __init__(self, base_url="https://ecommerce-hub-115.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://inventory-system-47.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
