@@ -46,25 +46,63 @@ db = client[os.environ['DB_NAME']]
 async def create_indexes():
     """Create database indexes for optimal performance with large datasets"""
     try:
-        # Products collection indexes
-        await db.products.create_index("name")  # For name search
+        # Products collection indexes - enhanced for large datasets
+        await db.products.create_index("name")  # For name search and sorting
         await db.products.create_index("company_id")  # For company filtering
         await db.products.create_index("category_id")  # For category filtering 
-        await db.products.create_index([("name", "text"), ("description", "text")])  # For text search
+        await db.products.create_index("is_favorite")  # For favorites sorting
+        await db.products.create_index("brand")  # For brand search
+        
+        # Compound indexes for better performance on common queries
+        await db.products.create_index([("is_favorite", -1), ("name", 1)])  # For favorites-first sorting
+        await db.products.create_index([("company_id", 1), ("name", 1)])  # For company-filtered lists
+        await db.products.create_index([("category_id", 1), ("name", 1)])  # For category-filtered lists
+        await db.products.create_index([("is_favorite", -1), ("company_id", 1), ("name", 1)])  # For complex queries
+        
+        # Enhanced text search index with weights for better relevance
+        await db.products.create_index([
+            ("name", "text"), 
+            ("description", "text"),
+            ("brand", "text")
+        ], {
+            "weights": {
+                "name": 10,      # Name is most important
+                "brand": 5,      # Brand is second
+                "description": 1  # Description is least important
+            },
+            "name": "products_text_search"
+        })
         
         # Companies collection indexes
         await db.companies.create_index("name")
         
         # Categories collection indexes
         await db.categories.create_index("name")
+        await db.categories.create_index("sort_order")  # For sorted category lists
         
-        # Quotes collection indexes
+        # Category groups collection indexes
+        await db.category_groups.create_index("name")
+        await db.category_groups.create_index("sort_order")  # For sorted category group lists
+        
+        # Quotes collection indexes - enhanced for performance
         await db.quotes.create_index("customer_name")
         await db.quotes.create_index("created_at")
+        await db.quotes.create_index([("status", 1), ("created_at", -1)])  # For status-filtered lists
         
-        logger.info("Database indexes created successfully")
+        # Packages collection indexes
+        await db.packages.create_index("name")
+        await db.packages.create_index("created_at")
+        await db.packages.create_index([("is_pinned", -1), ("created_at", -1)])  # For pinned packages first
+        
+        # Package products collection indexes
+        await db.package_products.create_index("package_id")
+        await db.package_products.create_index("product_id")
+        await db.package_products.create_index([("package_id", 1), ("product_id", 1)])  # For efficient lookups
+        
+        logger.info("Enhanced database indexes created successfully for optimal performance")
     except Exception as e:
         logger.error(f"Error creating indexes: {e}")
+        # Don't fail startup if indexes can't be created
 
 # Create the main app
 app = FastAPI(title="Karavan Elektrik Ekipmanları Fiyat Karşılaştırma API")
