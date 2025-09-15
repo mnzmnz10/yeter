@@ -556,6 +556,9 @@ function App() {
     try {
       await axios.post(`${API}/companies`, { name: newCompanyName });
       setNewCompanyName('');
+      
+      // PERFORMANCE: Invalidate cache before reload
+      CacheManager.remove('companies');
       await loadCompanies();
       toast.success('Firma başarıyla oluşturuldu');
     } catch (error) {
