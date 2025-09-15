@@ -2510,22 +2510,37 @@ function App() {
 
             {/* Category Groups Management */}
             <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Kategori Grupları</CardTitle>
-                    <CardDescription>Kategorileri mantıksal gruplar halinde düzenleyin</CardDescription>
-                  </div>
-                  <Button onClick={() => setShowCategoryGroupDialog(true)} className="bg-purple-600 hover:bg-purple-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Grup Ekle
-                  </Button>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div>
+                  <CardTitle>Kategori Grupları</CardTitle>
+                  <CardDescription>
+                    Kategorileri mantıksal gruplar halinde düzenleyin.
+                    <span className="text-purple-600 font-medium">💡 Grupları sürükleyerek sıralarını değiştirebilirsiniz</span>
+                  </CardDescription>
                 </div>
+                <Button onClick={() => setShowCategoryGroupDialog(true)} className="bg-purple-600 hover:bg-purple-700">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Grup Ekle
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {categoryGroups.map((group) => (
-                    <Card key={group.id} className="border-2" style={{ borderColor: group.color }}>
+                    <Card 
+                      key={group.id} 
+                      className={`border-2 cursor-move transition-all duration-200 ${
+                        draggedCategoryGroupId === group.id ? 'opacity-50 scale-95' : ''
+                      } ${
+                        dragOverCategoryGroupId === group.id ? 'ring-2 ring-purple-400 ring-opacity-50 scale-105' : ''
+                      }`}
+                      style={{ borderColor: group.color }}
+                      draggable={true}
+                      onDragStart={(e) => handleCategoryGroupDragStart(e, group.id)}
+                      onDragOver={(e) => handleCategoryGroupDragOver(e, group.id)}
+                      onDragLeave={handleCategoryGroupDragLeave}
+                      onDrop={(e) => handleCategoryGroupDrop(e, group.id)}
+                      onDragEnd={handleCategoryGroupDragEnd}
+                    >
                       <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
