@@ -2252,7 +2252,7 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         story.append(Spacer(1, 10))
         
         # Ürün tablosu (kategori grupları ile)
-        story.append(self._create_package_products_table_with_groups(products, include_prices))
+        story.append(await self._create_package_products_table_with_groups(products, include_prices))
         story.append(Spacer(1, 25))
         
         # Toplam hesaplama bölümü
