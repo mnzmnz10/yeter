@@ -2840,6 +2840,19 @@ function App() {
                         />
                       </div>
                     </div>
+                    
+                    {/* Package Notes Section */}
+                    <div className="mt-4">
+                      <Label htmlFor="edit-package-notes">Paket Notları</Label>
+                      <textarea
+                        id="edit-package-notes"
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1"
+                        value={packageForm.notes || ''}
+                        onChange={(e) => setPackageForm({...packageForm, notes: e.target.value})}
+                        placeholder="Paket ile ilgili özel notlar, açıklamalar..."
+                      />
+                    </div>
+                    
                     {packageWithProducts && showPackageDiscountedPrices && (
                       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg space-y-2 mt-4">
                         <div className="text-sm text-amber-800">
