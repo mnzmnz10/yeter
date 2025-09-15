@@ -4076,6 +4076,37 @@ async def delete_category_group(group_id: str):
         logger.error(f"Error deleting category group: {e}")
         raise HTTPException(status_code=500, detail="Kategori grubu silinemedi")
 
+@api_router.post("/category-groups/reorder")
+async def reorder_category_groups(group_orders: List[Dict[str, Any]]):
+    """Kategori gruplarının sırasını toplu güncelle"""
+    try:
+        # group_orders: [{"id": "group1", "sort_order": 1}, {"id": "group2", "sort_order": 2}, ...]
+        for item in group_orders:
+            group_id = item.get("id")
+            sort_order = item.get("sort_order", 0)
+            
+            if group_id:
+                await db.category_groups.update_one(
+                    {"id": group_id},
+                    {"$set": {"sort_order": sort_order}}
+                )
+        
+        # Return updated category groups sorted by new order
+        groups = []
+        async for group in db.category_groups.find().sort([("sort_order", 1), ("name", 1)]):
+            group.pop('_id', None)
+            groups.append(group)
+        
+        return {
+            "success": True,
+            "message": "Kategori grubu sıralaması güncellendi",
+            "category_groups": groups
+        }
+        
+    except Exception as e:
+        logger.error(f"Error reordering category groups: {e}")
+        raise HTTPException(status_code=500, detail="Kategori grubu sıralaması güncellenemedi")
+
 # Static file serving for MongoDB Atlas migration files
 @api_router.get("/atlas-downloads")
 async def downloads_page():
