@@ -4009,8 +4009,20 @@ async def get_products(
         cursor = db.products.aggregate(pipeline)
         products = await cursor.to_list(None)
         
-        # Create response with cache headers for better performance
-        response_data = [Product(**product).dict() for product in products]
+        # Convert Decimal fields to float for JSON serialization
+        response_data = []
+        for product in products:
+            # Convert Decimal fields to float
+            if 'list_price' in product and isinstance(product['list_price'], Decimal):
+                product['list_price'] = float(product['list_price'])
+            if 'discounted_price' in product and isinstance(product['discounted_price'], Decimal):
+                product['discounted_price'] = float(product['discounted_price'])
+            if 'list_price_try' in product and isinstance(product['list_price_try'], Decimal):
+                product['list_price_try'] = float(product['list_price_try'])
+            if 'discounted_price_try' in product and isinstance(product['discounted_price_try'], Decimal):
+                product['discounted_price_try'] = float(product['discounted_price_try'])
+            
+            response_data.append(product)
         
         # PERFORMANCE: Cache invalidation for products to ensure fresh sorting
         if not search:
