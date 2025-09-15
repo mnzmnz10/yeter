@@ -10247,6 +10247,10 @@ class KaravanAPITester:
             print("\n🎯 PRIORITY 11: Ergün Bey Package Category Groups Comprehensive Testing")
             self.test_ergun_bey_package_category_groups_comprehensive()
             
+            # PRIORITY 12: Notes Functionality Testing (NEW REVIEW REQUEST)
+            print("\n🎯 PRIORITY 12: Notes Functionality for Packages and Quotes")
+            self.test_notes_functionality_comprehensive()
+            
         finally:
             # Always cleanup
             self.cleanup_test_data()
