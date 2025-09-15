@@ -115,6 +115,18 @@
 user_problem_statement: "Siteye girişte kullanıcı adı ve şifre istesin"
 
 backend:
+  - task: "PDF Generation with Notes Testing"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "PDF generation functionality with notes needs comprehensive testing after recent fixes. Focus areas: package PDF generation with notes (both with-prices and without-prices), quote PDF generation with notes, Turkish character support in notes, error handling for empty/null notes and very long notes, font-related error fixes."
+
   - task: "Debug Package Update with Discount and Labor Cost"
     implemented: true
     working: true
