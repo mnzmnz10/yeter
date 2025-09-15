@@ -112,7 +112,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "siteyi optimize et, hızlansın kasma olmasın"
+user_problem_statement: "Frontend performans optimizasyonlarını kapsamlı olarak test et"
 
 backend:
   - task: "Comprehensive Performance Optimization Implementation"
