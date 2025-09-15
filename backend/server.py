@@ -2355,23 +2355,41 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         """Paket ürünleri tablosu - kategori grupları ile organize edilmiş"""
         from reportlab.platypus import Table as PDFTable
         import asyncio
+        import threading
         
-        # Kategorileri ve kategori gruplarını getir - sync wrapper for async calls
-        async def get_categories_and_groups():
-            categories = await db.categories.find().to_list(None)
-            category_groups = await db.category_groups.find().to_list(None)
-            return categories, category_groups
+        # Kategorileri ve kategori gruplarını getir - thread-safe approach
+        categories = []
+        category_groups = []
         
-        # Run async code in sync context
-        try:
-            loop = asyncio.get_event_loop()
-            categories, category_groups = loop.run_until_complete(get_categories_and_groups())
-        except RuntimeError:
-            # If no event loop is running, create a new one
+        def run_async_in_thread():
+            async def get_data():
+                cats = await db.categories.find().to_list(None)
+                groups = await db.category_groups.find().to_list(None)
+                return cats, groups
+            
+            # Create new event loop for this thread
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            categories, category_groups = loop.run_until_complete(get_categories_and_groups())
-            loop.close()
+            try:
+                return loop.run_until_complete(get_data())
+            finally:
+                loop.close()
+        
+        # Run in separate thread to avoid event loop conflicts
+        result_container = []
+        
+        def thread_target():
+            result_container.extend(run_async_in_thread())
+        
+        thread = threading.Thread(target=thread_target)
+        thread.start()
+        thread.join()
+        
+        if len(result_container) >= 2:
+            categories, category_groups = result_container[0], result_container[1]
+        else:
+            # Fallback to empty lists if database access fails
+            categories, category_groups = [], []
         
         # Kategori grup haritası oluştur
         category_to_group = {}
