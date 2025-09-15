@@ -1340,6 +1340,7 @@ function App() {
         sale_price: parseFloat(packageForm.sale_price) || 0,
         discount_percentage: parseFloat(packageDiscount) || 0,  // packageDiscount state'ini kullan
         labor_cost: parseFloat(packageLaborCost) || 0,  // packageLaborCost state'ini kullan
+        notes: packageForm.notes || null,
         image_url: packageForm.image_url || null
       });
       
