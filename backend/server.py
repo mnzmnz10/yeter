@@ -2616,7 +2616,7 @@ async def download_package_pdf_without_prices(package_id: str):
         
         # PDF oluştur
         generator = PDFPackageGenerator()
-        pdf_buffer = await generator.generate_package_pdf(package, products, include_prices=False, categories=categories, category_groups=category_groups)
+        pdf_buffer = generator.generate_package_pdf(package, products, include_prices=False, categories=categories, category_groups=category_groups)
         
         # Dosya adı
         safe_name = "".join(c for c in package["name"] if c.isalnum() or c in (' ', '-', '_')).strip()
