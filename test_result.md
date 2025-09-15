@@ -594,6 +594,7 @@ test_plan:
   completed_tests:
     - "Debug Ergün Bey Package Category Group Issue in PDF Generation"
     - "Motokaravan - Kopya Package PDF Category Groups Fix"
+    - "Backend Performance Optimizations Testing"
 
 backend:
   - task: "Excel Currency Detection System"
