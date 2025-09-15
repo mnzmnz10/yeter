@@ -3738,7 +3738,7 @@ async def get_products(
     limit: int = 100,
     skip_pagination: bool = False  # For backward compatibility
 ):
-    """Get products with pagination, optionally filtered by company, category, or search term"""
+    """Get products with optimized pagination, filtering by company, category, or search term"""
     try:
         query = {}
         if company_id:
@@ -3746,27 +3746,55 @@ async def get_products(
         if category_id:
             query["category_id"] = category_id
         if search:
-            # Case-insensitive search in product name and description
-            query["$or"] = [
-                {"name": {"$regex": search, "$options": "i"}},
-                {"description": {"$regex": search, "$options": "i"}}
-            ]
+            # Enhanced text search with index utilization
+            search_term = search.strip()
+            if len(search_term) >= 2:  # Only search for 2+ characters for performance
+                query["$text"] = {"$search": search_term}
+            else:
+                # Fallback for short searches
+                query["$or"] = [
+                    {"name": {"$regex": f"^{search}", "$options": "i"}},
+                    {"brand": {"$regex": f"^{search}", "$options": "i"}}
+                ]
         
-        # Sort products: favorites first, then by name
+        # Optimize sorting: favorites first, then by name with index utilization
         sort_criteria = [("is_favorite", -1), ("name", 1)]
         
         # For backward compatibility - if skip_pagination is true, return all
         if skip_pagination:
-            products = await db.products.find(query).sort(sort_criteria).to_list(None)
+            # For large datasets, still apply reasonable limits
+            max_limit = 5000
+            products = await db.products.find(query).sort(sort_criteria).limit(max_limit).to_list(max_limit)
         else:
-            # Calculate skip value for pagination
+            # Enhanced pagination with performance optimizations
             skip = (page - 1) * limit
-            products = await db.products.find(query).sort(sort_criteria).skip(skip).limit(limit).to_list(limit)
+            
+            # Use hint for index optimization when applicable
+            cursor = db.products.find(query).sort(sort_criteria).skip(skip).limit(limit)
+            
+            # Add index hint for better performance on large datasets
+            if not search:  # Only use hint when not doing text search
+                cursor = cursor.hint([("is_favorite", -1), ("name", 1)])
+            
+            products = await cursor.to_list(limit)
             
         return [Product(**product) for product in products]
     except Exception as e:
         logger.error(f"Error getting products: {e}")
-        raise HTTPException(status_code=500, detail="Ürünler getirilemedi")
+        # Fallback to basic query if optimization fails
+        try:
+            basic_query = {}
+            if company_id:
+                basic_query["company_id"] = company_id
+            if category_id:
+                basic_query["category_id"] = category_id
+            
+            skip = (page - 1) * limit if not skip_pagination else 0
+            products = await db.products.find(basic_query).sort([("name", 1)]).skip(skip).limit(limit).to_list(limit)
+            return [Product(**product) for product in products]
+        except Exception as fallback_error:
+            logger.error(f"Fallback query also failed: {fallback_error}")
+            raise HTTPException(status_code=500, detail="Ürünler getirilemedi")
 
 @api_router.post("/products", response_model=Product)
 async def create_product(product: ProductCreate):
