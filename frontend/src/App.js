@@ -2971,26 +2971,78 @@ function App() {
                         <div className="space-y-3">
                           {packageWithProducts.products.length > 0 && (
                             <div className="mb-4">
-                              <h4 className="font-medium text-slate-800 mb-2">Mevcut Ürünler:</h4>
-                              <div className="space-y-2">
-                                {packageWithProducts.products.map((product) => (
-                                  <div key={product.id} className="border rounded-lg p-3 bg-slate-50">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex-1">
-                                        <div className="font-medium">{product.name}</div>
-                                        <div className="text-sm text-slate-500">
-                                          Adet: {product.quantity} • {showPackageDiscountedPrices && product.discounted_price_try ? (
-                                            <>
-                                              <span className="line-through text-slate-400">₺ {formatPrice(product.list_price_try || 0)}</span>
-                                              {' → '}
-                                              <span className="text-green-600 font-medium">₺ {formatPrice(product.discounted_price_try)}</span>
-                                            </>
-                                          ) : (
-                                            <>₺ {formatPrice(product.list_price_try || 0)}</>
-                                          )}
+                              <h4 className="font-medium text-slate-800 mb-3 flex items-center gap-2">
+                                <Package className="w-4 h-4" />
+                                Mevcut Ürünler ({packageWithProducts.products.length})
+                              </h4>
+                              <div className="space-y-4">
+                                {Object.entries(getPackageProductsByGroups())
+                                  .sort(([keyA, groupA], [keyB, groupB]) => {
+                                    // Uncategorized always last
+                                    if (keyA === 'uncategorized') return 1;
+                                    if (keyB === 'uncategorized') return -1;
+                                    
+                                    // Sort by group/category name
+                                    return groupA.name.localeCompare(groupB.name);
+                                  })
+                                  .map(([groupKey, groupData]) => (
+                                  <div key={groupKey} className="space-y-2">
+                                    {/* Group/Category Header */}
+                                    <div 
+                                      className="flex items-center gap-2 p-2 rounded-lg font-medium text-sm"
+                                      style={{
+                                        backgroundColor: `${groupData.color}15`,
+                                        borderLeft: `4px solid ${groupData.color}`
+                                      }}
+                                    >
+                                      <div 
+                                        className="w-3 h-3 rounded-full"
+                                        style={{ backgroundColor: groupData.color }}
+                                      ></div>
+                                      <span style={{ color: groupData.color }}>
+                                        {groupData.isGroup && '📁 '}{groupData.name}
+                                      </span>
+                                      <span className="text-xs text-slate-500 ml-auto">
+                                        {groupData.products.length} ürün
+                                      </span>
+                                    </div>
+                                    
+                                    {/* Products in this group */}
+                                    <div className="space-y-2 ml-4">
+                                      {groupData.products.map((product) => (
+                                        <div key={product.id} className="border rounded-lg p-3 bg-white shadow-sm">
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex-1">
+                                              <div className="font-medium text-sm">{product.name}</div>
+                                              <div className="text-xs text-slate-500 flex items-center gap-3">
+                                                <span>Adet: {product.quantity}</span>
+                                                <span>•</span>
+                                                <span>
+                                                  {showPackageDiscountedPrices && product.discounted_price_try ? (
+                                                    <>
+                                                      <span className="line-through text-slate-400">₺ {formatPrice(product.list_price_try || 0)}</span>
+                                                      {' → '}
+                                                      <span className="text-green-600 font-medium">₺ {formatPrice(product.discounted_price_try)}</span>
+                                                    </>
+                                                  ) : (
+                                                    <>₺ {formatPrice(product.list_price_try || 0)}</>
+                                                  )}
+                                                </span>
+                                              </div>
+                                            </div>
+                                            <Badge 
+                                              variant="outline" 
+                                              className="text-xs"
+                                              style={{ 
+                                                borderColor: groupData.color,
+                                                color: groupData.color
+                                              }}
+                                            >
+                                              {product.quantity}x
+                                            </Badge>
+                                          </div>
                                         </div>
-                                      </div>
-                                      <Badge variant="outline">{product.quantity}x</Badge>
+                                      ))}
                                     </div>
                                   </div>
                                 ))}
