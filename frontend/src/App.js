@@ -1066,7 +1066,7 @@ function App() {
         discount_percentage: 0,
         labor_cost: 0,
         products: selectedProductData,
-        notes: `${selectedProductData.length} ürün ile oluşturulan teklif`
+        notes: quickQuoteNotes.trim() || `${selectedProductData.length} ürün ile oluşturulan teklif`
       };
 
       const response = await fetch(`${API}/quotes`, {
