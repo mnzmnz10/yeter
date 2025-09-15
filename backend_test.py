@@ -4401,6 +4401,505 @@ class KaravanAPITester:
         
         return True
 
+    def test_notes_functionality_comprehensive(self):
+        """Comprehensive test for notes functionality in packages and quotes"""
+        print("\n🔍 Testing Notes Functionality for Packages and Quotes...")
+        
+        # Step 1: Create test company for notes testing
+        notes_company_name = f"Notes Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Notes Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": notes_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Notes Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            notes_company_id = company_data.get('id')
+            if not notes_company_id:
+                self.log_test("Notes Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(notes_company_id)
+        except Exception as e:
+            self.log_test("Notes Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Step 2: Create test products for notes testing
+        test_products = [
+            {
+                "name": "Solar Panel for Notes Test",
+                "company_id": notes_company_id,
+                "list_price": 299.99,
+                "discounted_price": 249.99,
+                "currency": "USD",
+                "description": "Test product for notes functionality"
+            },
+            {
+                "name": "Inverter for Notes Test", 
+                "company_id": notes_company_id,
+                "list_price": 450.50,
+                "discounted_price": 399.00,
+                "currency": "EUR",
+                "description": "Another test product for notes"
+            }
+        ]
+        
+        created_product_ids = []
+        
+        for product_data in test_products:
+            success, response = self.run_test(
+                f"Create Product: {product_data['name'][:30]}...",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        self.log_test(f"Product Created for Notes Test", True, f"ID: {product_id}")
+                    else:
+                        self.log_test(f"Product Creation", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Product Creation", False, f"Error parsing: {e}")
+
+        if len(created_product_ids) < 2:
+            self.log_test("Notes Test Products", False, f"Only {len(created_product_ids)} products created, need at least 2")
+            return False
+
+        # Step 3: Test Package Notes Functionality
+        print("\n🔍 Testing Package Notes...")
+        
+        # Test 3.1: Create package with notes
+        package_notes = "Bu paket notları test ediyor. Özel karakterler: ğüşıöç ĞÜŞIÖÇ. Very long notes to test character limits and special formatting. This should appear in the PDF generation correctly."
+        
+        package_data = {
+            "name": "Test Package with Notes",
+            "description": "Package for testing notes functionality",
+            "sale_price": 1000.00,
+            "discount_percentage": 10.0,
+            "labor_cost": 500.0,
+            "notes": package_notes,
+            "is_pinned": False
+        }
+        
+        success, response = self.run_test(
+            "Create Package with Notes",
+            "POST",
+            "packages",
+            200,
+            data=package_data
+        )
+        
+        package_id = None
+        if success and response:
+            try:
+                package_response = response.json()
+                package_id = package_response.get('id')
+                if package_id:
+                    self.log_test("Package with Notes Created", True, f"ID: {package_id}")
+                    
+                    # Verify notes field is present and correct
+                    returned_notes = package_response.get('notes')
+                    if returned_notes == package_notes:
+                        self.log_test("Package Notes Field Verification", True, f"Notes correctly saved: {returned_notes[:50]}...")
+                    else:
+                        self.log_test("Package Notes Field Verification", False, f"Expected: {package_notes[:50]}..., Got: {returned_notes}")
+                else:
+                    self.log_test("Package Creation", False, "No package ID returned")
+            except Exception as e:
+                self.log_test("Package Creation", False, f"Error parsing: {e}")
+
+        # Test 3.2: Add products to package
+        if package_id and created_product_ids:
+            package_products = [
+                {"product_id": created_product_ids[0], "quantity": 2},
+                {"product_id": created_product_ids[1], "quantity": 1}
+            ]
+            
+            success, response = self.run_test(
+                "Add Products to Package",
+                "POST",
+                f"packages/{package_id}/products",
+                200,
+                data=package_products
+            )
+            
+            if success:
+                self.log_test("Package Products Added", True, "Products added to package successfully")
+
+        # Test 3.3: Update package with different notes
+        if package_id:
+            updated_notes = "Updated package notes with Turkish characters: çğıöşü ÇĞIÖŞÜ. Empty notes test will come next."
+            
+            updated_package_data = {
+                "name": "Test Package with Updated Notes",
+                "description": "Updated package description",
+                "sale_price": 1200.00,
+                "discount_percentage": 15.0,
+                "labor_cost": 600.0,
+                "notes": updated_notes,
+                "is_pinned": False
+            }
+            
+            success, response = self.run_test(
+                "Update Package with New Notes",
+                "PUT",
+                f"packages/{package_id}",
+                200,
+                data=updated_package_data
+            )
+            
+            if success and response:
+                try:
+                    updated_package = response.json()
+                    returned_notes = updated_package.get('notes')
+                    if returned_notes == updated_notes:
+                        self.log_test("Package Notes Update", True, f"Notes updated correctly: {returned_notes[:50]}...")
+                    else:
+                        self.log_test("Package Notes Update", False, f"Expected: {updated_notes[:50]}..., Got: {returned_notes}")
+                except Exception as e:
+                    self.log_test("Package Notes Update", False, f"Error parsing: {e}")
+
+        # Test 3.4: Get package with products and verify notes
+        if package_id:
+            success, response = self.run_test(
+                "Get Package with Products and Notes",
+                "GET",
+                f"packages/{package_id}",
+                200
+            )
+            
+            if success and response:
+                try:
+                    package_with_products = response.json()
+                    returned_notes = package_with_products.get('notes')
+                    if returned_notes:
+                        self.log_test("Package Notes in GET Response", True, f"Notes present: {returned_notes[:50]}...")
+                    else:
+                        self.log_test("Package Notes in GET Response", False, "Notes missing in GET response")
+                except Exception as e:
+                    self.log_test("Package GET Response", False, f"Error parsing: {e}")
+
+        # Test 3.5: Test package PDF generation with notes
+        if package_id:
+            print("\n🔍 Testing Package PDF Generation with Notes...")
+            
+            # Test PDF with prices
+            success, response = self.run_test(
+                "Generate Package PDF with Prices and Notes",
+                "GET",
+                f"packages/{package_id}/pdf-with-prices",
+                200
+            )
+            
+            if success and response:
+                try:
+                    content_type = response.headers.get('content-type', '')
+                    if 'application/pdf' in content_type:
+                        pdf_size = len(response.content)
+                        self.log_test("Package PDF with Prices Generated", True, f"PDF size: {pdf_size} bytes")
+                        
+                        # Basic PDF validation
+                        if response.content.startswith(b'%PDF'):
+                            self.log_test("Package PDF Format Validation", True, "Valid PDF format")
+                        else:
+                            self.log_test("Package PDF Format Validation", False, "Invalid PDF format")
+                    else:
+                        self.log_test("Package PDF Content Type", False, f"Expected PDF, got: {content_type}")
+                except Exception as e:
+                    self.log_test("Package PDF Generation", False, f"Error: {e}")
+            
+            # Test PDF without prices
+            success, response = self.run_test(
+                "Generate Package PDF without Prices and Notes",
+                "GET",
+                f"packages/{package_id}/pdf-without-prices",
+                200
+            )
+            
+            if success and response:
+                try:
+                    content_type = response.headers.get('content-type', '')
+                    if 'application/pdf' in content_type:
+                        pdf_size = len(response.content)
+                        self.log_test("Package PDF without Prices Generated", True, f"PDF size: {pdf_size} bytes")
+                    else:
+                        self.log_test("Package PDF without Prices Content Type", False, f"Expected PDF, got: {content_type}")
+                except Exception as e:
+                    self.log_test("Package PDF without Prices", False, f"Error: {e}")
+
+        # Step 4: Test Quote Notes Functionality
+        print("\n🔍 Testing Quote Notes...")
+        
+        # Test 4.1: Create quote with notes
+        quote_notes = "Bu teklif notları test ediyor. Türkçe karakterler: çğıöşü ÇĞIÖŞÜ. Long notes for testing: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        
+        quote_data = {
+            "name": "Test Quote with Notes",
+            "customer_name": "Test Customer",
+            "customer_email": "test@example.com",
+            "discount_percentage": 5.0,
+            "labor_cost": 300.0,
+            "products": [
+                {"id": created_product_ids[0], "quantity": 1},
+                {"id": created_product_ids[1], "quantity": 2}
+            ],
+            "notes": quote_notes
+        }
+        
+        success, response = self.run_test(
+            "Create Quote with Notes",
+            "POST",
+            "quotes",
+            200,
+            data=quote_data
+        )
+        
+        quote_id = None
+        if success and response:
+            try:
+                quote_response = response.json()
+                quote_id = quote_response.get('id')
+                if quote_id:
+                    self.log_test("Quote with Notes Created", True, f"ID: {quote_id}")
+                    
+                    # Verify notes field is present and correct
+                    returned_notes = quote_response.get('notes')
+                    if returned_notes == quote_notes:
+                        self.log_test("Quote Notes Field Verification", True, f"Notes correctly saved: {returned_notes[:50]}...")
+                    else:
+                        self.log_test("Quote Notes Field Verification", False, f"Expected: {quote_notes[:50]}..., Got: {returned_notes}")
+                else:
+                    self.log_test("Quote Creation", False, "No quote ID returned")
+            except Exception as e:
+                self.log_test("Quote Creation", False, f"Error parsing: {e}")
+
+        # Test 4.2: Update quote with different notes
+        if quote_id:
+            updated_quote_notes = "Updated quote notes. Testing special characters: @#$%^&*()_+{}|:<>?[];',./`~"
+            
+            quote_update_data = {
+                "name": "Updated Test Quote with Notes",
+                "customer_name": "Updated Customer",
+                "discount_percentage": 7.5,
+                "labor_cost": 400.0,
+                "notes": updated_quote_notes
+            }
+            
+            success, response = self.run_test(
+                "Update Quote with New Notes",
+                "PUT",
+                f"quotes/{quote_id}",
+                200,
+                data=quote_update_data
+            )
+            
+            if success and response:
+                try:
+                    update_result = response.json()
+                    if update_result.get('success'):
+                        self.log_test("Quote Notes Update", True, "Quote updated successfully")
+                    else:
+                        self.log_test("Quote Notes Update", False, f"Update failed: {update_result}")
+                except Exception as e:
+                    self.log_test("Quote Notes Update", False, f"Error parsing: {e}")
+
+        # Test 4.3: Get quote and verify notes
+        if quote_id:
+            success, response = self.run_test(
+                "Get Quote with Notes",
+                "GET",
+                f"quotes/{quote_id}",
+                200
+            )
+            
+            if success and response:
+                try:
+                    quote_data = response.json()
+                    returned_notes = quote_data.get('notes')
+                    if returned_notes:
+                        self.log_test("Quote Notes in GET Response", True, f"Notes present: {returned_notes[:50]}...")
+                    else:
+                        self.log_test("Quote Notes in GET Response", False, "Notes missing in GET response")
+                except Exception as e:
+                    self.log_test("Quote GET Response", False, f"Error parsing: {e}")
+
+        # Test 4.4: Test quote PDF generation with notes
+        if quote_id:
+            print("\n🔍 Testing Quote PDF Generation with Notes...")
+            
+            success, response = self.run_test(
+                "Generate Quote PDF with Notes",
+                "GET",
+                f"quotes/{quote_id}/pdf",
+                200
+            )
+            
+            if success and response:
+                try:
+                    content_type = response.headers.get('content-type', '')
+                    if 'application/pdf' in content_type:
+                        pdf_size = len(response.content)
+                        self.log_test("Quote PDF with Notes Generated", True, f"PDF size: {pdf_size} bytes")
+                        
+                        # Basic PDF validation
+                        if response.content.startswith(b'%PDF'):
+                            self.log_test("Quote PDF Format Validation", True, "Valid PDF format")
+                        else:
+                            self.log_test("Quote PDF Format Validation", False, "Invalid PDF format")
+                    else:
+                        self.log_test("Quote PDF Content Type", False, f"Expected PDF, got: {content_type}")
+                except Exception as e:
+                    self.log_test("Quote PDF Generation", False, f"Error: {e}")
+
+        # Step 5: Test Edge Cases
+        print("\n🔍 Testing Notes Edge Cases...")
+        
+        # Test 5.1: Empty notes
+        empty_notes_package = {
+            "name": "Package with Empty Notes",
+            "description": "Testing empty notes",
+            "sale_price": 500.00,
+            "discount_percentage": 0.0,
+            "labor_cost": 0.0,
+            "notes": "",
+            "is_pinned": False
+        }
+        
+        success, response = self.run_test(
+            "Create Package with Empty Notes",
+            "POST",
+            "packages",
+            200,
+            data=empty_notes_package
+        )
+        
+        if success and response:
+            try:
+                package_response = response.json()
+                returned_notes = package_response.get('notes')
+                if returned_notes == "" or returned_notes is None:
+                    self.log_test("Empty Notes Handling", True, "Empty notes handled correctly")
+                else:
+                    self.log_test("Empty Notes Handling", False, f"Expected empty/null, got: {returned_notes}")
+            except Exception as e:
+                self.log_test("Empty Notes Test", False, f"Error: {e}")
+
+        # Test 5.2: Very long notes (500+ characters)
+        long_notes = "A" * 600 + " Türkçe karakterler: çğıöşü ÇĞIÖŞÜ " + "B" * 100
+        
+        long_notes_quote = {
+            "name": "Quote with Very Long Notes",
+            "customer_name": "Long Notes Customer",
+            "discount_percentage": 0.0,
+            "labor_cost": 0.0,
+            "products": [{"id": created_product_ids[0], "quantity": 1}],
+            "notes": long_notes
+        }
+        
+        success, response = self.run_test(
+            "Create Quote with Very Long Notes",
+            "POST",
+            "quotes",
+            200,
+            data=long_notes_quote
+        )
+        
+        if success and response:
+            try:
+                quote_response = response.json()
+                returned_notes = quote_response.get('notes')
+                if len(returned_notes) >= 500:
+                    self.log_test("Long Notes Handling", True, f"Long notes handled correctly: {len(returned_notes)} chars")
+                else:
+                    self.log_test("Long Notes Handling", False, f"Expected 500+ chars, got: {len(returned_notes) if returned_notes else 0}")
+            except Exception as e:
+                self.log_test("Long Notes Test", False, f"Error: {e}")
+
+        # Test 5.3: Notes with special characters and Turkish characters
+        special_notes = "Special chars: !@#$%^&*()_+-={}[]|\\:;\"'<>,.?/~` Turkish: çğıöşü ÇĞIÖŞÜ Numbers: 1234567890"
+        
+        special_notes_package = {
+            "name": "Package with Special Character Notes",
+            "description": "Testing special characters in notes",
+            "sale_price": 750.00,
+            "discount_percentage": 5.0,
+            "labor_cost": 100.0,
+            "notes": special_notes,
+            "is_pinned": False
+        }
+        
+        success, response = self.run_test(
+            "Create Package with Special Character Notes",
+            "POST",
+            "packages",
+            200,
+            data=special_notes_package
+        )
+        
+        if success and response:
+            try:
+                package_response = response.json()
+                returned_notes = package_response.get('notes')
+                if returned_notes == special_notes:
+                    self.log_test("Special Characters in Notes", True, "Special characters handled correctly")
+                else:
+                    self.log_test("Special Characters in Notes", False, f"Special characters not preserved correctly")
+            except Exception as e:
+                self.log_test("Special Characters Test", False, f"Error: {e}")
+
+        # Test 5.4: Null notes field
+        null_notes_quote = {
+            "name": "Quote with Null Notes",
+            "customer_name": "Null Notes Customer",
+            "discount_percentage": 0.0,
+            "labor_cost": 0.0,
+            "products": [{"id": created_product_ids[0], "quantity": 1}],
+            "notes": None
+        }
+        
+        success, response = self.run_test(
+            "Create Quote with Null Notes",
+            "POST",
+            "quotes",
+            200,
+            data=null_notes_quote
+        )
+        
+        if success and response:
+            try:
+                quote_response = response.json()
+                returned_notes = quote_response.get('notes')
+                if returned_notes is None or returned_notes == "":
+                    self.log_test("Null Notes Handling", True, "Null notes handled correctly")
+                else:
+                    self.log_test("Null Notes Handling", False, f"Expected null/empty, got: {returned_notes}")
+            except Exception as e:
+                self.log_test("Null Notes Test", False, f"Error: {e}")
+
+        print(f"\n✅ Notes Functionality Test Summary:")
+        print(f"   - Tested Package notes creation, update, and retrieval")
+        print(f"   - Tested Quote notes creation, update, and retrieval")
+        print(f"   - Tested Package PDF generation with notes")
+        print(f"   - Tested Quote PDF generation with notes")
+        print(f"   - Tested edge cases: empty notes, long notes, special characters, null notes")
+        print(f"   - Verified notes field is optional and properly handled")
+        print(f"   - Tested Turkish character support in notes")
+        
+        return True
+
     def cleanup_test_data(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
