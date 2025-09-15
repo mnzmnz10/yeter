@@ -49,18 +49,25 @@ db = client[os.environ['DB_NAME']]
 async def create_indexes():
     """Create database indexes for optimal performance with large datasets"""
     try:
-        # Products collection indexes - enhanced for large datasets
+        # Products collection indexes - ENHANCED FOR PERFORMANCE
         await db.products.create_index("name")  # For name search and sorting
         await db.products.create_index("company_id")  # For company filtering
         await db.products.create_index("category_id")  # For category filtering 
         await db.products.create_index("is_favorite")  # For favorites sorting
         await db.products.create_index("brand")  # For brand search
+        await db.products.create_index("created_at")  # For date sorting
         
-        # Compound indexes for better performance on common queries
+        # PERFORMANCE: Compound indexes for common queries
         await db.products.create_index([("is_favorite", -1), ("name", 1)])  # For favorites-first sorting
         await db.products.create_index([("company_id", 1), ("name", 1)])  # For company-filtered lists
         await db.products.create_index([("category_id", 1), ("name", 1)])  # For category-filtered lists
         await db.products.create_index([("is_favorite", -1), ("company_id", 1), ("name", 1)])  # For complex queries
+        await db.products.create_index([("company_id", 1), ("category_id", 1), ("name", 1)])  # For multi-filter queries
+        await db.products.create_index([("is_favorite", -1), ("created_at", -1)])  # For favorites + date sorting
+        
+        # PERFORMANCE: Sparse indexes for optional fields
+        await db.products.create_index("list_price_try", sparse=True)
+        await db.products.create_index("discounted_price_try", sparse=True)
         
         # Enhanced text search index with weights for better relevance
         await db.products.create_index([
@@ -76,31 +83,44 @@ async def create_indexes():
             "name": "products_text_search"
         })
         
-        # Companies collection indexes
+        # Companies collection indexes - ENHANCED
         await db.companies.create_index("name")
+        await db.companies.create_index("created_at")
         
-        # Categories collection indexes
+        # Categories collection indexes - ENHANCED
         await db.categories.create_index("name")
         await db.categories.create_index("sort_order")  # For sorted category lists
+        await db.categories.create_index("created_at")
         
-        # Category groups collection indexes
+        # Category groups collection indexes - ENHANCED
         await db.category_groups.create_index("name")
         await db.category_groups.create_index("sort_order")  # For sorted category group lists
+        await db.category_groups.create_index("created_at")
         
-        # Quotes collection indexes - enhanced for performance
+        # Quotes collection indexes - PERFORMANCE ENHANCED
         await db.quotes.create_index("customer_name")
         await db.quotes.create_index("created_at")
         await db.quotes.create_index([("status", 1), ("created_at", -1)])  # For status-filtered lists
+        await db.quotes.create_index([("customer_name", 1), ("created_at", -1)])  # For customer-filtered lists
         
-        # Packages collection indexes
+        # Packages collection indexes - PERFORMANCE ENHANCED
         await db.packages.create_index("name")
         await db.packages.create_index("created_at")
         await db.packages.create_index([("is_pinned", -1), ("created_at", -1)])  # For pinned packages first
+        await db.packages.create_index([("name", 1), ("created_at", -1)])  # For name + date sorting
         
-        # Package products collection indexes
+        # Package products collection indexes - PERFORMANCE ENHANCED
         await db.package_products.create_index("package_id")
         await db.package_products.create_index("product_id")
         await db.package_products.create_index([("package_id", 1), ("product_id", 1)])  # For efficient lookups
+        await db.package_products.create_index([("package_id", 1), ("quantity", -1)])  # For quantity-based queries
+        
+        logger.info("PERFORMANCE: Database indexes created successfully")
+        
+    except Exception as e:
+        logger.error(f"Error creating indexes: {e}")
+        # Don't fail startup if index creation fails
+        pass
         
         logger.info("Enhanced database indexes created successfully for optimal performance")
     except Exception as e:
