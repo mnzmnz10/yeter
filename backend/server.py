@@ -4018,6 +4018,48 @@ async def create_product(product: ProductCreate):
         if not company:
             raise HTTPException(status_code=404, detail="Firma bulunamadı")
         
+        # Verify category exists if provided
+        if product.category_id:
+            category = await db.categories.find_one({"id": product.category_id})
+            if not category:
+                raise HTTPException(status_code=404, detail="Kategori bulunamadı")
+        
+        # Get exchange rates for TRY conversion
+        exchange_rates = await get_exchange_rates()
+        
+        # Create product with currency conversion
+        product_data = product.dict()
+        product_data["id"] = str(uuid.uuid4())
+        product_data["created_at"] = datetime.now(timezone.utc)
+        
+        # Convert prices to TRY
+        if product.currency == 'USD':
+            product_data["list_price_try"] = product.list_price * exchange_rates.get('USD', 1)
+            if product.discounted_price:
+                product_data["discounted_price_try"] = product.discounted_price * exchange_rates.get('USD', 1)
+        elif product.currency == 'EUR':
+            product_data["list_price_try"] = product.list_price * exchange_rates.get('EUR', 1)
+            if product.discounted_price:
+                product_data["discounted_price_try"] = product.discounted_price * exchange_rates.get('EUR', 1)
+        else:  # TRY
+            product_data["list_price_try"] = product.list_price
+            if product.discounted_price:
+                product_data["discounted_price_try"] = product.discounted_price
+        
+        # Insert into database
+        await db.products.insert_one(product_data)
+        
+        # PERFORMANCE: Invalidate cache
+        invalidate_cache("/api/products")
+        
+        return Product(**product_data)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating product: {e}")
+        raise HTTPException(status_code=500, detail="Ürün oluşturulamadı")
+        
         # Verify category exists (if provided)
         if product.category_id:
             category = await db.categories.find_one({"id": product.category_id})
