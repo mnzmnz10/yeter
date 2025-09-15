@@ -3992,18 +3992,14 @@ async def get_products(
         if skip_pagination:
             # For large datasets, still apply reasonable limits
             max_limit = 5000
+            # FORCED SORTING: Favoriler önce gelsin diye explicit sort
             products = await db.products.find(query).sort(sort_criteria).limit(max_limit).to_list(max_limit)
         else:
             # Enhanced pagination with performance optimizations
             skip = (page - 1) * limit
             
-            # Use hint for index optimization when applicable
+            # FORCED SORTING: Index hint olmadan da favoriler önce gelsin 
             cursor = db.products.find(query).sort(sort_criteria).skip(skip).limit(limit)
-            
-            # Add index hint for better performance on large datasets
-            if not search:  # Only use hint when not doing text search
-                cursor = cursor.hint([("is_favorite", -1), ("name", 1)])
-            
             products = await cursor.to_list(limit)
         
         # Create response with cache headers for better performance
