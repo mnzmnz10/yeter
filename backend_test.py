@@ -6365,8 +6365,10 @@ class KaravanAPITester:
                     # Verify each supply has correct structure and quantities
                     expected_quantities = [1, 3, 5]
                     for i, supply in enumerate(supplies):
-                        if 'product_id' in supply and 'quantity' in supply and 'note' in supply:
-                            self.log_test(f"Supply {i+1} Structure", True, f"Has all required fields")
+                        # The backend returns supplies with full product info, not just product_id
+                        # Expected structure: {id, name, quantity, note, list_price, currency, etc.}
+                        if 'id' in supply and 'quantity' in supply and 'note' in supply:
+                            self.log_test(f"Supply {i+1} Structure", True, f"Has all required fields (id, quantity, note)")
                             
                             # Check quantity
                             if supply['quantity'] in expected_quantities:
