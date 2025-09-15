@@ -2351,13 +2351,27 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         
         return table
     
-    async def _create_package_products_table_with_groups(self, products, include_prices=True):
+    def _create_package_products_table_with_groups(self, products, include_prices=True):
         """Paket ürünleri tablosu - kategori grupları ile organize edilmiş"""
         from reportlab.platypus import Table as PDFTable
+        import asyncio
         
-        # Kategorileri ve kategori gruplarını getir
-        categories = await db.categories.find().to_list(None)
-        category_groups = await db.category_groups.find().to_list(None)
+        # Kategorileri ve kategori gruplarını getir - sync wrapper for async calls
+        async def get_categories_and_groups():
+            categories = await db.categories.find().to_list(None)
+            category_groups = await db.category_groups.find().to_list(None)
+            return categories, category_groups
+        
+        # Run async code in sync context
+        try:
+            loop = asyncio.get_event_loop()
+            categories, category_groups = loop.run_until_complete(get_categories_and_groups())
+        except RuntimeError:
+            # If no event loop is running, create a new one
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            categories, category_groups = loop.run_until_complete(get_categories_and_groups())
+            loop.close()
         
         # Kategori grup haritası oluştur
         category_to_group = {}
