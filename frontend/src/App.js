@@ -4547,6 +4547,20 @@ function App() {
                         </div>
                       </div>
                     </div>
+                    
+                    {/* Teklif Notları Bölümü */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        <span className="font-medium text-blue-900">Teklif Notları</span>
+                      </div>
+                      <textarea
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={quoteNotes}
+                        onChange={(e) => setQuoteNotes(e.target.value)}
+                        placeholder="Teklif ile ilgili özel notlar, açıklamalar veya koşullar..."
+                      />
+                    </div>
 
                     {/* Quote Summary */}
                     <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
