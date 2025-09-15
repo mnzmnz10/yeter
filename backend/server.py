@@ -3795,7 +3795,8 @@ async def get_products(
     search: Optional[str] = None,
     page: int = 1,
     limit: int = 100,
-    skip_pagination: bool = False  # For backward compatibility
+    skip_pagination: bool = False,  # For backward compatibility
+    request: Request = None
 ):
     """Get products with optimized pagination, filtering by company, category, or search term"""
     try:
@@ -3836,8 +3837,18 @@ async def get_products(
                 cursor = cursor.hint([("is_favorite", -1), ("name", 1)])
             
             products = await cursor.to_list(limit)
+        
+        # Create response with cache headers for better performance
+        response = JSONResponse(content=[Product(**product).dict() for product in products])
+        
+        # Add cache headers for non-search queries (5 minutes cache)
+        if not search:
+            response.headers["Cache-Control"] = "public, max-age=300"
+        else:
+            response.headers["Cache-Control"] = "public, max-age=60"  # Shorter cache for search
             
-        return [Product(**product) for product in products]
+        return response
+            
     except Exception as e:
         logger.error(f"Error getting products: {e}")
         # Fallback to basic query if optimization fails
