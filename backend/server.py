@@ -2566,6 +2566,33 @@ async def update_category(category_id: str, update_data: CategoryCreate):
         logger.error(f"Error updating category: {e}")
         raise HTTPException(status_code=500, detail="Kategori güncellenemedi")
 
+@api_router.post("/categories/reorder")
+async def reorder_categories(category_orders: List[Dict[str, Any]]):
+    """Kategorilerin sırasını toplu güncelle"""
+    try:
+        # category_orders: [{"id": "cat1", "sort_order": 1}, {"id": "cat2", "sort_order": 2}, ...]
+        for item in category_orders:
+            category_id = item.get("id")
+            sort_order = item.get("sort_order", 0)
+            
+            if category_id:
+                await db.categories.update_one(
+                    {"id": category_id},
+                    {"$set": {"sort_order": sort_order}}
+                )
+        
+        # Return updated categories sorted by new order
+        categories = await db.categories.find().sort([("sort_order", 1), ("name", 1)]).to_list(None)
+        return {
+            "success": True,
+            "message": "Kategori sıralaması güncellendi",
+            "categories": [Category(**category) for category in categories]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error reordering categories: {e}")
+        raise HTTPException(status_code=500, detail="Kategori sıralaması güncellenemedi")
+
 @api_router.delete("/categories/{category_id}")
 async def delete_category(category_id: str):
     """Delete a category"""
