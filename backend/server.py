@@ -3148,7 +3148,8 @@ async def get_package_with_products(package_id: str):
                     "currency": supply.get("currency", "USD"),
                     "quantity": ps["quantity"],
                     "note": ps.get("note", ""),
-                    "company_id": supply.get("company_id")
+                    "company_id": supply.get("company_id"),
+                    "category_id": supply.get("category_id")
                 }
                 supplies.append(supply_data)
                 
