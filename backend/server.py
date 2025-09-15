@@ -2010,7 +2010,7 @@ class PDFQuoteGenerator:
                 fontName=self.get_font_name()
             )
             story.append(Paragraph(quote_notes, notes_style))
-            story.append(Spacer(1, 25))
+            story.append(Spacer(1, 15))  # 25'ten 15'e küçültüldü
         
         # Toplam hesaplama bölümü
         story.extend(self._create_modern_totals_section(quote_data))
