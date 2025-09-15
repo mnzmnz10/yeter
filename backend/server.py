@@ -255,12 +255,14 @@ class PackageWithProducts(BaseModel):
     description: Optional[str] = None
     sale_price: Optional[Decimal] = None
     discount_percentage: float = 0  # Paket indirimi
+    labor_cost: float = 0  # İşçilik maliyeti
     image_url: Optional[str] = None
     created_at: datetime
     products: List[Dict[str, Any]] = []
     supplies: List[Dict[str, Any]] = []  # Sarf malzemeleri
     total_discounted_price: Optional[Decimal] = None
-    total_discounted_price_with_supplies: Optional[Decimal] = None  # Sarf malzemeleri dahil
+    total_discounted_price_with_supplies: Optional[Decimal] = None
+    status: str
 class UploadHistoryResponse(BaseModel):
     id: str
     company_id: str
