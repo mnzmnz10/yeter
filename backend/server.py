@@ -4003,13 +4003,15 @@ async def get_products(
             products = await cursor.to_list(limit)
         
         # Create response with cache headers for better performance
-        response = JSONResponse(content=[Product(**product).dict() for product in products])
+        response_data = [Product(**product).dict() for product in products]
         
-        # Add cache headers for non-search queries (5 minutes cache)
+        # PERFORMANCE: Cache invalidation for products to ensure fresh sorting
         if not search:
-            response.headers["Cache-Control"] = "public, max-age=300"
+            response = JSONResponse(content=response_data)
+            response.headers["Cache-Control"] = "public, max-age=60"  # Kısa cache favori sıralama için
         else:
-            response.headers["Cache-Control"] = "public, max-age=60"  # Shorter cache for search
+            response = JSONResponse(content=response_data)
+            response.headers["Cache-Control"] = "public, max-age=30"  # Arama için daha kısa
             
         return response
             
