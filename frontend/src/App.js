@@ -825,6 +825,68 @@ function App() {
     setDragOverCategoryId(null);
   };
 
+  // Category group drag and drop functions
+  const handleCategoryGroupDragStart = (e, categoryGroupId) => {
+    setDraggedCategoryGroupId(categoryGroupId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleCategoryGroupDragOver = (e, categoryGroupId) => {
+    e.preventDefault();
+    setDragOverCategoryGroupId(categoryGroupId);
+  };
+
+  const handleCategoryGroupDragLeave = () => {
+    setDragOverCategoryGroupId(null);
+  };
+
+  const handleCategoryGroupDrop = async (e, targetCategoryGroupId) => {
+    e.preventDefault();
+    setDragOverCategoryGroupId(null);
+    
+    if (!draggedCategoryGroupId || draggedCategoryGroupId === targetCategoryGroupId) {
+      setDraggedCategoryGroupId(null);
+      return;
+    }
+
+    try {
+      // Kategori gruplarının yeni sırasını hesapla
+      const reorderedCategoryGroups = [...categoryGroups];
+      const draggedIndex = reorderedCategoryGroups.findIndex(g => g.id === draggedCategoryGroupId);
+      const targetIndex = reorderedCategoryGroups.findIndex(g => g.id === targetCategoryGroupId);
+      
+      if (draggedIndex === -1 || targetIndex === -1) return;
+      
+      // Kategori gruplarını yeniden sırala
+      const [draggedGroup] = reorderedCategoryGroups.splice(draggedIndex, 1);
+      reorderedCategoryGroups.splice(targetIndex, 0, draggedGroup);
+      
+      // Her kategori grubuna yeni sort_order ata
+      const groupOrders = reorderedCategoryGroups.map((group, index) => ({
+        id: group.id,
+        sort_order: index + 1
+      }));
+      
+      // Backend'e gönder
+      const response = await axios.post(`${API}/category-groups/reorder`, groupOrders);
+      
+      if (response.data.success) {
+        toast.success('Kategori grubu sıralaması güncellendi');
+        await loadCategoryGroups(); // Kategori gruplarını yeniden yükle
+      }
+    } catch (error) {
+      console.error('Error reordering category groups:', error);
+      toast.error('Kategori grubu sıralaması güncellenemedi');
+    }
+    
+    setDraggedCategoryGroupId(null);
+  };
+
+  const handleCategoryGroupDragEnd = () => {
+    setDraggedCategoryGroupId(null);
+    setDragOverCategoryGroupId(null);
+  };
+
   const handleSearch = (query) => {
     setSearchQuery(query);
   };
