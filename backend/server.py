@@ -2309,6 +2309,25 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         story.append(self._create_package_products_table_with_groups(products, include_prices, categories, category_groups))
         story.append(Spacer(1, 25))
         
+        # Paket notları (varsa)
+        package_notes = package_data.get('notes', '').strip()
+        if package_notes:
+            story.append(Paragraph("<b>Notlar</b>", self.subtitle_style))
+            story.append(Spacer(1, 10))
+            
+            # Notları paragraf olarak ekle
+            notes_style = ParagraphStyle(
+                'Notes',
+                parent=self.styles['Normal'],
+                fontSize=10,
+                leading=14,
+                spaceAfter=12,
+                leftIndent=20,
+                fontName='Montserrat-Regular'
+            )
+            story.append(Paragraph(package_notes, notes_style))
+            story.append(Spacer(1, 25))
+        
         # Toplam hesaplama bölümü (indirim ve işçilik ile)
         if include_prices:
             # Fiyatlı listede indirim ve işçilik hesaplaması
