@@ -186,6 +186,7 @@ class CategoryGroup(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = "#6B7280"  # Default gray color
     category_ids: List[str] = []  # Bu gruba dahil kategoriler
+    sort_order: int = 0  # Kategori grup sıralama numarası
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CategoryGroupCreate(BaseModel):
@@ -193,12 +194,14 @@ class CategoryGroupCreate(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = "#6B7280"
     category_ids: List[str] = []
+    sort_order: Optional[int] = 0  # Yeni kategori grubu için varsayılan sıra
 
 class CategoryGroupUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     color: Optional[str] = None
     category_ids: Optional[List[str]] = None
+    sort_order: Optional[int] = None  # Sıralama güncellemesi için
 
 # Upload History Models
 class UploadHistory(BaseModel):
