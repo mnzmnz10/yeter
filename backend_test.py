@@ -10635,67 +10635,71 @@ class KaravanAPITester:
 
     def run_all_tests(self):
         """Run focused backend tests based on review request"""
-        print("🚀 Starting Karavan Backend Testing - Focus on Package Update & PDF Generation")
+        print("🚀 Starting Karavan Backend Testing - Focus on PDF Generation with Notes")
         print(f"🌐 Testing against: {self.base_url}")
         print("=" * 80)
         
         try:
-            # PRIORITY 1: REVIEW REQUEST - Package Update with Discount and Labor Cost
-            print("\n🎯 PRIORITY 1: REVIEW REQUEST - Package Update with Discount and Labor Cost")
+            # PRIORITY 1: REVIEW REQUEST - PDF Generation with Notes Testing
+            print("\n🎯 PRIORITY 1: REVIEW REQUEST - PDF Generation with Notes Testing")
+            self.test_pdf_generation_with_notes_comprehensive()
+            
+            # PRIORITY 2: REVIEW REQUEST - Package Update with Discount and Labor Cost
+            print("\n🎯 PRIORITY 2: REVIEW REQUEST - Package Update with Discount and Labor Cost")
             self.test_package_update_discount_labor_comprehensive()
             
-            # PRIORITY 2: URGENT DEBUG - Motokaravan - Kopya package issue
-            print("\n🎯 PRIORITY 2: URGENT DEBUG - Motokaravan - Kopya Package PDF Category Groups Issue")
+            # PRIORITY 3: URGENT DEBUG - Motokaravan - Kopya package issue
+            print("\n🎯 PRIORITY 3: URGENT DEBUG - Motokaravan - Kopya Package PDF Category Groups Issue")
             self.test_motokaravan_kopya_package_debug()
             
-            # PRIORITY 3: Backend Startup and Supplies System
-            print("\n🎯 PRIORITY 3: Backend Startup & Sarf Malzemeleri System")
+            # PRIORITY 4: Backend Startup and Supplies System
+            print("\n🎯 PRIORITY 4: Backend Startup & Sarf Malzemeleri System")
             self.test_backend_startup_and_supplies_system()
             
-            # PRIORITY 4: Package System Core Functionality
-            print("\n🎯 PRIORITY 4: Package System Core Functionality")
+            # PRIORITY 5: Package System Core Functionality
+            print("\n🎯 PRIORITY 5: Package System Core Functionality")
             self.test_package_system_focused()
             
-            # PRIORITY 5: PDF Generation with Category Groups (NEW - Review Request)
-            print("\n🎯 PRIORITY 5: PDF Generation with Category Groups")
+            # PRIORITY 6: PDF Generation with Category Groups (NEW - Review Request)
+            print("\n🎯 PRIORITY 6: PDF Generation with Category Groups")
             self.test_pdf_generation_with_category_groups()
             
-            # PRIORITY 5: Core API Tests
-            print("\n🎯 PRIORITY 5: Core API Functionality")
+            # PRIORITY 7: Core API Tests
+            print("\n🎯 PRIORITY 7: Core API Functionality")
             self.test_root_endpoint()
             self.test_exchange_rates_comprehensive()
             
-            # PRIORITY 6: Company and Product Management
-            print("\n🎯 PRIORITY 6: Company & Product Management")
+            # PRIORITY 8: Company and Product Management
+            print("\n🎯 PRIORITY 8: Company & Product Management")
             company_ids = self.test_company_management()
             self.test_products_management()
             
-            # PRIORITY 7: Excel Currency Selection System (NEW)
-            print("\n🎯 PRIORITY 7: Excel Currency Selection System")
+            # PRIORITY 9: Excel Currency Selection System (NEW)
+            print("\n🎯 PRIORITY 9: Excel Currency Selection System")
             self.test_excel_currency_selection_system()
             
-            # PRIORITY 7: Excel Discount Functionality (NEW)
-            print("\n🎯 PRIORITY 7: Excel Discount Functionality")
+            # PRIORITY 10: Excel Discount Functionality (NEW)
+            print("\n🎯 PRIORITY 10: Excel Discount Functionality")
             self.test_excel_discount_functionality()
             
-            # PRIORITY 8: Package Sale Price Optional Testing (NEW)
-            print("\n🎯 PRIORITY 8: Package Sale Price Optional Feature")
+            # PRIORITY 11: Package Sale Price Optional Testing (NEW)
+            print("\n🎯 PRIORITY 11: Package Sale Price Optional Feature")
             self.test_package_sale_price_optional()
             
-            # PRIORITY 9: Package Discount Percentage Fix Testing (CRITICAL)
-            print("\n🎯 PRIORITY 9: Package Discount Percentage Fix")
+            # PRIORITY 12: Package Discount Percentage Fix Testing (CRITICAL)
+            print("\n🎯 PRIORITY 12: Package Discount Percentage Fix")
             self.test_package_discount_percentage_fix()
             
-            # PRIORITY 10: Ergün Bey Package Category Fix Testing (CRITICAL)
-            print("\n🎯 PRIORITY 10: Ergün Bey Package Category Assignment Fix")
+            # PRIORITY 13: Ergün Bey Package Category Fix Testing (CRITICAL)
+            print("\n🎯 PRIORITY 13: Ergün Bey Package Category Assignment Fix")
             self.test_ergun_bey_package_category_fix()
             
-            # PRIORITY 11: Ergün Bey Package Category Groups Comprehensive Testing (REVIEW REQUEST)
-            print("\n🎯 PRIORITY 11: Ergün Bey Package Category Groups Comprehensive Testing")
+            # PRIORITY 14: Ergün Bey Package Category Groups Comprehensive Testing (REVIEW REQUEST)
+            print("\n🎯 PRIORITY 14: Ergün Bey Package Category Groups Comprehensive Testing")
             self.test_ergun_bey_package_category_groups_comprehensive()
             
-            # PRIORITY 12: Notes Functionality Testing (NEW REVIEW REQUEST)
-            print("\n🎯 PRIORITY 12: Notes Functionality for Packages and Quotes")
+            # PRIORITY 15: Notes Functionality Testing (NEW REVIEW REQUEST)
+            print("\n🎯 PRIORITY 15: Notes Functionality for Packages and Quotes")
             self.test_notes_functionality_comprehensive()
             
         finally:
