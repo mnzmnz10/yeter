@@ -1727,9 +1727,16 @@ function App() {
 
     const groupedProducts = {};
     
-    // Create category to group mapping
+    // Create category to group mapping with sorting
     const categoryToGroup = {};
-    categoryGroups.forEach(group => {
+    const sortedCategoryGroups = [...categoryGroups].sort((a, b) => {
+      if (a.sort_order !== b.sort_order) {
+        return a.sort_order - b.sort_order;
+      }
+      return a.name.localeCompare(b.name);
+    });
+    
+    sortedCategoryGroups.forEach(group => {
       group.category_ids?.forEach(categoryId => {
         categoryToGroup[categoryId] = group;
       });
@@ -1749,7 +1756,8 @@ function App() {
         groupData = {
           name: group.name,
           color: group.color || '#64748b',
-          isGroup: true
+          isGroup: true,
+          sort_order: group.sort_order || 0
         };
       } else if (category) {
         // Product has category but no group
@@ -1757,7 +1765,8 @@ function App() {
         groupData = {
           name: category.name,
           color: category.color || '#64748b',
-          isGroup: false
+          isGroup: false,
+          sort_order: category.sort_order || 0
         };
       } else {
         // Product has no category
@@ -1765,7 +1774,8 @@ function App() {
         groupData = {
           name: 'Kategorisiz',
           color: '#94a3b8',
-          isGroup: false
+          isGroup: false,
+          sort_order: 9999 // Always last
         };
       }
       
