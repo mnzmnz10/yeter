@@ -12899,6 +12899,14 @@ if __name__ == "__main__":
         print(f"   Passed: {tester.tests_passed}")
         print(f"   Failed: {tester.tests_run - tester.tests_passed}")
         print(f"   Success Rate: {(tester.tests_passed/tester.tests_run*100):.1f}%" if tester.tests_run > 0 else "   Success Rate: 0%")
+    elif len(sys.argv) > 1 and sys.argv[1] == "--favorite-sorting":
+        # Run only favorite sorting debug tests
+        tester.test_favorite_product_sorting_comprehensive()
+        print(f"\n📊 Favorite Sorting Debug Test Results Summary:")
+        print(f"   Total Tests: {tester.tests_run}")
+        print(f"   Passed: {tester.tests_passed}")
+        print(f"   Failed: {tester.tests_run - tester.tests_passed}")
+        print(f"   Success Rate: {(tester.tests_passed/tester.tests_run*100):.1f}%" if tester.tests_run > 0 else "   Success Rate: 0%")
     elif len(sys.argv) > 1 and sys.argv[1] == "--performance":
         # Run only performance optimization tests
         tester.test_performance_optimizations_comprehensive()
