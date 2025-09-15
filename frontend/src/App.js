@@ -898,21 +898,21 @@ function App() {
     setSelectedCategory(categoryId === 'all' ? '' : categoryId);
   };
 
-  // Search and category filter effects - optimized for performance
+  // Search and category filter effects - OPTİMİZE EDİLDİ
   React.useEffect(() => {
     const delayedSearch = setTimeout(() => {
       loadProducts(1, true); // Reset to page 1 when searching/filtering
-    }, searchQuery.length >= 3 ? 300 : 600); // Faster response for longer searches, slower for short ones
+    }, searchQuery.length >= 2 ? 200 : 400); // HIZLANDIRILDI: Daha hızlı tepki
 
     return () => clearTimeout(delayedSearch);
   }, [searchQuery, selectedCategory]);
 
-  // Category dialog search effect
+  // Category dialog search effect - OPTİMİZE EDİLDİ
   React.useEffect(() => {
     if (showCategoryProductDialog) {
       const delayedSearch = setTimeout(() => {
         loadAllProductsForCategory(categoryDialogSearchQuery);
-      }, 300);
+      }, 200); // HIZLANDIRILDI
 
       return () => clearTimeout(delayedSearch);
     }
