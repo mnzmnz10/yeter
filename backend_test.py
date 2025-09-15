@@ -8269,6 +8269,10 @@ class KaravanAPITester:
             print("\n🎯 PRIORITY 9: Package Discount Percentage Fix")
             self.test_package_discount_percentage_fix()
             
+            # PRIORITY 10: Ergün Bey Package Category Fix Testing (CRITICAL)
+            print("\n🎯 PRIORITY 10: Ergün Bey Package Category Assignment Fix")
+            self.test_ergun_bey_package_category_fix()
+            
         finally:
             # Always cleanup
             self.cleanup_test_data()
