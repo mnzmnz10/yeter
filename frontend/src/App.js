@@ -895,11 +895,11 @@ function App() {
     setSelectedCategory(categoryId === 'all' ? '' : categoryId);
   };
 
-  // Search and category filter effects
+  // Search and category filter effects - optimized for performance
   React.useEffect(() => {
     const delayedSearch = setTimeout(() => {
       loadProducts(1, true); // Reset to page 1 when searching/filtering
-    }, 500); // Increased debounce to 500ms for better performance
+    }, searchQuery.length >= 3 ? 300 : 600); // Faster response for longer searches, slower for short ones
 
     return () => clearTimeout(delayedSearch);
   }, [searchQuery, selectedCategory]);
