@@ -1089,6 +1089,7 @@ function App() {
       // Dialog'u kapat ve formu temizle
       setShowQuickQuoteDialog(false);
       setQuickQuoteCustomerName('');
+      setQuickQuoteNotes(''); // Teklif notlarını temizle
       
       // Seçimi temizle
       clearSelection();
