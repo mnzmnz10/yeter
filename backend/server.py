@@ -2520,9 +2520,10 @@ async def create_category(category: CategoryCreate):
 
 @api_router.get("/categories", response_model=List[Category])
 async def get_categories():
-    """Get all categories"""
+    """Get all categories sorted by sort_order, then by name"""
     try:
-        categories = await db.categories.find().to_list(None)
+        # Kategorileri önce sort_order'a, sonra name'e göre sırala
+        categories = await db.categories.find().sort([("sort_order", 1), ("name", 1)]).to_list(None)
         return [Category(**category) for category in categories]
     except Exception as e:
         logger.error(f"Error getting categories: {e}")
