@@ -274,6 +274,7 @@ class PackageCreate(BaseModel):
     sale_price: Optional[Decimal] = None
     discount_percentage: float = 0  # Paket indirimi
     labor_cost: float = 0  # İşçilik maliyeti
+    notes: Optional[str] = None  # Paket notları
     image_url: Optional[str] = None
     is_pinned: bool = False
 
