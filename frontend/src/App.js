@@ -4919,6 +4919,7 @@ function App() {
                                         setSelectedProductsData(new Map(productData));
                                         setQuoteDiscount(quote.discount_percentage);
                                         setQuoteLaborCost(quote.labor_cost || 0);
+                                        setQuoteNotes(quote.notes || ''); // Teklif notlarını yükle
                                         setLoadedQuote({...quote}); // Yeni object reference
                                         setQuoteName(quote.name);
                                         
