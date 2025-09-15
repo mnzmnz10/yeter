@@ -3027,7 +3027,29 @@ function App() {
 
                           {/* Products by Categories */}
                           <div className="max-h-96 overflow-y-auto space-y-3">
-                            {Object.entries(getFilteredAndGroupedProducts()).map(([categoryId, categoryData]) => (
+                            {Object.entries(getFilteredAndGroupedProducts())
+                              .sort(([categoryIdA], [categoryIdB]) => {
+                                // Uncategorized always last
+                                if (categoryIdA === 'uncategorized') return 1;
+                                if (categoryIdB === 'uncategorized') return -1;
+                                
+                                // Sort by category sort_order
+                                const categoryA = categories.find(c => c.id === categoryIdA);
+                                const categoryB = categories.find(c => c.id === categoryIdB);
+                                
+                                const sortOrderA = categoryA?.sort_order || 0;
+                                const sortOrderB = categoryB?.sort_order || 0;
+                                
+                                if (sortOrderA !== sortOrderB) {
+                                  return sortOrderA - sortOrderB;
+                                }
+                                
+                                // If same sort_order, sort alphabetically
+                                const nameA = categoryA?.name || '';
+                                const nameB = categoryB?.name || '';
+                                return nameA.localeCompare(nameB);
+                              })
+                              .map(([categoryId, categoryData]) => (
                               <div key={categoryId} className="border rounded-lg">
                                 {/* Category Header */}
                                 <div 
