@@ -130,7 +130,7 @@ function App() {
   // Pagination ve performance için state'ler
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
-  const [productsPerPage] = useState(50); // Sayfa başına ürün sayısı
+  const [productsPerPage] = useState(100); // İyileştirilmiş: Daha iyi performans için sayfa başına 100 ürün
   const [loadingProducts, setLoadingProducts] = useState(false);
 
   // Kategori renk paleti sistemi
