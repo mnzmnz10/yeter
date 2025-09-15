@@ -7016,7 +7016,9 @@ class KaravanAPITester:
             if success and response:
                 try:
                     updated_product = response.json()
-                    if updated_product.get('success'):
+                    # Check if the category_id was actually updated
+                    assigned_category_id = updated_product.get('category_id')
+                    if assigned_category_id == category_id:
                         assignment_results.append({
                             'product_id': product_id,
                             'success': True,
@@ -7027,9 +7029,9 @@ class KaravanAPITester:
                         assignment_results.append({
                             'product_id': product_id,
                             'success': False,
-                            'error': 'Update failed'
+                            'error': f'Category not updated: expected {category_id}, got {assigned_category_id}'
                         })
-                        self.log_test(f"Category Assignment Failed - {product_name[:20]}...", False, "Update response indicates failure")
+                        self.log_test(f"Category Assignment Failed - {product_name[:20]}...", False, f"Expected {category_id}, got {assigned_category_id}")
                 except Exception as e:
                     assignment_results.append({
                         'product_id': product_id,
