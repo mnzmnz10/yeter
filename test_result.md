@@ -112,9 +112,24 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "siteyi optimize et, hızlansın kasma olmasın"
+user_problem_statement: "Favori ürün sıralama problemini debug et: 1. MongoDB Sort Testing: /api/products endpoint'inde favoriler neden en üstte gelmiyor? Sort criteria [('is_favorite', -1), ('name', 1)] düzgün çalışıyor mu? 2. is_favorite Field Analysis: Favori ürünlerin is_favorite field'ının gerçek değerini kontrol et. Boolean mu, string mi, null mu? 3. Aggregate Pipeline Testing: Yeni implement ettiğimiz aggregate pipeline'ının düzgün çalışıp çalışmadığını test et. 4. Sorting Validation: 17 favori ürün var, bunlar ilk sıralarda gelip gelmediğini kontrol et. 5. Database Index Check: is_favorite için index var mı ve düzgün çalışıyor mu?"
 
 backend:
+  - task: "Debug Favorite Product Sorting Issue"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "FAVORITE PRODUCT SORTING ISSUE IDENTIFIED: ❌ CRITICAL ISSUE FOUND - Favorites are NOT sorted to the top despite aggregate pipeline implementation, ✅ ANALYSIS COMPLETED - Found 17 favorite products and 83 non-favorite products (total 100), ✅ is_favorite FIELD ANALYSIS - All fields are proper boolean type (no string/null issues), ✅ ROOT CAUSE IDENTIFIED - Decimal serialization error in aggregate pipeline causing fallback to basic query without proper sorting, ✅ AGGREGATE PIPELINE ISSUE - MongoDB aggregate pipeline failing due to 'Object of type Decimal is not JSON serializable' error, ✅ DATABASE INDEX CONFIRMED - Compound index [('is_favorite', -1), ('name', 1)] exists and working, ✅ SORTING VALIDATION FAILED - First 10 products show favorites mixed with non-favorites instead of favorites-first order"
+      - working: true
+        agent: "testing"
+        comment: "FAVORITE PRODUCT SORTING ISSUE COMPLETELY RESOLVED: ✅ CRITICAL SUCCESS - Fixed Decimal serialization issue in products endpoint aggregate pipeline, ✅ ROOT CAUSE FIXED - Added proper Decimal to float conversion for list_price, discounted_price, list_price_try, and discounted_price_try fields, ✅ AGGREGATE PIPELINE WORKING - MongoDB aggregate pipeline now executes successfully with sort criteria [('is_favorite', -1), ('name', 1)], ✅ FALLBACK QUERY FIXED - Updated fallback query to use same favorites-first sorting as aggregate pipeline, ✅ SORTING VALIDATION CONFIRMED - All 17 favorite products now appear in positions 1-17, non-favorites start from position 18, ✅ COMPREHENSIVE TESTING PASSED - Tested with different page sizes (10, 25, 50), search queries, and edge cases - all working correctly, ✅ DATABASE INDEX UTILIZED - Compound index [('is_favorite', -1), ('name', 1)] working effectively for performance, ✅ SEARCH FUNCTIONALITY VERIFIED - Favorites are properly prioritized even in search results (e.g., 'apex' search shows favorites first), ✅ FINAL VERIFICATION - curl tests confirm perfect sorting: positions 1-17 are all favorites (is_favorite: true), positions 18+ are non-favorites (is_favorite: false). The favorite product sorting system is now working perfectly as designed."
+
   - task: "Comprehensive Performance Optimization Implementation"
     implemented: true
     working: true
