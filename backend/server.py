@@ -2251,8 +2251,8 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         story.append(Paragraph("<b>Paket İçeriği</b>", self.subtitle_style))
         story.append(Spacer(1, 10))
         
-        # Ürün tablosu
-        story.append(self._create_package_products_table(products, include_prices))
+        # Ürün tablosu (kategori grupları ile)
+        story.append(self._create_package_products_table_with_groups(products, include_prices))
         story.append(Spacer(1, 25))
         
         # Toplam hesaplama bölümü
