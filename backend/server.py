@@ -3117,7 +3117,8 @@ async def get_package_with_products(package_id: str):
                     "discounted_price_try": product.get("discounted_price_try"),
                     "currency": product.get("currency", "USD"),
                     "quantity": pp["quantity"],
-                    "company_id": product.get("company_id")
+                    "company_id": product.get("company_id"),
+                    "category_id": product.get("category_id")
                 }
                 products.append(product_data)
                 
