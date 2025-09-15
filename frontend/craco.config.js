@@ -84,7 +84,7 @@ module.exports = {
           '**/*.test.js',
           '**/*.spec.js',
         ],
-        aggregateTimeoutInner: 300,  // Faster response
+        aggregateTimeout: 300,  // Faster response
         poll: false, // Use native file watching
       };
 
