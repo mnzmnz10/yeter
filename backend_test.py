@@ -7628,30 +7628,34 @@ class KaravanAPITester:
             print("\n🎯 PRIORITY 2: Package System Core Functionality")
             self.test_package_system_focused()
             
-            # PRIORITY 3: Core API Tests
-            print("\n🎯 PRIORITY 3: Core API Functionality")
+            # PRIORITY 3: PDF Generation with Category Groups (NEW - Review Request)
+            print("\n🎯 PRIORITY 3: PDF Generation with Category Groups")
+            self.test_pdf_generation_with_category_groups()
+            
+            # PRIORITY 4: Core API Tests
+            print("\n🎯 PRIORITY 4: Core API Functionality")
             self.test_root_endpoint()
             self.test_exchange_rates_comprehensive()
             
-            # PRIORITY 4: Company and Product Management
-            print("\n🎯 PRIORITY 4: Company & Product Management")
+            # PRIORITY 5: Company and Product Management
+            print("\n🎯 PRIORITY 5: Company & Product Management")
             company_ids = self.test_company_management()
             self.test_products_management()
             
-            # PRIORITY 5: Excel Currency Selection System (NEW)
-            print("\n🎯 PRIORITY 5: Excel Currency Selection System")
+            # PRIORITY 6: Excel Currency Selection System (NEW)
+            print("\n🎯 PRIORITY 6: Excel Currency Selection System")
             self.test_excel_currency_selection_system()
             
-            # PRIORITY 6: Excel Discount Functionality (NEW)
-            print("\n🎯 PRIORITY 6: Excel Discount Functionality")
+            # PRIORITY 7: Excel Discount Functionality (NEW)
+            print("\n🎯 PRIORITY 7: Excel Discount Functionality")
             self.test_excel_discount_functionality()
             
-            # PRIORITY 7: Package Sale Price Optional Testing (NEW)
-            print("\n🎯 PRIORITY 7: Package Sale Price Optional Feature")
+            # PRIORITY 8: Package Sale Price Optional Testing (NEW)
+            print("\n🎯 PRIORITY 8: Package Sale Price Optional Feature")
             self.test_package_sale_price_optional()
             
-            # PRIORITY 8: Package Discount Percentage Fix Testing (CRITICAL)
-            print("\n🎯 PRIORITY 8: Package Discount Percentage Fix")
+            # PRIORITY 9: Package Discount Percentage Fix Testing (CRITICAL)
+            print("\n🎯 PRIORITY 9: Package Discount Percentage Fix")
             self.test_package_discount_percentage_fix()
             
         finally:
