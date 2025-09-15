@@ -1968,6 +1968,25 @@ class PDFQuoteGenerator:
         story.append(self._create_modern_products_table(quote_data['products']))
         story.append(Spacer(1, 25))
         
+        # Teklif notları (varsa)
+        quote_notes = quote_data.get('notes', '').strip() if quote_data.get('notes') else ''
+        if quote_notes:
+            story.append(Paragraph("<b>Notlar</b>", self.subtitle_style))
+            story.append(Spacer(1, 10))
+            
+            # Notları paragraf olarak ekle
+            notes_style = ParagraphStyle(
+                'QuoteNotes',
+                parent=self.styles['Normal'],
+                fontSize=10,
+                leading=14,
+                spaceAfter=12,
+                leftIndent=20,
+                fontName='Montserrat-Regular'
+            )
+            story.append(Paragraph(quote_notes, notes_style))
+            story.append(Spacer(1, 25))
+        
         # Toplam hesaplama bölümü
         story.extend(self._create_modern_totals_section(quote_data))
         story.append(Spacer(1, 30))
