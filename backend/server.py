@@ -2379,7 +2379,7 @@ class PDFPackageGenerator(PDFQuoteGenerator):
                 fontName=self.get_font_name()
             )
             story.append(Paragraph(package_notes, notes_style))
-            story.append(Spacer(1, 25))
+            story.append(Spacer(1, 15))  # 25'ten 15'e küçültüldü
         
         # Toplam hesaplama bölümü (indirim ve işçilik ile)
         if include_prices:
