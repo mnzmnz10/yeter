@@ -9130,30 +9130,34 @@ class KaravanAPITester:
         print("=" * 80)
         
         try:
-            # PRIORITY 1: Backend Startup and Supplies System
-            print("\n🎯 PRIORITY 1: Backend Startup & Sarf Malzemeleri System")
+            # PRIORITY 1: URGENT DEBUG - Motokaravan - Kopya package issue
+            print("\n🎯 PRIORITY 1: URGENT DEBUG - Motokaravan - Kopya Package PDF Category Groups Issue")
+            self.test_motokaravan_kopya_package_debug()
+            
+            # PRIORITY 2: Backend Startup and Supplies System
+            print("\n🎯 PRIORITY 2: Backend Startup & Sarf Malzemeleri System")
             self.test_backend_startup_and_supplies_system()
             
-            # PRIORITY 2: Package System Core Functionality
-            print("\n🎯 PRIORITY 2: Package System Core Functionality")
+            # PRIORITY 3: Package System Core Functionality
+            print("\n🎯 PRIORITY 3: Package System Core Functionality")
             self.test_package_system_focused()
             
-            # PRIORITY 3: PDF Generation with Category Groups (NEW - Review Request)
-            print("\n🎯 PRIORITY 3: PDF Generation with Category Groups")
+            # PRIORITY 4: PDF Generation with Category Groups (NEW - Review Request)
+            print("\n🎯 PRIORITY 4: PDF Generation with Category Groups")
             self.test_pdf_generation_with_category_groups()
             
-            # PRIORITY 4: Core API Tests
-            print("\n🎯 PRIORITY 4: Core API Functionality")
+            # PRIORITY 5: Core API Tests
+            print("\n🎯 PRIORITY 5: Core API Functionality")
             self.test_root_endpoint()
             self.test_exchange_rates_comprehensive()
             
-            # PRIORITY 5: Company and Product Management
-            print("\n🎯 PRIORITY 5: Company & Product Management")
+            # PRIORITY 6: Company and Product Management
+            print("\n🎯 PRIORITY 6: Company & Product Management")
             company_ids = self.test_company_management()
             self.test_products_management()
             
-            # PRIORITY 6: Excel Currency Selection System (NEW)
-            print("\n🎯 PRIORITY 6: Excel Currency Selection System")
+            # PRIORITY 7: Excel Currency Selection System (NEW)
+            print("\n🎯 PRIORITY 7: Excel Currency Selection System")
             self.test_excel_currency_selection_system()
             
             # PRIORITY 7: Excel Discount Functionality (NEW)
