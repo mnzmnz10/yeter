@@ -2219,9 +2219,15 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         formatted = f"{float(price):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
         return formatted
 
-    async def generate_package_pdf(self, package_data, products, include_prices=True):
+    def generate_package_pdf(self, package_data, products, include_prices=True, categories=None, category_groups=None):
         """Teklif taslağını kullanarak paket PDF'i oluştur"""
         buffer = BytesIO()
+        
+        # Veriler parametre olarak geçildiyse onları kullan, yoksa boş liste
+        if categories is None:
+            categories = []
+        if category_groups is None:
+            category_groups = []
         
         # Yüksek kaliteli PDF ayarları (teklif ile aynı)
         doc = SimpleDocTemplate(
@@ -2255,7 +2261,7 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         story.append(Spacer(1, 10))
         
         # Ürün tablosu (kategori grupları ile)
-        story.append(await self._create_package_products_table_with_groups(products, include_prices))
+        story.append(self._create_package_products_table_with_groups(products, include_prices, categories, category_groups))
         story.append(Spacer(1, 25))
         
         # Toplam hesaplama bölümü
