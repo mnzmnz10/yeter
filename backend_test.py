@@ -9674,25 +9674,29 @@ class KaravanAPITester:
 
     def run_all_tests(self):
         """Run focused backend tests based on review request"""
-        print("🚀 Starting Karavan Backend Testing - Focus on Startup & Package System")
+        print("🚀 Starting Karavan Backend Testing - Focus on Package Update & PDF Generation")
         print(f"🌐 Testing against: {self.base_url}")
         print("=" * 80)
         
         try:
-            # PRIORITY 1: URGENT DEBUG - Motokaravan - Kopya package issue
-            print("\n🎯 PRIORITY 1: URGENT DEBUG - Motokaravan - Kopya Package PDF Category Groups Issue")
+            # PRIORITY 1: REVIEW REQUEST - Package Update with Discount and Labor Cost
+            print("\n🎯 PRIORITY 1: REVIEW REQUEST - Package Update with Discount and Labor Cost")
+            self.test_package_update_discount_labor_comprehensive()
+            
+            # PRIORITY 2: URGENT DEBUG - Motokaravan - Kopya package issue
+            print("\n🎯 PRIORITY 2: URGENT DEBUG - Motokaravan - Kopya Package PDF Category Groups Issue")
             self.test_motokaravan_kopya_package_debug()
             
-            # PRIORITY 2: Backend Startup and Supplies System
-            print("\n🎯 PRIORITY 2: Backend Startup & Sarf Malzemeleri System")
+            # PRIORITY 3: Backend Startup and Supplies System
+            print("\n🎯 PRIORITY 3: Backend Startup & Sarf Malzemeleri System")
             self.test_backend_startup_and_supplies_system()
             
-            # PRIORITY 3: Package System Core Functionality
-            print("\n🎯 PRIORITY 3: Package System Core Functionality")
+            # PRIORITY 4: Package System Core Functionality
+            print("\n🎯 PRIORITY 4: Package System Core Functionality")
             self.test_package_system_focused()
             
-            # PRIORITY 4: PDF Generation with Category Groups (NEW - Review Request)
-            print("\n🎯 PRIORITY 4: PDF Generation with Category Groups")
+            # PRIORITY 5: PDF Generation with Category Groups (NEW - Review Request)
+            print("\n🎯 PRIORITY 5: PDF Generation with Category Groups")
             self.test_pdf_generation_with_category_groups()
             
             # PRIORITY 5: Core API Tests
