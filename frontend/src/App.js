@@ -1227,6 +1227,10 @@ function App() {
   const [draggedCategoryId, setDraggedCategoryId] = useState(null);
   const [dragOverCategoryId, setDragOverCategoryId] = useState(null);
   
+  // Category group sorting states
+  const [draggedCategoryGroupId, setDraggedCategoryGroupId] = useState(null);
+  const [dragOverCategoryGroupId, setDragOverCategoryGroupId] = useState(null);
+  
   // Package discount and labor cost states (similar to quotes)
   const [packageDiscount, setPackageDiscount] = useState(0);
   const [packageLaborCost, setPackageLaborCost] = useState(0);
