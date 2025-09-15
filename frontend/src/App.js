@@ -1648,9 +1648,72 @@ function App() {
         await loadPackageWithProducts(selectedPackageForEdit.id);
       }
     } catch (error) {
-      console.error('Error removing supply:', error);
-      toast.error('Sarf malzemesi çıkarılamadı');
+      console.error('Error removing supply from package:', error);
+      toast.error('Sarf malzemesi paketten çıkarılamadı');
     }
+  };
+
+  // Package products organization by category groups
+  const getPackageProductsByGroups = () => {
+    if (!packageWithProducts?.products || !categories.length) {
+      return {};
+    }
+
+    const groupedProducts = {};
+    
+    // Create category to group mapping
+    const categoryToGroup = {};
+    categoryGroups.forEach(group => {
+      group.category_ids?.forEach(categoryId => {
+        categoryToGroup[categoryId] = group;
+      });
+    });
+
+    // Group products
+    packageWithProducts.products.forEach(product => {
+      const categoryId = product.category_id;
+      const category = categories.find(c => c.id === categoryId);
+      
+      let groupKey, groupData;
+      
+      if (categoryId && categoryToGroup[categoryId]) {
+        // Product belongs to a category group
+        const group = categoryToGroup[categoryId];
+        groupKey = group.id;
+        groupData = {
+          name: group.name,
+          color: group.color || '#64748b',
+          isGroup: true
+        };
+      } else if (category) {
+        // Product has category but no group
+        groupKey = category.id;
+        groupData = {
+          name: category.name,
+          color: category.color || '#64748b',
+          isGroup: false
+        };
+      } else {
+        // Product has no category
+        groupKey = 'uncategorized';
+        groupData = {
+          name: 'Kategorisiz',
+          color: '#94a3b8',
+          isGroup: false
+        };
+      }
+      
+      if (!groupedProducts[groupKey]) {
+        groupedProducts[groupKey] = {
+          ...groupData,
+          products: []
+        };
+      }
+      
+      groupedProducts[groupKey].products.push(product);
+    });
+
+    return groupedProducts;
   };
 
   // Sarf malzemesi toggle fonksiyonu
