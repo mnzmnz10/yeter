@@ -3074,11 +3074,10 @@ function App() {
                               <div className="space-y-4">
                                 {Object.entries(getPackageProductsByGroups())
                                   .sort(([keyA, groupA], [keyB, groupB]) => {
-                                    // Uncategorized always last
-                                    if (keyA === 'uncategorized') return 1;
-                                    if (keyB === 'uncategorized') return -1;
-                                    
-                                    // Sort by group/category name
+                                    // Sort by sort_order first, then by name
+                                    if (groupA.sort_order !== groupB.sort_order) {
+                                      return groupA.sort_order - groupB.sort_order;
+                                    }
                                     return groupA.name.localeCompare(groupB.name);
                                   })
                                   .map(([groupKey, groupData]) => (
