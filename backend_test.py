@@ -1489,6 +1489,447 @@ class KaravanAPITester:
         
         return True
 
+    def test_pdf_generation_with_notes_comprehensive(self):
+        """Comprehensive test for PDF generation with notes functionality after recent fixes"""
+        print("\n🔍 Testing PDF Generation with Notes Functionality...")
+        
+        # Step 1: Create a test company for PDF testing
+        pdf_company_name = f"PDF Notes Test Şirketi {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create PDF Notes Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": pdf_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("PDF Notes Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            pdf_company_id = company_data.get('id')
+            if not pdf_company_id:
+                self.log_test("PDF Notes Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(pdf_company_id)
+        except Exception as e:
+            self.log_test("PDF Notes Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Step 2: Create products with Turkish characters for PDF testing
+        turkish_products = [
+            {
+                "name": "Güneş Paneli 450W Monokristal",
+                "company_id": pdf_company_id,
+                "list_price": 299.99,
+                "discounted_price": 249.99,
+                "currency": "USD",
+                "description": "Yüksek verimli güneş paneli - Türkçe açıklama"
+            },
+            {
+                "name": "İnvertör 5000W Hibrit Sistem", 
+                "company_id": pdf_company_id,
+                "list_price": 850.50,
+                "discounted_price": 799.00,
+                "currency": "EUR",
+                "description": "Hibrit güneş enerjisi invertörü - şarj kontrolcülü"
+            },
+            {
+                "name": "Akü 200Ah Derin Döngü",
+                "company_id": pdf_company_id,
+                "list_price": 12500.00,
+                "discounted_price": 11250.00,
+                "currency": "TRY",
+                "description": "Güneş enerjisi sistemi için özel akü - uzun ömürlü"
+            },
+            {
+                "name": "Şarj Kontrolcüsü MPPT 60A",
+                "company_id": pdf_company_id,
+                "list_price": 189.99,
+                "discounted_price": 159.99,
+                "currency": "USD",
+                "description": "MPPT teknolojili şarj kontrolcüsü - LCD ekranlı"
+            }
+        ]
+        
+        created_pdf_product_ids = []
+        
+        for product_data in turkish_products:
+            success, response = self.run_test(
+                f"Create Turkish Product: {product_data['name'][:30]}...",
+                "POST",
+                "products",
+                200,
+                data=product_data
+            )
+            
+            if success and response:
+                try:
+                    product_response = response.json()
+                    product_id = product_response.get('id')
+                    if product_id:
+                        created_pdf_product_ids.append(product_id)
+                        self.created_products.append(product_id)
+                        self.log_test(f"Turkish Product Created - {product_data['name'][:20]}...", True, f"ID: {product_id}")
+                    else:
+                        self.log_test(f"Turkish Product Creation - {product_data['name'][:20]}...", False, "No product ID returned")
+                except Exception as e:
+                    self.log_test(f"Turkish Product Creation - {product_data['name'][:20]}...", False, f"Error parsing: {e}")
+
+        if len(created_pdf_product_ids) < 3:
+            self.log_test("PDF Test Products", False, f"Only {len(created_pdf_product_ids)} products created, need at least 3")
+            return False
+
+        # Step 3: Test Quote PDF Generation with Notes
+        print("\n🔍 Testing Quote PDF Generation with Notes...")
+        
+        # Test Case 1: Quote with Turkish notes
+        quote_with_notes = {
+            "name": "Güneş Enerjisi Sistemi Teklifi - Notlu Test",
+            "customer_name": "Mehmet Özkan",
+            "customer_email": "mehmet.ozkan@example.com",
+            "discount_percentage": 5.0,
+            "labor_cost": 1500.0,
+            "products": [
+                {"id": created_pdf_product_ids[0], "quantity": 2},
+                {"id": created_pdf_product_ids[1], "quantity": 1},
+                {"id": created_pdf_product_ids[2], "quantity": 1}
+            ],
+            "notes": "Bu teklif Türkçe karakter desteği testi için hazırlanmıştır. Özel karakterler: ğüşıöç ĞÜŞIÖÇ. Kurulum ve garanti koşulları: 1) Kurulum ücretsizdir, 2) 2 yıl garanti verilmektedir, 3) Bakım hizmetleri dahildir."
+        }
+        
+        success, response = self.run_test(
+            "Create Quote with Turkish Notes",
+            "POST",
+            "quotes",
+            200,
+            data=quote_with_notes
+        )
+        
+        quote_with_notes_id = None
+        if success and response:
+            try:
+                quote_response = response.json()
+                quote_with_notes_id = quote_response.get('id')
+                if quote_with_notes_id:
+                    self.log_test("Quote with Notes Created", True, f"ID: {quote_with_notes_id}")
+                else:
+                    self.log_test("Quote with Notes Creation", False, "No quote ID returned")
+            except Exception as e:
+                self.log_test("Quote with Notes Creation", False, f"Error parsing: {e}")
+
+        # Test Case 2: Quote without notes
+        quote_without_notes = {
+            "name": "Güneş Enerjisi Sistemi Teklifi - Notsuz Test",
+            "customer_name": "Ali Veli",
+            "customer_email": "ali.veli@example.com",
+            "discount_percentage": 10.0,
+            "labor_cost": 2000.0,
+            "products": [
+                {"id": created_pdf_product_ids[0], "quantity": 1},
+                {"id": created_pdf_product_ids[3], "quantity": 2}
+            ]
+            # notes field intentionally omitted
+        }
+        
+        success, response = self.run_test(
+            "Create Quote without Notes",
+            "POST",
+            "quotes",
+            200,
+            data=quote_without_notes
+        )
+        
+        quote_without_notes_id = None
+        if success and response:
+            try:
+                quote_response = response.json()
+                quote_without_notes_id = quote_response.get('id')
+                if quote_without_notes_id:
+                    self.log_test("Quote without Notes Created", True, f"ID: {quote_without_notes_id}")
+                else:
+                    self.log_test("Quote without Notes Creation", False, "No quote ID returned")
+            except Exception as e:
+                self.log_test("Quote without Notes Creation", False, f"Error parsing: {e}")
+
+        # Test Case 3: Quote with empty notes
+        quote_empty_notes = {
+            "name": "Güneş Enerjisi Sistemi Teklifi - Boş Not Test",
+            "customer_name": "Fatma Hanım",
+            "customer_email": "fatma.hanim@example.com",
+            "discount_percentage": 0.0,
+            "labor_cost": 0.0,
+            "products": [
+                {"id": created_pdf_product_ids[1], "quantity": 1}
+            ],
+            "notes": ""  # Empty notes
+        }
+        
+        success, response = self.run_test(
+            "Create Quote with Empty Notes",
+            "POST",
+            "quotes",
+            200,
+            data=quote_empty_notes
+        )
+        
+        quote_empty_notes_id = None
+        if success and response:
+            try:
+                quote_response = response.json()
+                quote_empty_notes_id = quote_response.get('id')
+                if quote_empty_notes_id:
+                    self.log_test("Quote with Empty Notes Created", True, f"ID: {quote_empty_notes_id}")
+                else:
+                    self.log_test("Quote with Empty Notes Creation", False, "No quote ID returned")
+            except Exception as e:
+                self.log_test("Quote with Empty Notes Creation", False, f"Error parsing: {e}")
+
+        # Test Case 4: Quote with very long notes
+        long_notes = "Bu çok uzun bir not metnidir. " * 50 + "Türkçe karakterler: ğüşıöç ĞÜŞIÖÇ. " * 10 + "Bu notun amacı PDF generation sisteminin uzun metinlerle nasıl başa çıktığını test etmektir."
+        
+        quote_long_notes = {
+            "name": "Güneş Enerjisi Sistemi Teklifi - Uzun Not Test",
+            "customer_name": "Uzun Notlu Müşteri",
+            "customer_email": "uzun.not@example.com",
+            "discount_percentage": 15.0,
+            "labor_cost": 3000.0,
+            "products": [
+                {"id": created_pdf_product_ids[0], "quantity": 1},
+                {"id": created_pdf_product_ids[1], "quantity": 1},
+                {"id": created_pdf_product_ids[2], "quantity": 1},
+                {"id": created_pdf_product_ids[3], "quantity": 1}
+            ],
+            "notes": long_notes
+        }
+        
+        success, response = self.run_test(
+            "Create Quote with Long Notes",
+            "POST",
+            "quotes",
+            200,
+            data=quote_long_notes
+        )
+        
+        quote_long_notes_id = None
+        if success and response:
+            try:
+                quote_response = response.json()
+                quote_long_notes_id = quote_response.get('id')
+                if quote_long_notes_id:
+                    self.log_test("Quote with Long Notes Created", True, f"ID: {quote_long_notes_id}")
+                else:
+                    self.log_test("Quote with Long Notes Creation", False, "No quote ID returned")
+            except Exception as e:
+                self.log_test("Quote with Long Notes Creation", False, f"Error parsing: {e}")
+
+        # Step 4: Test Quote PDF Generation
+        print("\n🔍 Testing Quote PDF Generation...")
+        
+        quote_test_cases = [
+            (quote_with_notes_id, "Quote with Turkish Notes"),
+            (quote_without_notes_id, "Quote without Notes"),
+            (quote_empty_notes_id, "Quote with Empty Notes"),
+            (quote_long_notes_id, "Quote with Long Notes")
+        ]
+        
+        for quote_id, test_name in quote_test_cases:
+            if quote_id:
+                try:
+                    pdf_url = f"{self.base_url}/quotes/{quote_id}/pdf"
+                    headers = {'Accept': 'application/pdf'}
+                    pdf_response = requests.get(pdf_url, headers=headers, timeout=30)
+                    
+                    if pdf_response.status_code == 200:
+                        content_type = pdf_response.headers.get('content-type', '')
+                        if 'application/pdf' in content_type:
+                            pdf_size = len(pdf_response.content)
+                            self.log_test(f"{test_name} PDF Generation", True, f"PDF generated ({pdf_size} bytes)")
+                            
+                            # Check PDF format
+                            if pdf_response.content.startswith(b'%PDF'):
+                                self.log_test(f"{test_name} PDF Format", True, "Valid PDF format")
+                            else:
+                                self.log_test(f"{test_name} PDF Format", False, "Invalid PDF format")
+                        else:
+                            self.log_test(f"{test_name} PDF Generation", False, f"Wrong content type: {content_type}")
+                    else:
+                        self.log_test(f"{test_name} PDF Generation", False, f"HTTP {pdf_response.status_code}")
+                        
+                except Exception as e:
+                    self.log_test(f"{test_name} PDF Generation", False, f"Error: {e}")
+
+        # Step 5: Test Package PDF Generation with Notes
+        print("\n🔍 Testing Package PDF Generation with Notes...")
+        
+        # Create a package with notes
+        package_with_notes = {
+            "name": "Güneş Enerjisi Paketi - Notlu Test",
+            "description": "Tam güneş enerjisi sistemi paketi",
+            "sale_price": 25000.00,
+            "discount_percentage": 10.0,
+            "labor_cost": 2500.0,
+            "notes": "Bu paket özel kurulum notları içermektedir. Türkçe karakterler: ğüşıöç ĞÜŞIÖÇ. Kurulum süresi: 2-3 gün. Garanti süresi: 5 yıl. Bakım periyodu: 6 ayda bir."
+        }
+        
+        success, response = self.run_test(
+            "Create Package with Notes",
+            "POST",
+            "packages",
+            200,
+            data=package_with_notes
+        )
+        
+        package_with_notes_id = None
+        if success and response:
+            try:
+                package_response = response.json()
+                package_with_notes_id = package_response.get('id')
+                if package_with_notes_id:
+                    self.log_test("Package with Notes Created", True, f"ID: {package_with_notes_id}")
+                    
+                    # Add products to package
+                    for i, product_id in enumerate(created_pdf_product_ids[:3]):
+                        product_data = {"product_id": product_id, "quantity": i + 1}
+                        success, response = self.run_test(
+                            f"Add Product {i+1} to Package",
+                            "POST",
+                            f"packages/{package_with_notes_id}/products",
+                            200,
+                            data=product_data
+                        )
+                        if success:
+                            self.log_test(f"Product {i+1} Added to Package", True, f"Product ID: {product_id}")
+                        else:
+                            self.log_test(f"Product {i+1} Added to Package", False, "Failed to add product")
+                else:
+                    self.log_test("Package with Notes Creation", False, "No package ID returned")
+            except Exception as e:
+                self.log_test("Package with Notes Creation", False, f"Error parsing: {e}")
+
+        # Create a package without notes
+        package_without_notes = {
+            "name": "Güneş Enerjisi Paketi - Notsuz Test",
+            "description": "Basit güneş enerjisi sistemi paketi",
+            "sale_price": 15000.00,
+            "discount_percentage": 5.0,
+            "labor_cost": 1000.0
+            # notes field intentionally omitted
+        }
+        
+        success, response = self.run_test(
+            "Create Package without Notes",
+            "POST",
+            "packages",
+            200,
+            data=package_without_notes
+        )
+        
+        package_without_notes_id = None
+        if success and response:
+            try:
+                package_response = response.json()
+                package_without_notes_id = package_response.get('id')
+                if package_without_notes_id:
+                    self.log_test("Package without Notes Created", True, f"ID: {package_without_notes_id}")
+                    
+                    # Add products to package
+                    for i, product_id in enumerate(created_pdf_product_ids[1:3]):
+                        product_data = {"product_id": product_id, "quantity": 2}
+                        success, response = self.run_test(
+                            f"Add Product {i+1} to Package (No Notes)",
+                            "POST",
+                            f"packages/{package_without_notes_id}/products",
+                            200,
+                            data=product_data
+                        )
+                        if success:
+                            self.log_test(f"Product {i+1} Added to Package (No Notes)", True, f"Product ID: {product_id}")
+                        else:
+                            self.log_test(f"Product {i+1} Added to Package (No Notes)", False, "Failed to add product")
+                else:
+                    self.log_test("Package without Notes Creation", False, "No package ID returned")
+            except Exception as e:
+                self.log_test("Package without Notes Creation", False, f"Error parsing: {e}")
+
+        # Step 6: Test Package PDF Generation
+        print("\n🔍 Testing Package PDF Generation...")
+        
+        package_test_cases = [
+            (package_with_notes_id, "Package with Notes", "pdf-with-prices"),
+            (package_with_notes_id, "Package with Notes", "pdf-without-prices"),
+            (package_without_notes_id, "Package without Notes", "pdf-with-prices"),
+            (package_without_notes_id, "Package without Notes", "pdf-without-prices")
+        ]
+        
+        for package_id, test_name, pdf_type in package_test_cases:
+            if package_id:
+                try:
+                    pdf_url = f"{self.base_url}/packages/{package_id}/{pdf_type}"
+                    headers = {'Accept': 'application/pdf'}
+                    pdf_response = requests.get(pdf_url, headers=headers, timeout=30)
+                    
+                    if pdf_response.status_code == 200:
+                        content_type = pdf_response.headers.get('content-type', '')
+                        if 'application/pdf' in content_type:
+                            pdf_size = len(pdf_response.content)
+                            self.log_test(f"{test_name} {pdf_type.upper()} PDF Generation", True, f"PDF generated ({pdf_size} bytes)")
+                            
+                            # Check PDF format
+                            if pdf_response.content.startswith(b'%PDF'):
+                                self.log_test(f"{test_name} {pdf_type.upper()} PDF Format", True, "Valid PDF format")
+                            else:
+                                self.log_test(f"{test_name} {pdf_type.upper()} PDF Format", False, "Invalid PDF format")
+                        else:
+                            self.log_test(f"{test_name} {pdf_type.upper()} PDF Generation", False, f"Wrong content type: {content_type}")
+                    else:
+                        self.log_test(f"{test_name} {pdf_type.upper()} PDF Generation", False, f"HTTP {pdf_response.status_code}")
+                        
+                except Exception as e:
+                    self.log_test(f"{test_name} {pdf_type.upper()} PDF Generation", False, f"Error: {e}")
+
+        # Step 7: Test Font Error Fixes
+        print("\n🔍 Testing Font Error Fixes...")
+        
+        # Test that the font-related errors mentioned in the review request are fixed
+        # by attempting to generate PDFs and checking for specific error patterns
+        
+        if quote_with_notes_id:
+            try:
+                # Test multiple rapid PDF generations to check for font errors
+                for i in range(3):
+                    pdf_url = f"{self.base_url}/quotes/{quote_with_notes_id}/pdf"
+                    pdf_response = requests.get(pdf_url, timeout=30)
+                    
+                    if pdf_response.status_code == 200:
+                        self.log_test(f"Font Error Fix Test {i+1}", True, "No font-related errors")
+                    else:
+                        error_text = pdf_response.text.lower()
+                        if "get_font_name() got an unexpected keyword argument 'bold'" in error_text:
+                            self.log_test(f"Font Error Fix Test {i+1}", False, "Font bold argument error still present")
+                        elif "'nonetype' object has no attribute 'strip'" in error_text:
+                            self.log_test(f"Font Error Fix Test {i+1}", False, "NoneType strip error still present")
+                        else:
+                            self.log_test(f"Font Error Fix Test {i+1}", False, f"Other error: {pdf_response.status_code}")
+                            
+            except Exception as e:
+                self.log_test("Font Error Fix Test", False, f"Error during font test: {e}")
+
+        print(f"\n✅ PDF Generation with Notes Test Summary:")
+        print(f"   - Tested quote PDF generation with Turkish notes")
+        print(f"   - Tested quote PDF generation without notes")
+        print(f"   - Tested quote PDF generation with empty notes")
+        print(f"   - Tested quote PDF generation with very long notes")
+        print(f"   - Tested package PDF generation with notes (both with-prices and without-prices)")
+        print(f"   - Tested package PDF generation without notes")
+        print(f"   - Verified font error fixes (bold argument and NoneType strip errors)")
+        print(f"   - Tested Turkish character support in notes")
+        print(f"   - Verified PDF format validation and content-type headers")
+        
+        return True
+
     def test_quote_functionality_after_rounding_removal(self):
         """Test quote functionality after removing 'Üzerine Tamamla' (rounding) feature"""
         print("\n🔍 Testing Quote Functionality After Rounding Feature Removal...")
