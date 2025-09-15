@@ -1992,7 +1992,7 @@ class PDFQuoteGenerator:
                 'NotesHeader',
                 parent=self.styles['Normal'],
                 fontSize=9,
-                fontName=self.get_font_name(bold=True),
+                fontName=self.get_font_name(is_bold=True),  # bold -> is_bold
                 spaceAfter=6,
                 leftIndent=20
             )
