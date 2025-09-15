@@ -8032,6 +8032,278 @@ class KaravanAPITester:
         
         return True
 
+    def test_package_update_with_discount_and_labor_cost(self):
+        """Test package update functionality with discount and labor cost - Debug Review Request"""
+        print("\n🔍 Testing Package Update with Discount and Labor Cost...")
+        
+        # Step 1: Get all packages to find "Motokaravan - Kopya"
+        print("\n🔍 Finding 'Motokaravan - Kopya' package...")
+        success, response = self.run_test(
+            "Get All Packages",
+            "GET",
+            "packages",
+            200
+        )
+        
+        target_package_id = None
+        target_package_name = "Motokaravan - Kopya"
+        
+        if success and response:
+            try:
+                packages = response.json()
+                if isinstance(packages, list):
+                    self.log_test("Packages List Format", True, f"Found {len(packages)} packages")
+                    
+                    # Find the target package
+                    for package in packages:
+                        if package.get('name') == target_package_name:
+                            target_package_id = package.get('id')
+                            self.log_test(f"Found Target Package", True, f"'{target_package_name}' ID: {target_package_id}")
+                            break
+                    
+                    if not target_package_id:
+                        # List all available packages for debugging
+                        package_names = [p.get('name', 'Unknown') for p in packages]
+                        self.log_test(f"Target Package Not Found", False, f"Available packages: {package_names}")
+                        
+                        # Use the first available package for testing if target not found
+                        if packages:
+                            target_package_id = packages[0].get('id')
+                            target_package_name = packages[0].get('name', 'Unknown')
+                            self.log_test(f"Using Alternative Package", True, f"'{target_package_name}' ID: {target_package_id}")
+                else:
+                    self.log_test("Packages List Format", False, "Response is not a list")
+                    return False
+            except Exception as e:
+                self.log_test("Packages List Parsing", False, f"Error: {e}")
+                return False
+        else:
+            self.log_test("Get Packages Failed", False, "Cannot proceed with package update test")
+            return False
+        
+        if not target_package_id:
+            self.log_test("No Package Available", False, "Cannot test package update without a package")
+            return False
+        
+        # Step 2: Get current package details
+        print(f"\n🔍 Getting current details for package '{target_package_name}'...")
+        success, response = self.run_test(
+            f"Get Package Details - {target_package_name}",
+            "GET",
+            f"packages/{target_package_id}",
+            200
+        )
+        
+        current_package = None
+        if success and response:
+            try:
+                current_package = response.json()
+                current_discount = current_package.get('discount_percentage', 0)
+                current_sale_price = current_package.get('sale_price')
+                
+                self.log_test("Current Package Details", True, 
+                    f"Discount: {current_discount}%, Sale Price: {current_sale_price}")
+                
+                # Check if package has products
+                products = current_package.get('products', [])
+                self.log_test("Package Products", True, f"Contains {len(products)} products")
+                
+            except Exception as e:
+                self.log_test("Package Details Parsing", False, f"Error: {e}")
+                return False
+        else:
+            self.log_test("Get Package Details Failed", False, "Cannot get current package state")
+            return False
+        
+        # Step 3: Test Package Update with Discount (15.0%)
+        print(f"\n🔍 Testing Package Update with discount_percentage = 15.0...")
+        
+        update_data_discount = {
+            "name": current_package.get('name'),
+            "description": current_package.get('description'),
+            "sale_price": current_package.get('sale_price'),
+            "discount_percentage": 15.0,  # Set discount to 15%
+            "image_url": current_package.get('image_url'),
+            "is_pinned": current_package.get('is_pinned', False)
+        }
+        
+        success, response = self.run_test(
+            f"Update Package with Discount - {target_package_name}",
+            "PUT",
+            f"packages/{target_package_id}",
+            200,
+            data=update_data_discount
+        )
+        
+        if success and response:
+            try:
+                updated_package = response.json()
+                updated_discount = updated_package.get('discount_percentage', 0)
+                
+                if updated_discount == 15.0:
+                    self.log_test("Discount Update Success", True, f"Discount updated to {updated_discount}%")
+                else:
+                    self.log_test("Discount Update Failed", False, f"Expected 15.0%, got {updated_discount}%")
+                    
+            except Exception as e:
+                self.log_test("Discount Update Response", False, f"Error parsing: {e}")
+        else:
+            # Capture the exact error message
+            if response:
+                try:
+                    error_data = response.json()
+                    error_detail = error_data.get('detail', 'Unknown error')
+                    self.log_test("Package Update Error Captured", False, f"Error: {error_detail}")
+                    
+                    # Check if it's the "paket güncellenemedi" error
+                    if "paket güncellenemedi" in error_detail.lower():
+                        self.log_test("Turkish Error Message Confirmed", True, f"Got expected error: {error_detail}")
+                except:
+                    self.log_test("Package Update Error", False, f"HTTP {response.status_code}: {response.text[:200]}")
+            else:
+                self.log_test("Package Update Failed", False, "No response received")
+        
+        # Step 4: Test Package Update with Labor Cost (this should fail as labor_cost is not in PackageCreate model)
+        print(f"\n🔍 Testing Package Update with labor_cost field...")
+        
+        update_data_labor = {
+            "name": current_package.get('name'),
+            "description": current_package.get('description'),
+            "sale_price": current_package.get('sale_price'),
+            "discount_percentage": current_package.get('discount_percentage', 0),
+            "labor_cost": 500.0,  # Try to add labor cost
+            "image_url": current_package.get('image_url'),
+            "is_pinned": current_package.get('is_pinned', False)
+        }
+        
+        success, response = self.run_test(
+            f"Update Package with Labor Cost - {target_package_name}",
+            "PUT",
+            f"packages/{target_package_id}",
+            422,  # Expecting validation error since labor_cost is not in PackageCreate model
+            data=update_data_labor
+        )
+        
+        if not success and response:
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', 'Unknown error')
+                
+                # Check if it's a validation error about unknown field
+                if isinstance(error_detail, list) and any('labor_cost' in str(err) for err in error_detail):
+                    self.log_test("Labor Cost Field Validation", True, f"Expected validation error: {error_detail}")
+                elif "labor_cost" in str(error_detail):
+                    self.log_test("Labor Cost Field Validation", True, f"Field not supported: {error_detail}")
+                else:
+                    self.log_test("Labor Cost Field Error", False, f"Unexpected error: {error_detail}")
+                    
+            except Exception as e:
+                self.log_test("Labor Cost Error Parsing", False, f"Error: {e}")
+        elif success:
+            # If it succeeded, check if labor_cost was actually saved (it shouldn't be)
+            try:
+                updated_package = response.json()
+                if 'labor_cost' in updated_package:
+                    self.log_test("Labor Cost Field Support", False, "labor_cost field unexpectedly supported")
+                else:
+                    self.log_test("Labor Cost Field Ignored", True, "labor_cost field ignored as expected")
+            except Exception as e:
+                self.log_test("Labor Cost Response Check", False, f"Error: {e}")
+        
+        # Step 5: Debug Backend Package Update Endpoint Structure
+        print(f"\n🔍 Debugging Backend Package Update Endpoint Structure...")
+        
+        # Test with minimal valid data
+        minimal_update = {
+            "name": current_package.get('name', 'Test Package'),
+            "discount_percentage": 10.0
+        }
+        
+        success, response = self.run_test(
+            f"Minimal Package Update Test - {target_package_name}",
+            "PUT",
+            f"packages/{target_package_id}",
+            200,
+            data=minimal_update
+        )
+        
+        if success and response:
+            try:
+                updated_package = response.json()
+                supported_fields = list(updated_package.keys())
+                self.log_test("Package Model Fields", True, f"Supported fields: {supported_fields}")
+                
+                # Check specifically for discount_percentage and labor_cost
+                has_discount = 'discount_percentage' in supported_fields
+                has_labor_cost = 'labor_cost' in supported_fields
+                
+                self.log_test("Discount Percentage Field", has_discount, f"discount_percentage supported: {has_discount}")
+                self.log_test("Labor Cost Field", has_labor_cost, f"labor_cost supported: {has_labor_cost}")
+                
+            except Exception as e:
+                self.log_test("Package Fields Analysis", False, f"Error: {e}")
+        
+        # Step 6: Test Error Response Analysis
+        print(f"\n🔍 Testing Error Response Analysis...")
+        
+        # Test with invalid package ID
+        success, response = self.run_test(
+            "Invalid Package ID Update",
+            "PUT",
+            "packages/invalid-package-id-12345",
+            404,
+            data=minimal_update
+        )
+        
+        if not success and response:
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', 'Unknown error')
+                
+                if "paket bulunamadı" in error_detail.lower():
+                    self.log_test("Package Not Found Error", True, f"Correct Turkish error: {error_detail}")
+                else:
+                    self.log_test("Package Not Found Error", False, f"Unexpected error: {error_detail}")
+                    
+            except Exception as e:
+                self.log_test("Error Response Analysis", False, f"Error: {e}")
+        
+        # Step 7: Check Backend Logs (if accessible)
+        print(f"\n🔍 Checking Backend Logs for Package Update Errors...")
+        
+        try:
+            # Try to get backend logs
+            import subprocess
+            result = subprocess.run(['tail', '-n', '20', '/var/log/supervisor/backend.err.log'], 
+                                  capture_output=True, text=True, timeout=5)
+            
+            if result.returncode == 0 and result.stdout:
+                log_lines = result.stdout.strip().split('\n')
+                package_errors = [line for line in log_lines if 'package' in line.lower() or 'paket' in line.lower()]
+                
+                if package_errors:
+                    self.log_test("Backend Package Errors Found", True, f"Found {len(package_errors)} package-related log entries")
+                    for i, error in enumerate(package_errors[-3:]):  # Show last 3 errors
+                        self.log_test(f"Package Error {i+1}", True, f"Log: {error[:100]}...")
+                else:
+                    self.log_test("Backend Package Errors", True, "No recent package errors in logs")
+            else:
+                self.log_test("Backend Logs Access", False, "Cannot access backend logs")
+                
+        except Exception as e:
+            self.log_test("Backend Logs Check", False, f"Error accessing logs: {e}")
+        
+        # Summary
+        print(f"\n✅ Package Update Debug Test Summary:")
+        print(f"   - Target Package: '{target_package_name}' (ID: {target_package_id})")
+        print(f"   - Tested discount_percentage field update (should work)")
+        print(f"   - Tested labor_cost field update (should fail - not in model)")
+        print(f"   - Analyzed Package model structure and supported fields")
+        print(f"   - Captured error messages for debugging")
+        print(f"   - Checked backend logs for additional error information")
+        
+        return True
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
