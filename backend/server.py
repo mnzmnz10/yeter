@@ -2360,45 +2360,15 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         
         return table
     
-    async def _create_package_products_table_with_groups(self, products, include_prices=True):
+    def _create_package_products_table_with_groups(self, products, include_prices=True, categories=None, category_groups=None):
         """Paket ürünleri tablosu - kategori grupları ile organize edilmiş"""
         from reportlab.platypus import Table as PDFTable
-        import asyncio
-        import threading
         
-        # Kategorileri ve kategori gruplarını getir - thread-safe approach
-        categories = []
-        category_groups = []
-        
-        def run_async_in_thread():
-            async def get_data():
-                cats = await db.categories.find().to_list(None)
-                groups = await db.category_groups.find().to_list(None)
-                return cats, groups
-            
-            # Create new event loop for this thread
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                return loop.run_until_complete(get_data())
-            finally:
-                loop.close()
-        
-        # Run in separate thread to avoid event loop conflicts
-        result_container = []
-        
-        def thread_target():
-            result_container.extend(run_async_in_thread())
-        
-        thread = threading.Thread(target=thread_target)
-        thread.start()
-        thread.join()
-        
-        if len(result_container) >= 2:
-            categories, category_groups = result_container[0], result_container[1]
-        else:
-            # Fallback to empty lists if database access fails
-            categories, category_groups = [], []
+        # Kategorileri ve kategori gruplarını kullan (parametre olarak geçildi)
+        if categories is None:
+            categories = []
+        if category_groups is None:
+            category_groups = []
         
         # Kategori grup haritası oluştur
         category_to_group = {}
