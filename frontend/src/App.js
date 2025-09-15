@@ -3636,11 +3636,26 @@ function App() {
                       groupedProducts[categoryId].push(product);
                     });
 
-                    // Sort categories: show categorized products first, then uncategorized
+                    // Sort categories by sort_order (same as category management), then uncategorized last
                     const sortedGroups = Object.entries(groupedProducts).sort(([a], [b]) => {
                       if (a === 'uncategorized') return 1;
                       if (b === 'uncategorized') return -1;
-                      return 0;
+                      
+                      // Sort by category sort_order
+                      const categoryA = categories.find(c => c.id === a);
+                      const categoryB = categories.find(c => c.id === b);
+                      
+                      const sortOrderA = categoryA?.sort_order || 0;
+                      const sortOrderB = categoryB?.sort_order || 0;
+                      
+                      if (sortOrderA !== sortOrderB) {
+                        return sortOrderA - sortOrderB;
+                      }
+                      
+                      // If same sort_order, sort alphabetically
+                      const nameA = categoryA?.name || '';
+                      const nameB = categoryB?.name || '';
+                      return nameA.localeCompare(nameB);
                     });
 
                     return sortedGroups.map(([categoryId, categoryProducts], index) => {
