@@ -2351,6 +2351,156 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         
         return table
     
+    async def _create_package_products_table_with_groups(self, products, include_prices=True):
+        """Paket ürünleri tablosu - kategori grupları ile organize edilmiş"""
+        from reportlab.platypus import Table as PDFTable
+        
+        # Kategorileri ve kategori gruplarını getir
+        categories = await db.categories.find().to_list(None)
+        category_groups = await db.category_groups.find().to_list(None)
+        
+        # Kategori grup haritası oluştur
+        category_to_group = {}
+        for group in category_groups:
+            for cat_id in group.get("category_ids", []):
+                category_to_group[cat_id] = group.get("name", "")
+        
+        # Ürünleri kategori gruplarına göre grupla
+        grouped_products = {}
+        for product in products:
+            category_id = product.get('category_id')
+            category = next((c for c in categories if c.get('id') == category_id), None)
+            
+            # Kategori grubunu belirle
+            if category_id and category_id in category_to_group:
+                group_name = category_to_group[category_id]
+            elif category:
+                group_name = category.get('name', 'Diğer')
+            else:
+                group_name = 'Kategorisiz'
+            
+            if group_name not in grouped_products:
+                grouped_products[group_name] = []
+            grouped_products[group_name].append(product)
+        
+        # Tablo başlıkları
+        if include_prices:
+            headers = ["Ürün Adı", "Adet", "Birim Fiyat", "Toplam"]
+            col_widths = [8*cm, 2*cm, 3*cm, 3*cm]
+        else:
+            headers = ["Ürün Adı", "Adet"]
+            col_widths = [12*cm, 3*cm]
+        
+        # Header row
+        header_row = []
+        for header in headers:
+            header_row.append(Paragraph(f"<b>{header}</b>", self.header_style))
+        
+        table_data = [header_row]
+        
+        # Grup başlıklarını ve ürünleri ekle
+        for group_name, group_products in grouped_products.items():
+            # Grup başlığı satırı - küçültülmüş font
+            group_header_style = ParagraphStyle(
+                'GroupHeader',
+                parent=self.styles['Normal'],
+                fontName=self.get_font_name(is_bold=True),
+                fontSize=7,  # Daha küçük font
+                alignment=TA_LEFT,
+                textColor=colors.HexColor('#2F4B68'),
+                leftIndent=5
+            )
+            
+            if include_prices:
+                group_row = [
+                    Paragraph(f"<b>{group_name}</b>", group_header_style),
+                    Paragraph("", group_header_style),
+                    Paragraph("", group_header_style),
+                    Paragraph("", group_header_style)
+                ]
+            else:
+                group_row = [
+                    Paragraph(f"<b>{group_name}</b>", group_header_style),
+                    Paragraph("", group_header_style)
+                ]
+            
+            table_data.append(group_row)
+            
+            # Grup içindeki ürünler - çok küçültülmüş font
+            small_data_style = ParagraphStyle(
+                'SmallData',
+                parent=self.styles['Normal'],
+                fontName=self.get_font_name(),
+                fontSize=6,  # Yarıdan da küçük (9'dan 6'ya)
+                alignment=TA_LEFT,
+                leftIndent=10
+            )
+            
+            for product in group_products:
+                quantity = product.get('quantity', 1)
+                product_name = product.get('name', '')
+                
+                if include_prices:
+                    unit_price = float(product.get('list_price_try', 0))
+                    line_total = unit_price * quantity
+                    
+                    row = [
+                        Paragraph(f"• {product_name}", small_data_style),
+                        Paragraph(str(quantity), small_data_style),
+                        Paragraph(f"₺ {self._format_price_modern(unit_price)}", small_data_style),
+                        Paragraph(f"₺ {self._format_price_modern(line_total)}", small_data_style)
+                    ]
+                else:
+                    row = [
+                        Paragraph(f"• {product_name}", small_data_style),
+                        Paragraph(str(quantity), small_data_style)
+                    ]
+                
+                table_data.append(row)
+        
+        # Tablo oluştur
+        table = PDFTable(table_data, colWidths=col_widths, repeatRows=1)
+        
+        # Tablo stili
+        styles_list = [
+            # Header stili
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2F4B68')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), self.get_font_name(is_bold=True)),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),  # Header da küçültüldü
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),  # Padding küçültüldü
+            ('TOPPADDING', (0, 0), (-1, 0), 8),
+            
+            # Veri stili
+            ('FONTNAME', (0, 1), (-1, -1), self.get_font_name()),
+            ('FONTSIZE', (0, 1), (-1, -1), 6),  # Çok küçültüldü
+            ('ALIGN', (0, 1), (0, -1), 'LEFT'),  # Ürün adları sola hizalı
+            ('ALIGN', (1, 1), (-1, -1), 'CENTER'),  # Diğer kolonlar orta hizalı
+            ('LEFTPADDING', (0, 1), (0, -1), 4),  # Padding küçültüldü
+            ('RIGHTPADDING', (-1, 1), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 3),
+            ('TOPPADDING', (0, 1), (-1, -1), 3),
+            
+            # Kenarlık ve zemin
+            ('GRID', (0, 0), (-1, -1), 0.3, colors.HexColor('#E2E8F0')),  # İnce kenarlık
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F9FAFB')])
+        ]
+        
+        # Grup başlıkları için özel stil ekle
+        row_idx = 1  # Header'dan sonra
+        for group_name, group_products in grouped_products.items():
+            # Grup başlığı satırı için özel background
+            styles_list.append(('BACKGROUND', (0, row_idx), (-1, row_idx), colors.HexColor('#EDF2F7')))
+            styles_list.append(('FONTSIZE', (0, row_idx), (-1, row_idx), 7))
+            row_idx += 1  # Grup başlığı
+            row_idx += len(group_products)  # Grup ürünleri
+        
+        table.setStyle(TableStyle(styles_list))
+        
+        return table
+    
     def _create_package_totals_section(self, amount, label):
         """Paket toplam bölümü"""
         from reportlab.platypus import Table as PDFTable
