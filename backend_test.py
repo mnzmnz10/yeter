@@ -8773,39 +8773,39 @@ class KaravanAPITester:
         return True
 
 def main():
-    """Main test runner - Focus on FAMILY 3500 Package Testing"""
-    print("🚀 Starting FAMILY 3500 Package Testing")
+    """Main test runner - Focus on Ergün Bey Package Category Group Debug"""
+    print("🚀 Starting Ergün Bey Package Category Group Debug")
     print("=" * 80)
     
     tester = KaravanAPITester()
     
     try:
-        # Test FAMILY 3500 Package functionality (as requested)
-        print("\n🔍 Running FAMILY 3500 Package Tests...")
-        family_success = tester.test_family_3500_package_functionality()
+        # Test Ergün Bey Package category group issue (as requested)
+        print("\n🔍 Running Ergün Bey Package Debug...")
+        debug_success = tester.test_ergun_bey_package_debug()
         
         # Also test root endpoint to verify basic connectivity
         print("\n🔍 Running Basic Connectivity Test...")
         root_success = tester.test_root_endpoint()
         
         # Clean up test data
-        tester.cleanup_test_data()
+        tester.cleanup()
         
         # Print final summary
         print(f"\n" + "=" * 80)
-        print(f"📊 FAMILY 3500 PACKAGE TESTING SUMMARY")
+        print(f"📊 ERGÜN BEY PACKAGE DEBUG SUMMARY")
         print(f"=" * 80)
         print(f"Total Tests Run: {tester.tests_run}")
         print(f"Tests Passed: {tester.tests_passed}")
         print(f"Tests Failed: {tester.tests_run - tester.tests_passed}")
         print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%" if tester.tests_run > 0 else "No tests run")
         
-        overall_success = family_success and root_success
+        overall_success = debug_success and root_success
         
         if overall_success:
-            print(f"✅ FAMILY 3500 PACKAGE TESTING COMPLETED SUCCESSFULLY")
+            print(f"✅ ERGÜN BEY PACKAGE DEBUG COMPLETED SUCCESSFULLY")
         else:
-            print(f"❌ FAMILY 3500 PACKAGE TESTING COMPLETED WITH ISSUES")
+            print(f"❌ ERGÜN BEY PACKAGE DEBUG COMPLETED WITH ISSUES")
             
         return 0 if overall_success else 1
         
