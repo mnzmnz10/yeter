@@ -3980,27 +3980,34 @@ async def get_products(
                     {"brand": {"$regex": f"^{search}", "$options": "i"}}
                 ]
         
-        # FAVORI ÜRÜNLER ÖNCELİKLİ SIRALAMA: Favori ürünler her zaman en üstte
-        if category_id:
-            # Kategori filtrelendiğinde: Favoriler önce, sonra alfabetik
-            sort_criteria = [("is_favorite", -1), ("name", 1)]
-        else:
-            # Genel listede: Favoriler önce, sonra alfabetik
-            sort_criteria = [("is_favorite", -1), ("name", 1)]
+        # FAVORI ÜRÜNLER ÖNCELİKLİ SIRALAMA: Aggregate ile güçlü sıralama
+        pipeline = []
         
-        # For backward compatibility - if skip_pagination is true, return all
-        if skip_pagination:
-            # For large datasets, still apply reasonable limits
-            max_limit = 5000
-            # FORCED SORTING: Favoriler önce gelsin diye explicit sort
-            products = await db.products.find(query).sort(sort_criteria).limit(max_limit).to_list(max_limit)
-        else:
-            # Enhanced pagination with performance optimizations
+        # Match stage - filtering
+        if query:
+            pipeline.append({"$match": query})
+        
+        # Sort stage - FAVORİLER ÖNCE! 
+        pipeline.append({
+            "$sort": {
+                "is_favorite": -1,  # True (-1) önce, False (0) sonra
+                "name": 1           # Sonra alfabetik
+            }
+        })
+        
+        # Pagination
+        if not skip_pagination:
             skip = (page - 1) * limit
-            
-            # FORCED SORTING: Index hint olmadan da favoriler önce gelsin 
-            cursor = db.products.find(query).sort(sort_criteria).skip(skip).limit(limit)
-            products = await cursor.to_list(limit)
+            pipeline.extend([
+                {"$skip": skip},
+                {"$limit": limit}
+            ])
+        else:
+            pipeline.append({"$limit": 5000})  # Max limit
+        
+        # Execute aggregation pipeline
+        cursor = db.products.aggregate(pipeline)
+        products = await cursor.to_list(None)
         
         # Create response with cache headers for better performance
         response_data = [Product(**product).dict() for product in products]
