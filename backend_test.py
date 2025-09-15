@@ -7442,6 +7442,297 @@ class KaravanAPITester:
         
         return True
 
+    def test_ergun_bey_package_category_groups_comprehensive(self):
+        """Comprehensive test for Ergün Bey Package Category Group Issue in PDF Generation"""
+        print("\n🔍 Testing Ergün Bey Package Category Groups in PDF Generation...")
+        
+        # Step 1: Find the Ergün Bey package
+        print("\n🔍 Step 1: Finding Ergün Bey Package...")
+        success, response = self.run_test(
+            "Get All Packages",
+            "GET",
+            "packages",
+            200
+        )
+        
+        ergun_bey_package = None
+        if success and response:
+            try:
+                packages = response.json()
+                if isinstance(packages, list):
+                    # Look for Ergün Bey package
+                    for package in packages:
+                        if 'ergün' in package.get('name', '').lower() or 'ergun' in package.get('name', '').lower():
+                            ergun_bey_package = package
+                            break
+                    
+                    if ergun_bey_package:
+                        package_id = ergun_bey_package.get('id')
+                        package_name = ergun_bey_package.get('name')
+                        self.log_test("Ergün Bey Package Found", True, f"Package: {package_name} (ID: {package_id})")
+                    else:
+                        self.log_test("Ergün Bey Package Found", False, f"Package not found in {len(packages)} packages")
+                        return False
+                else:
+                    self.log_test("Packages List Format", False, "Response is not a list")
+                    return False
+            except Exception as e:
+                self.log_test("Packages List Parsing", False, f"Error: {e}")
+                return False
+        else:
+            self.log_test("Get Packages", False, "Failed to get packages list")
+            return False
+        
+        package_id = ergun_bey_package.get('id')
+        
+        # Step 2: Get package details with products
+        print(f"\n🔍 Step 2: Getting Package Details for {ergun_bey_package.get('name')}...")
+        success, response = self.run_test(
+            "Get Package with Products",
+            "GET",
+            f"packages/{package_id}",
+            200
+        )
+        
+        package_products = []
+        if success and response:
+            try:
+                package_data = response.json()
+                package_products = package_data.get('products', [])
+                supplies = package_data.get('supplies', [])
+                
+                self.log_test("Package Structure Verification", True, f"Found {len(package_products)} products and {len(supplies)} supplies")
+                
+                # Check if products have category assignments
+                categorized_products = 0
+                uncategorized_products = 0
+                category_breakdown = {}
+                
+                for product in package_products:
+                    category_id = product.get('category_id')
+                    if category_id and category_id != 'null' and category_id != '':
+                        categorized_products += 1
+                        category_name = product.get('category_name', 'Unknown Category')
+                        category_breakdown[category_name] = category_breakdown.get(category_name, 0) + 1
+                    else:
+                        uncategorized_products += 1
+                
+                if uncategorized_products == 0:
+                    self.log_test("Product Category Assignment", True, f"All {len(package_products)} products have categories assigned")
+                    self.log_test("Category Breakdown", True, f"Categories: {category_breakdown}")
+                else:
+                    self.log_test("Product Category Assignment", False, f"{uncategorized_products} products without categories, {categorized_products} with categories")
+                
+            except Exception as e:
+                self.log_test("Package Details Parsing", False, f"Error: {e}")
+                return False
+        else:
+            self.log_test("Get Package Details", False, "Failed to get package details")
+            return False
+        
+        # Step 3: Verify Category Groups System
+        print("\n🔍 Step 3: Verifying Category Groups System...")
+        success, response = self.run_test(
+            "Get Category Groups",
+            "GET",
+            "category-groups",
+            200
+        )
+        
+        category_groups = []
+        if success and response:
+            try:
+                groups_data = response.json()
+                if isinstance(groups_data, list):
+                    category_groups = groups_data
+                    self.log_test("Category Groups Found", True, f"Found {len(category_groups)} category groups")
+                    
+                    # Look for Enerji Grubu specifically
+                    enerji_grubu = None
+                    for group in category_groups:
+                        if 'enerji' in group.get('name', '').lower():
+                            enerji_grubu = group
+                            break
+                    
+                    if enerji_grubu:
+                        group_categories = enerji_grubu.get('category_ids', [])
+                        self.log_test("Enerji Grubu Found", True, f"Contains {len(group_categories)} categories")
+                    else:
+                        self.log_test("Enerji Grubu Found", False, "Enerji Grubu category group not found")
+                        
+                else:
+                    self.log_test("Category Groups Format", False, "Response is not a list")
+            except Exception as e:
+                self.log_test("Category Groups Parsing", False, f"Error: {e}")
+        
+        # Step 4: Test PDF Generation with Prices
+        print(f"\n🔍 Step 4: Testing PDF Generation WITH Prices for {ergun_bey_package.get('name')}...")
+        try:
+            pdf_url = f"{self.base_url}/packages/{package_id}/pdf-with-prices"
+            headers = {'Accept': 'application/pdf'}
+            
+            pdf_response = requests.get(pdf_url, headers=headers, timeout=60)
+            
+            if pdf_response.status_code == 200:
+                content_type = pdf_response.headers.get('content-type', '')
+                content_length = len(pdf_response.content)
+                
+                if 'application/pdf' in content_type and content_length > 1000:
+                    self.log_test("PDF with Prices Generation", True, f"Generated PDF: {content_length} bytes")
+                    
+                    # Check if PDF content is valid
+                    if pdf_response.content.startswith(b'%PDF'):
+                        self.log_test("PDF with Prices Format", True, "Valid PDF format")
+                    else:
+                        self.log_test("PDF with Prices Format", False, "Invalid PDF format")
+                else:
+                    self.log_test("PDF with Prices Generation", False, f"Invalid content type: {content_type}, size: {content_length}")
+            else:
+                self.log_test("PDF with Prices Generation", False, f"HTTP {pdf_response.status_code}: {pdf_response.text[:200]}")
+                
+        except Exception as e:
+            self.log_test("PDF with Prices Generation", False, f"Error: {e}")
+        
+        # Step 5: Test PDF Generation without Prices
+        print(f"\n🔍 Step 5: Testing PDF Generation WITHOUT Prices for {ergun_bey_package.get('name')}...")
+        try:
+            pdf_url = f"{self.base_url}/packages/{package_id}/pdf-without-prices"
+            headers = {'Accept': 'application/pdf'}
+            
+            pdf_response = requests.get(pdf_url, headers=headers, timeout=60)
+            
+            if pdf_response.status_code == 200:
+                content_type = pdf_response.headers.get('content-type', '')
+                content_length = len(pdf_response.content)
+                
+                if 'application/pdf' in content_type and content_length > 1000:
+                    self.log_test("PDF without Prices Generation", True, f"Generated PDF: {content_length} bytes")
+                    
+                    # Check if PDF content is valid
+                    if pdf_response.content.startswith(b'%PDF'):
+                        self.log_test("PDF without Prices Format", True, "Valid PDF format")
+                    else:
+                        self.log_test("PDF without Prices Format", False, "Invalid PDF format")
+                else:
+                    self.log_test("PDF without Prices Generation", False, f"Invalid content type: {content_type}, size: {content_length}")
+            else:
+                self.log_test("PDF without Prices Generation", False, f"HTTP {pdf_response.status_code}: {pdf_response.text[:200]}")
+                
+        except Exception as e:
+            self.log_test("PDF without Prices Generation", False, f"Error: {e}")
+        
+        # Step 6: Verify Categories System
+        print("\n🔍 Step 6: Verifying Categories System...")
+        success, response = self.run_test(
+            "Get All Categories",
+            "GET",
+            "categories",
+            200
+        )
+        
+        categories = []
+        if success and response:
+            try:
+                categories = response.json()
+                if isinstance(categories, list):
+                    self.log_test("Categories System", True, f"Found {len(categories)} categories")
+                    
+                    # Check for expected categories
+                    expected_categories = ['Akü', 'Güneş Paneli', 'İnverter', 'MPPT Cihazları', 'Sarf Malzemeleri']
+                    found_categories = [cat.get('name') for cat in categories]
+                    
+                    for expected in expected_categories:
+                        if any(expected.lower() in found.lower() for found in found_categories):
+                            self.log_test(f"Category '{expected}' Found", True, "Category exists in system")
+                        else:
+                            self.log_test(f"Category '{expected}' Found", False, "Category missing from system")
+                else:
+                    self.log_test("Categories Format", False, "Response is not a list")
+            except Exception as e:
+                self.log_test("Categories Parsing", False, f"Error: {e}")
+        
+        # Step 7: Test Async Function Performance
+        print("\n🔍 Step 7: Testing Async PDF Generation Performance...")
+        
+        # Test multiple PDF generations to verify async functionality
+        pdf_generation_times = []
+        for i in range(3):
+            try:
+                start_time = time.time()
+                pdf_url = f"{self.base_url}/packages/{package_id}/pdf-with-prices"
+                pdf_response = requests.get(pdf_url, headers={'Accept': 'application/pdf'}, timeout=60)
+                end_time = time.time()
+                
+                generation_time = end_time - start_time
+                pdf_generation_times.append(generation_time)
+                
+                if pdf_response.status_code == 200:
+                    self.log_test(f"Async PDF Generation Test {i+1}", True, f"Generated in {generation_time:.2f}s")
+                else:
+                    self.log_test(f"Async PDF Generation Test {i+1}", False, f"Failed with status {pdf_response.status_code}")
+                    
+            except Exception as e:
+                self.log_test(f"Async PDF Generation Test {i+1}", False, f"Error: {e}")
+        
+        if pdf_generation_times:
+            avg_time = sum(pdf_generation_times) / len(pdf_generation_times)
+            if avg_time < 10:  # Should generate within 10 seconds
+                self.log_test("PDF Generation Performance", True, f"Average generation time: {avg_time:.2f}s")
+            else:
+                self.log_test("PDF Generation Performance", False, f"Slow generation time: {avg_time:.2f}s")
+        
+        # Step 8: Debug Category Group Data Retrieval
+        print("\n🔍 Step 8: Debug Category Group Data Retrieval...")
+        
+        # Test if we can get individual products and their categories
+        if package_products:
+            sample_products = package_products[:5]  # Test first 5 products
+            
+            for i, product in enumerate(sample_products):
+                product_id = product.get('id')
+                product_name = product.get('name', 'Unknown')
+                category_id = product.get('category_id')
+                
+                if product_id:
+                    # Get individual product to verify category assignment
+                    success, response = self.run_test(
+                        f"Get Product {i+1} Category",
+                        "GET",
+                        f"products?search={product_name[:20]}",
+                        200
+                    )
+                    
+                    if success and response:
+                        try:
+                            products_list = response.json()
+                            if isinstance(products_list, list):
+                                found_product = None
+                                for p in products_list:
+                                    if p.get('id') == product_id:
+                                        found_product = p
+                                        break
+                                
+                                if found_product:
+                                    db_category_id = found_product.get('category_id')
+                                    if db_category_id and db_category_id != 'null':
+                                        self.log_test(f"Product {i+1} Category Assignment", True, f"{product_name[:30]}... → Category ID: {db_category_id}")
+                                    else:
+                                        self.log_test(f"Product {i+1} Category Assignment", False, f"{product_name[:30]}... → No category assigned")
+                                else:
+                                    self.log_test(f"Product {i+1} Found", False, f"Product {product_name[:30]}... not found in search")
+                        except Exception as e:
+                            self.log_test(f"Product {i+1} Category Check", False, f"Error: {e}")
+        
+        print(f"\n✅ Ergün Bey Package Category Groups Test Summary:")
+        print(f"   - Verified package exists and contains products")
+        print(f"   - Tested PDF generation with and without prices")
+        print(f"   - Verified category groups system functionality")
+        print(f"   - Checked product category assignments")
+        print(f"   - Tested async PDF generation performance")
+        print(f"   - Debugged category group data retrieval")
+        
+        return True
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
