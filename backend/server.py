@@ -170,6 +170,7 @@ class Category(BaseModel):
     name: str
     description: Optional[str] = None
     color: Optional[str] = None
+    sort_order: int = 0  # Kategori sıralama numarası
     is_deletable: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -177,6 +178,7 @@ class CategoryCreate(BaseModel):
     name: str
     description: Optional[str] = None
     color: Optional[str] = None
+    sort_order: Optional[int] = 0  # Yeni kategori için varsayılan sıra
 
 class CategoryGroup(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
