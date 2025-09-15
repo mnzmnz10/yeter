@@ -3610,7 +3610,14 @@ function App() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Tüm Kategoriler</SelectItem>
-                        {categories.map((category) => (
+                        {categories
+                          .sort((a, b) => {
+                            if (a.sort_order !== b.sort_order) {
+                              return a.sort_order - b.sort_order;
+                            }
+                            return a.name.localeCompare(b.name);
+                          })
+                          .map((category) => (
                           <SelectItem key={category.id} value={category.id}>
                             {category.name}
                           </SelectItem>
