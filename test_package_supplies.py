@@ -50,6 +50,10 @@ def main():
             print("⚠️ Some tests failed. Check the output above for details.")
         
         print("=" * 80)
+        
+        # Return success status for script exit code
+        return tester.tests_passed == tester.tests_run
 
 if __name__ == "__main__":
-    main()
+    success = main()
+    sys.exit(0 if success else 1)
