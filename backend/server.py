@@ -4045,8 +4045,25 @@ async def get_products(
                 basic_query["category_id"] = category_id
             
             skip = (page - 1) * limit if not skip_pagination else 0
-            products = await db.products.find(basic_query).sort([("name", 1)]).skip(skip).limit(limit).to_list(limit)
-            return [Product(**product) for product in products]
+            # IMPORTANT: Use the same sorting as aggregate pipeline - FAVORITES FIRST!
+            products = await db.products.find(basic_query).sort([("is_favorite", -1), ("name", 1)]).skip(skip).limit(limit).to_list(limit)
+            
+            # Convert Decimal fields to float for JSON serialization
+            response_data = []
+            for product in products:
+                # Convert Decimal fields to float
+                if 'list_price' in product and isinstance(product['list_price'], Decimal):
+                    product['list_price'] = float(product['list_price'])
+                if 'discounted_price' in product and isinstance(product['discounted_price'], Decimal):
+                    product['discounted_price'] = float(product['discounted_price'])
+                if 'list_price_try' in product and isinstance(product['list_price_try'], Decimal):
+                    product['list_price_try'] = float(product['list_price_try'])
+                if 'discounted_price_try' in product and isinstance(product['discounted_price_try'], Decimal):
+                    product['discounted_price_try'] = float(product['discounted_price_try'])
+                
+                response_data.append(product)
+            
+            return response_data
         except Exception as fallback_error:
             logger.error(f"Fallback query also failed: {fallback_error}")
             raise HTTPException(status_code=500, detail="Ürünler getirilemedi")
