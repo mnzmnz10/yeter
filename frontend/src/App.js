@@ -480,8 +480,23 @@ function App() {
 
   const loadCategories = async () => {
     try {
+      // PERFORMANCE: Check cache first
+      const cached = CacheManager.get('categories');
+      if (cached) {
+        setCategories(cached);
+        // Kategoriler yüklendikten sonra, bir sonraki rengi otomatik seç
+        setTimeout(() => {
+          const nextColor = getNextCategoryColor();
+          setNewCategoryColor(nextColor);
+        }, 100);
+        return;
+      }
+
       const response = await axios.get(`${API}/categories`);
       setCategories(response.data);
+      
+      // PERFORMANCE: Cache the result
+      CacheManager.set('categories', response.data);
       
       // Kategoriler yüklendikten sonra, bir sonraki rengi otomatik seç
       setTimeout(() => {
