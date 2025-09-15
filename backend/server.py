@@ -2216,7 +2216,7 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         formatted = f"{float(price):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
         return formatted
 
-    def generate_package_pdf(self, package_data, products, include_prices=True):
+    async def generate_package_pdf(self, package_data, products, include_prices=True):
         """Teklif taslağını kullanarak paket PDF'i oluştur"""
         buffer = BytesIO()
         
