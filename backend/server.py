@@ -2351,7 +2351,7 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         
         return table
     
-    def _create_package_products_table_with_groups(self, products, include_prices=True):
+    async def _create_package_products_table_with_groups(self, products, include_prices=True):
         """Paket ürünleri tablosu - kategori grupları ile organize edilmiş"""
         from reportlab.platypus import Table as PDFTable
         import asyncio
