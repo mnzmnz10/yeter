@@ -763,6 +763,68 @@ function App() {
     }
   };
 
+  // Category drag and drop functions
+  const handleCategoryDragStart = (e, categoryId) => {
+    setDraggedCategoryId(categoryId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleCategoryDragOver = (e, categoryId) => {
+    e.preventDefault();
+    setDragOverCategoryId(categoryId);
+  };
+
+  const handleCategoryDragLeave = () => {
+    setDragOverCategoryId(null);
+  };
+
+  const handleCategoryDrop = async (e, targetCategoryId) => {
+    e.preventDefault();
+    setDragOverCategoryId(null);
+    
+    if (!draggedCategoryId || draggedCategoryId === targetCategoryId) {
+      setDraggedCategoryId(null);
+      return;
+    }
+
+    try {
+      // Kategorilerin yeni sırasını hesapla
+      const reorderedCategories = [...categories];
+      const draggedIndex = reorderedCategories.findIndex(c => c.id === draggedCategoryId);
+      const targetIndex = reorderedCategories.findIndex(c => c.id === targetCategoryId);
+      
+      if (draggedIndex === -1 || targetIndex === -1) return;
+      
+      // Kategorileri yeniden sırala
+      const [draggedCategory] = reorderedCategories.splice(draggedIndex, 1);
+      reorderedCategories.splice(targetIndex, 0, draggedCategory);
+      
+      // Her kategoriye yeni sort_order ata
+      const categoryOrders = reorderedCategories.map((category, index) => ({
+        id: category.id,
+        sort_order: index + 1
+      }));
+      
+      // Backend'e gönder
+      const response = await axios.post(`${API}/categories/reorder`, categoryOrders);
+      
+      if (response.data.success) {
+        toast.success('Kategori sıralaması güncellendi');
+        await loadCategories(); // Kategorileri yeniden yükle
+      }
+    } catch (error) {
+      console.error('Error reordering categories:', error);
+      toast.error('Kategori sıralaması güncellenemedi');
+    }
+    
+    setDraggedCategoryId(null);
+  };
+
+  const handleCategoryDragEnd = () => {
+    setDraggedCategoryId(null);
+    setDragOverCategoryId(null);
+  };
+
   const handleSearch = (query) => {
     setSearchQuery(query);
   };
