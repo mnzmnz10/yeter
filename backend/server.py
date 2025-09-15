@@ -1748,6 +1748,22 @@ async def update_quote(quote_id: str, quote_update: Dict[str, Any]):
         if "discount_percentage" in quote_update:
             update_data["discount_percentage"] = float(quote_update["discount_percentage"])
         
+        # Teklif notları güncellenirse
+        if "notes" in quote_update:
+            update_data["notes"] = quote_update["notes"]
+        
+        # Teklif adı güncellenirse
+        if "name" in quote_update:
+            update_data["name"] = quote_update["name"]
+        
+        # Müşteri adı güncellenirse
+        if "customer_name" in quote_update:
+            update_data["customer_name"] = quote_update["customer_name"]
+        
+        # Müşteri e-postası güncellenirse
+        if "customer_email" in quote_update:
+            update_data["customer_email"] = quote_update["customer_email"]
+        
         # Güncelleme zamanını ekle
         update_data["updated_at"] = datetime.utcnow().isoformat() + "Z"
         
