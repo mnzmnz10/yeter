@@ -525,6 +525,9 @@ test_plan:
     - "Quote Editing Functionality - Update Instead of Duplicate Creation"
   test_all: false
   test_priority: "high_first"
+  completed_tests:
+    - "Debug Ergün Bey Package Category Group Issue in PDF Generation"
+    - "Motokaravan - Kopya Package PDF Category Groups Fix"
 
 backend:
   - task: "Excel Currency Detection System"
