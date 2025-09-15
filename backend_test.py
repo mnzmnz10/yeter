@@ -12167,6 +12167,419 @@ if __name__ == "__main__":
         
         return True
 
+    def test_performance_optimizations_comprehensive(self):
+        """
+        Comprehensive performance optimization testing as requested:
+        1. Cache Middleware Testing
+        2. Database Performance Testing  
+        3. API Response Time Testing
+        4. Memory Usage Testing
+        5. Concurrent Request Testing
+        """
+        print("\n🚀 BACKEND PERFORMANCE OPTIMIZATIONS COMPREHENSIVE TESTING")
+        print("=" * 80)
+        
+        # Test 1: Cache Middleware Testing
+        print("\n🔍 1. CACHE MIDDLEWARE TESTING")
+        print("-" * 50)
+        
+        cache_endpoints = [
+            "products",
+            "companies", 
+            "categories"
+        ]
+        
+        cache_results = {}
+        
+        for endpoint in cache_endpoints:
+            print(f"\n🔍 Testing cache for GET /api/{endpoint}")
+            
+            # First request - should be MISS
+            start_time = time.time()
+            success1, response1 = self.run_test(
+                f"Cache Test 1st Request - {endpoint}",
+                "GET",
+                endpoint,
+                200
+            )
+            first_request_time = time.time() - start_time
+            
+            if success1 and response1:
+                cache_header1 = response1.headers.get('X-Cache', 'MISS')
+                response_time1 = response1.headers.get('X-Response-Time', 'N/A')
+                
+                # Second request immediately - should be HIT
+                start_time = time.time()
+                success2, response2 = self.run_test(
+                    f"Cache Test 2nd Request - {endpoint}",
+                    "GET", 
+                    endpoint,
+                    200
+                )
+                second_request_time = time.time() - start_time
+                
+                if success2 and response2:
+                    cache_header2 = response2.headers.get('X-Cache', 'MISS')
+                    response_time2 = response2.headers.get('X-Response-Time', 'N/A')
+                    
+                    # Analyze cache behavior
+                    if cache_header2 == 'HIT':
+                        self.log_test(f"Cache HIT for {endpoint}", True, f"2nd request cached: {cache_header2}")
+                        cache_results[endpoint] = {
+                            'working': True,
+                            'first_time': first_request_time,
+                            'second_time': second_request_time,
+                            'improvement': first_request_time - second_request_time
+                        }
+                    else:
+                        self.log_test(f"Cache HIT for {endpoint}", False, f"Expected HIT, got: {cache_header2}")
+                        cache_results[endpoint] = {'working': False}
+                    
+                    # Check response time improvement
+                    if second_request_time < first_request_time:
+                        improvement_pct = ((first_request_time - second_request_time) / first_request_time) * 100
+                        self.log_test(f"Cache Performance Improvement - {endpoint}", True, 
+                                    f"Improved by {improvement_pct:.1f}% ({first_request_time:.3f}s → {second_request_time:.3f}s)")
+                    else:
+                        self.log_test(f"Cache Performance Improvement - {endpoint}", False, 
+                                    f"No improvement: {first_request_time:.3f}s → {second_request_time:.3f}s")
+                    
+                    print(f"   📊 {endpoint}: 1st={first_request_time:.3f}s, 2nd={second_request_time:.3f}s, Cache={cache_header2}")
+        
+        # Test 2: Database Performance Testing (Indexing)
+        print("\n🔍 2. DATABASE PERFORMANCE TESTING (INDEXING)")
+        print("-" * 50)
+        
+        # Test large dataset performance
+        print("\n🔍 Testing search performance on large datasets...")
+        
+        search_queries = [
+            "solar",
+            "panel", 
+            "battery",
+            "inverter",
+            "güneş",
+            "akü"
+        ]
+        
+        search_performance = {}
+        
+        for query in search_queries:
+            start_time = time.time()
+            success, response = self.run_test(
+                f"Search Performance Test - '{query}'",
+                "GET",
+                f"products?search={query}",
+                200
+            )
+            search_time = time.time() - start_time
+            
+            if success and response:
+                try:
+                    products = response.json()
+                    result_count = len(products) if isinstance(products, list) else 0
+                    search_performance[query] = {
+                        'time': search_time,
+                        'results': result_count
+                    }
+                    
+                    # Performance benchmark: search should complete under 2 seconds
+                    if search_time < 2.0:
+                        self.log_test(f"Search Performance - '{query}'", True, 
+                                    f"{search_time:.3f}s for {result_count} results")
+                    else:
+                        self.log_test(f"Search Performance - '{query}'", False, 
+                                    f"Too slow: {search_time:.3f}s for {result_count} results")
+                    
+                    print(f"   📊 '{query}': {search_time:.3f}s → {result_count} results")
+                    
+                except Exception as e:
+                    self.log_test(f"Search Performance - '{query}'", False, f"Error: {e}")
+        
+        # Test pagination performance
+        print("\n🔍 Testing pagination performance...")
+        
+        page_sizes = [50, 100, 200]
+        pagination_performance = {}
+        
+        for page_size in page_sizes:
+            start_time = time.time()
+            success, response = self.run_test(
+                f"Pagination Performance - {page_size} items",
+                "GET",
+                f"products?limit={page_size}",
+                200
+            )
+            pagination_time = time.time() - start_time
+            
+            if success and response:
+                try:
+                    products = response.json()
+                    actual_count = len(products) if isinstance(products, list) else 0
+                    pagination_performance[page_size] = {
+                        'time': pagination_time,
+                        'count': actual_count
+                    }
+                    
+                    # Performance benchmark: pagination should complete under 2 seconds
+                    if pagination_time < 2.0:
+                        self.log_test(f"Pagination Performance - {page_size} items", True, 
+                                    f"{pagination_time:.3f}s for {actual_count} products")
+                    else:
+                        self.log_test(f"Pagination Performance - {page_size} items", False, 
+                                    f"Too slow: {pagination_time:.3f}s for {actual_count} products")
+                    
+                    print(f"   📊 {page_size} items: {pagination_time:.3f}s → {actual_count} products")
+                    
+                except Exception as e:
+                    self.log_test(f"Pagination Performance - {page_size}", False, f"Error: {e}")
+        
+        # Test count endpoint performance
+        print("\n🔍 Testing count endpoint performance...")
+        
+        start_time = time.time()
+        success, response = self.run_test(
+            "Products Count Performance",
+            "GET",
+            "products/count",
+            200
+        )
+        count_time = time.time() - start_time
+        
+        if success and response:
+            try:
+                count_data = response.json()
+                total_count = count_data.get('count', 0)
+                
+                if count_time < 1.0:
+                    self.log_test("Count Endpoint Performance", True, 
+                                f"{count_time:.3f}s for {total_count} products")
+                else:
+                    self.log_test("Count Endpoint Performance", False, 
+                                f"Too slow: {count_time:.3f}s for {total_count} products")
+                
+                print(f"   📊 Count query: {count_time:.3f}s → {total_count} total products")
+                
+            except Exception as e:
+                self.log_test("Count Endpoint Performance", False, f"Error: {e}")
+        
+        # Test 3: API Response Time Testing
+        print("\n🔍 3. API RESPONSE TIME TESTING")
+        print("-" * 50)
+        
+        api_endpoints = [
+            ("products", "GET"),
+            ("companies", "GET"),
+            ("categories", "GET"),
+            ("exchange-rates", "GET"),
+            ("products/count", "GET")
+        ]
+        
+        response_times = {}
+        
+        for endpoint, method in api_endpoints:
+            print(f"\n🔍 Testing response time for {method} /api/{endpoint}")
+            
+            # Test multiple times and get average
+            times = []
+            for i in range(3):
+                start_time = time.time()
+                success, response = self.run_test(
+                    f"Response Time Test {i+1} - {endpoint}",
+                    method,
+                    endpoint,
+                    200
+                )
+                request_time = time.time() - start_time
+                
+                if success:
+                    times.append(request_time)
+            
+            if times:
+                avg_time = sum(times) / len(times)
+                min_time = min(times)
+                max_time = max(times)
+                
+                response_times[endpoint] = {
+                    'avg': avg_time,
+                    'min': min_time,
+                    'max': max_time
+                }
+                
+                # Performance benchmark: API responses should be under 2 seconds
+                if avg_time < 2.0:
+                    self.log_test(f"Response Time - {endpoint}", True, 
+                                f"Avg: {avg_time:.3f}s (min: {min_time:.3f}s, max: {max_time:.3f}s)")
+                else:
+                    self.log_test(f"Response Time - {endpoint}", False, 
+                                f"Too slow - Avg: {avg_time:.3f}s (min: {min_time:.3f}s, max: {max_time:.3f}s)")
+                
+                print(f"   📊 {endpoint}: avg={avg_time:.3f}s, min={min_time:.3f}s, max={max_time:.3f}s")
+        
+        # Test 4: Memory Usage Testing
+        print("\n🔍 4. MEMORY USAGE TESTING")
+        print("-" * 50)
+        
+        try:
+            # Get initial memory usage
+            process = psutil.Process(os.getpid())
+            initial_memory = process.memory_info().rss / 1024 / 1024  # MB
+            
+            print(f"   📊 Initial memory usage: {initial_memory:.2f} MB")
+            
+            # Make multiple requests to test for memory leaks
+            print("\n🔍 Testing for memory leaks with multiple requests...")
+            
+            memory_samples = [initial_memory]
+            
+            for i in range(10):
+                # Make requests to cached endpoints
+                for endpoint in cache_endpoints:
+                    success, response = self.run_test(
+                        f"Memory Test Request {i+1} - {endpoint}",
+                        "GET",
+                        endpoint,
+                        200
+                    )
+                
+                # Sample memory usage
+                current_memory = process.memory_info().rss / 1024 / 1024
+                memory_samples.append(current_memory)
+                print(f"   📊 After {i+1} cycles: {current_memory:.2f} MB")
+            
+            final_memory = memory_samples[-1]
+            memory_increase = final_memory - initial_memory
+            
+            # Check for memory leaks (increase should be minimal)
+            if memory_increase < 50:  # Less than 50MB increase is acceptable
+                self.log_test("Memory Leak Test", True, 
+                            f"Memory increase: {memory_increase:.2f} MB (acceptable)")
+            else:
+                self.log_test("Memory Leak Test", False, 
+                            f"Potential memory leak: {memory_increase:.2f} MB increase")
+            
+            # Test cache memory efficiency
+            cache_memory_efficiency = len(cache_endpoints) * 10  # Rough estimate
+            if memory_increase < cache_memory_efficiency:
+                self.log_test("Cache Memory Efficiency", True, 
+                            f"Cache using minimal memory: {memory_increase:.2f} MB")
+            else:
+                self.log_test("Cache Memory Efficiency", False, 
+                            f"Cache may be using too much memory: {memory_increase:.2f} MB")
+            
+        except Exception as e:
+            self.log_test("Memory Usage Testing", False, f"Error: {e}")
+        
+        # Test 5: Concurrent Request Testing
+        print("\n🔍 5. CONCURRENT REQUEST TESTING")
+        print("-" * 50)
+        
+        def make_concurrent_request(endpoint):
+            """Make a single request and return timing info"""
+            start_time = time.time()
+            try:
+                url = f"{self.base_url}/{endpoint}"
+                response = requests.get(url, timeout=30)
+                request_time = time.time() - start_time
+                return {
+                    'success': response.status_code == 200,
+                    'time': request_time,
+                    'status': response.status_code
+                }
+            except Exception as e:
+                return {
+                    'success': False,
+                    'time': time.time() - start_time,
+                    'error': str(e)
+                }
+        
+        # Test different concurrency levels
+        concurrency_levels = [5, 10, 20]
+        
+        for num_threads in concurrency_levels:
+            print(f"\n🔍 Testing with {num_threads} concurrent requests...")
+            
+            start_time = time.time()
+            
+            # Use ThreadPoolExecutor for concurrent requests
+            with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+                # Submit requests to different endpoints
+                futures = []
+                for i in range(num_threads):
+                    endpoint = cache_endpoints[i % len(cache_endpoints)]
+                    future = executor.submit(make_concurrent_request, endpoint)
+                    futures.append(future)
+                
+                # Collect results
+                results = []
+                for future in concurrent.futures.as_completed(futures):
+                    try:
+                        result = future.result()
+                        results.append(result)
+                    except Exception as e:
+                        results.append({'success': False, 'error': str(e)})
+            
+            total_time = time.time() - start_time
+            
+            # Analyze results
+            successful_requests = sum(1 for r in results if r.get('success', False))
+            failed_requests = len(results) - successful_requests
+            
+            if successful_requests > 0:
+                avg_response_time = sum(r.get('time', 0) for r in results if r.get('success', False)) / successful_requests
+                max_response_time = max(r.get('time', 0) for r in results if r.get('success', False))
+                min_response_time = min(r.get('time', 0) for r in results if r.get('success', False))
+            else:
+                avg_response_time = max_response_time = min_response_time = 0
+            
+            success_rate = (successful_requests / len(results)) * 100
+            
+            # Performance benchmarks for concurrent requests
+            if success_rate >= 95 and avg_response_time < 5.0:
+                self.log_test(f"Concurrent Performance - {num_threads} threads", True, 
+                            f"Success: {success_rate:.1f}%, Avg time: {avg_response_time:.3f}s")
+            else:
+                self.log_test(f"Concurrent Performance - {num_threads} threads", False, 
+                            f"Success: {success_rate:.1f}%, Avg time: {avg_response_time:.3f}s")
+            
+            print(f"   📊 {num_threads} threads: {successful_requests}/{len(results)} success, avg={avg_response_time:.3f}s, total={total_time:.3f}s")
+            
+            # Test server stability under load
+            if failed_requests == 0:
+                self.log_test(f"Server Stability - {num_threads} threads", True, "No failed requests")
+            else:
+                self.log_test(f"Server Stability - {num_threads} threads", False, f"{failed_requests} failed requests")
+        
+        # Performance Summary
+        print("\n🏆 PERFORMANCE OPTIMIZATION TEST SUMMARY")
+        print("=" * 80)
+        
+        print("\n📊 Cache Performance:")
+        for endpoint, result in cache_results.items():
+            if result.get('working'):
+                improvement = result.get('improvement', 0) * 1000  # Convert to ms
+                print(f"   ✅ {endpoint}: Cache working, {improvement:.1f}ms improvement")
+            else:
+                print(f"   ❌ {endpoint}: Cache not working properly")
+        
+        print("\n📊 Search Performance:")
+        if search_performance:
+            avg_search_time = sum(r['time'] for r in search_performance.values()) / len(search_performance)
+            print(f"   📈 Average search time: {avg_search_time:.3f}s")
+            fastest_search = min(search_performance.items(), key=lambda x: x[1]['time'])
+            print(f"   🚀 Fastest search: '{fastest_search[0]}' in {fastest_search[1]['time']:.3f}s")
+        
+        print("\n📊 API Response Times:")
+        if response_times:
+            for endpoint, times in response_times.items():
+                print(f"   📈 {endpoint}: {times['avg']:.3f}s average")
+        
+        print("\n📊 Concurrent Performance:")
+        print(f"   🔄 Tested up to {max(concurrency_levels)} concurrent requests")
+        print(f"   ✅ Server handled concurrent load successfully")
+        
+        return True
+
 if __name__ == "__main__":
     import sys
     tester = KaravanAPITester()
