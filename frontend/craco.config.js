@@ -13,6 +13,24 @@ module.exports = {
     },
     configure: (webpackConfig, { env }) => {
       
+      // PERFORMANCE: Development mode optimizations
+      if (env === 'development') {
+        // Reduce compilation time
+        webpackConfig.optimization = {
+          ...webpackConfig.optimization,
+          removeAvailableModules: false,
+          removeEmptyChunks: false,
+          splitChunks: false,
+        };
+        
+        // Speed up builds
+        webpackConfig.resolve.symlinks = false;
+        webpackConfig.resolve.cacheWithContext = false;
+        
+        // Less aggressive source maps for faster builds
+        webpackConfig.devtool = 'eval-cheap-module-source-map';
+      }
+      
       // Production optimizations
       if (env === 'production') {
         // Enable additional optimizations
@@ -53,6 +71,23 @@ module.exports = {
         };
       }
       
+      // PERFORMANCE: Optimize watch options for both modes
+      webpackConfig.watchOptions = {
+        ...webpackConfig.watchOptions,
+        ignored: [
+          '**/node_modules/**',
+          '**/.git/**',
+          '**/build/**',
+          '**/dist/**',
+          '**/coverage/**',
+          '**/public/**',
+          '**/*.test.js',
+          '**/*.spec.js',
+        ],
+        aggregateTimeoutInner: 300,  // Faster response
+        poll: false, // Use native file watching
+      };
+
       // Disable hot reload completely if environment variable is set
       if (config.disableHotReload) {
         // Remove hot reload related plugins
@@ -64,19 +99,6 @@ module.exports = {
         webpackConfig.watch = false;
         webpackConfig.watchOptions = {
           ignored: /.*/, // Ignore all files
-        };
-      } else {
-        // Add ignored patterns to reduce watched directories
-        webpackConfig.watchOptions = {
-          ...webpackConfig.watchOptions,
-          ignored: [
-            '**/node_modules/**',
-            '**/.git/**',
-            '**/build/**',
-            '**/dist/**',
-            '**/coverage/**',
-            '**/public/**',
-          ],
         };
       }
       
