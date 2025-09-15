@@ -7733,6 +7733,305 @@ class KaravanAPITester:
         
         return True
 
+    def test_motokaravan_kopya_package_debug(self):
+        """Debug the specific 'Motokaravan - Kopya' package PDF category groups issue"""
+        print("\n🔍 DEBUGGING MOTOKARAVAN - KOPYA PACKAGE PDF CATEGORY GROUPS ISSUE...")
+        
+        # Step 1: Find the "Motokaravan - Kopya" package
+        print("\n🔍 Step 1: Finding 'Motokaravan - Kopya' Package...")
+        success, response = self.run_test(
+            "Get All Packages",
+            "GET",
+            "packages",
+            200
+        )
+        
+        motokaravan_kopya_package = None
+        if success and response:
+            try:
+                packages = response.json()
+                for package in packages:
+                    if package.get('name') == 'Motokaravan - Kopya':
+                        motokaravan_kopya_package = package
+                        self.log_test("Found Motokaravan - Kopya Package", True, f"Package ID: {package.get('id')}")
+                        break
+                
+                if not motokaravan_kopya_package:
+                    # List all available packages
+                    package_names = [p.get('name', 'Unknown') for p in packages]
+                    self.log_test("Motokaravan - Kopya Package Found", False, f"Available packages: {package_names}")
+                    return False
+                    
+            except Exception as e:
+                self.log_test("Package List Parsing", False, f"Error: {e}")
+                return False
+        else:
+            return False
+        
+        package_id = motokaravan_kopya_package.get('id')
+        
+        # Step 2: Get package details with products
+        print(f"\n🔍 Step 2: Getting Package Details for ID: {package_id}")
+        success, response = self.run_test(
+            "Get Motokaravan - Kopya Package Details",
+            "GET",
+            f"packages/{package_id}",
+            200
+        )
+        
+        package_products = []
+        if success and response:
+            try:
+                package_details = response.json()
+                package_products = package_details.get('products', [])
+                self.log_test("Package Products Retrieved", True, f"Found {len(package_products)} products")
+                
+                # Log product names for verification
+                for product in package_products:
+                    product_name = product.get('name', 'Unknown')
+                    category_id = product.get('category_id')
+                    self.log_test(f"Product in Package", True, f"'{product_name}' - Category ID: {category_id}")
+                    
+            except Exception as e:
+                self.log_test("Package Details Parsing", False, f"Error: {e}")
+                return False
+        else:
+            return False
+        
+        # Step 3: Check specific products mentioned in the issue
+        print("\n🔍 Step 3: Checking Specific Products Category Assignments...")
+        target_products = {
+            "100 Ah Apex Jel Akü": "Akü",
+            "150 Ah Apex Jel Akü": "Akü", 
+            "Berhimi 45x90 Karavan Camı": "Camlar",
+            "MPK 40x40 Karavan Hekisi": "Hekiler"
+        }
+        
+        # Get all categories to map names to IDs
+        success, response = self.run_test(
+            "Get All Categories",
+            "GET",
+            "categories",
+            200
+        )
+        
+        categories_map = {}
+        if success and response:
+            try:
+                categories = response.json()
+                for category in categories:
+                    categories_map[category.get('name')] = category.get('id')
+                self.log_test("Categories Retrieved", True, f"Found {len(categories)} categories")
+            except Exception as e:
+                self.log_test("Categories Parsing", False, f"Error: {e}")
+                return False
+        
+        # Check each target product
+        products_to_fix = []
+        for product in package_products:
+            product_name = product.get('name', '')
+            product_id = product.get('id')
+            current_category_id = product.get('category_id')
+            
+            for target_name, expected_category in target_products.items():
+                if target_name in product_name:
+                    expected_category_id = categories_map.get(expected_category)
+                    
+                    if current_category_id is None:
+                        self.log_test(f"Category Assignment Issue - {target_name}", False, f"Product has NO category assigned (should be '{expected_category}')")
+                        products_to_fix.append({
+                            'product_id': product_id,
+                            'product_name': product_name,
+                            'expected_category': expected_category,
+                            'expected_category_id': expected_category_id
+                        })
+                    elif current_category_id != expected_category_id:
+                        self.log_test(f"Category Assignment Issue - {target_name}", False, f"Product has wrong category (should be '{expected_category}')")
+                        products_to_fix.append({
+                            'product_id': product_id,
+                            'product_name': product_name,
+                            'expected_category': expected_category,
+                            'expected_category_id': expected_category_id
+                        })
+                    else:
+                        self.log_test(f"Category Assignment OK - {target_name}", True, f"Product correctly assigned to '{expected_category}'")
+                    break
+        
+        # Step 4: Fix category assignments if needed
+        if products_to_fix:
+            print(f"\n🔍 Step 4: Fixing Category Assignments for {len(products_to_fix)} Products...")
+            
+            for product_fix in products_to_fix:
+                update_data = {
+                    "category_id": product_fix['expected_category_id']
+                }
+                
+                success, response = self.run_test(
+                    f"Fix Category - {product_fix['product_name'][:30]}...",
+                    "PUT",
+                    f"products/{product_fix['product_id']}",
+                    200,
+                    data=update_data
+                )
+                
+                if success:
+                    self.log_test(f"Category Fixed - {product_fix['expected_category']}", True, f"Product assigned to '{product_fix['expected_category']}'")
+                else:
+                    self.log_test(f"Category Fix Failed - {product_fix['expected_category']}", False, f"Failed to assign category")
+        else:
+            self.log_test("Category Assignments", True, "All target products have correct categories")
+        
+        # Step 5: Get category groups to verify structure
+        print("\n🔍 Step 5: Verifying Category Groups Structure...")
+        success, response = self.run_test(
+            "Get Category Groups",
+            "GET",
+            "category-groups",
+            200
+        )
+        
+        category_groups = {}
+        if success and response:
+            try:
+                groups = response.json()
+                for group in groups:
+                    group_name = group.get('name')
+                    category_ids = group.get('category_ids', [])
+                    category_groups[group_name] = category_ids
+                    
+                    # Map category IDs to names for display
+                    category_names = []
+                    for cat_id in category_ids:
+                        for cat_name, cat_id_check in categories_map.items():
+                            if cat_id_check == cat_id:
+                                category_names.append(cat_name)
+                                break
+                    
+                    self.log_test(f"Category Group - {group_name}", True, f"Contains categories: {category_names}")
+                    
+            except Exception as e:
+                self.log_test("Category Groups Parsing", False, f"Error: {e}")
+                return False
+        
+        # Verify expected category groups exist
+        expected_groups = {
+            "Enerji Grubu": ["Akü", "Güneş Paneli", "İnverter", "MPPT Cihazları"],
+            "Cam ve Hekiler": ["Camlar", "Hekiler"]
+        }
+        
+        for group_name, expected_categories in expected_groups.items():
+            if group_name in category_groups:
+                group_category_ids = category_groups[group_name]
+                expected_category_ids = [categories_map.get(cat) for cat in expected_categories if categories_map.get(cat)]
+                
+                missing_categories = []
+                for expected_cat in expected_categories:
+                    expected_cat_id = categories_map.get(expected_cat)
+                    if expected_cat_id not in group_category_ids:
+                        missing_categories.append(expected_cat)
+                
+                if not missing_categories:
+                    self.log_test(f"Category Group Complete - {group_name}", True, f"All expected categories present")
+                else:
+                    self.log_test(f"Category Group Incomplete - {group_name}", False, f"Missing categories: {missing_categories}")
+            else:
+                self.log_test(f"Category Group Missing - {group_name}", False, f"Group not found")
+        
+        # Step 6: Test PDF generation after fixes
+        print(f"\n🔍 Step 6: Testing PDF Generation After Category Fixes...")
+        
+        # Test PDF with prices
+        success, response = self.run_test(
+            "Generate PDF with Prices - Motokaravan Kopya",
+            "GET",
+            f"packages/{package_id}/pdf-with-prices",
+            200
+        )
+        
+        if success and response:
+            try:
+                pdf_size = len(response.content) if hasattr(response, 'content') else 0
+                self.log_test("PDF with Prices Generated", True, f"PDF size: {pdf_size} bytes")
+            except Exception as e:
+                self.log_test("PDF with Prices Generated", False, f"Error: {e}")
+        
+        # Test PDF without prices
+        success, response = self.run_test(
+            "Generate PDF without Prices - Motokaravan Kopya",
+            "GET",
+            f"packages/{package_id}/pdf-without-prices",
+            200
+        )
+        
+        if success and response:
+            try:
+                pdf_size = len(response.content) if hasattr(response, 'content') else 0
+                self.log_test("PDF without Prices Generated", True, f"PDF size: {pdf_size} bytes")
+            except Exception as e:
+                self.log_test("PDF without Prices Generated", False, f"Error: {e}")
+        
+        # Step 7: Verify no "Kategorisiz" products in final package state
+        print(f"\n🔍 Step 7: Final Verification - No Kategorisiz Products...")
+        
+        success, response = self.run_test(
+            "Final Package Verification",
+            "GET",
+            f"packages/{package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                final_package = response.json()
+                final_products = final_package.get('products', [])
+                
+                uncategorized_count = 0
+                categorized_by_group = {"Enerji Grubu": 0, "Cam ve Hekiler": 0, "Other": 0}
+                
+                for product in final_products:
+                    category_id = product.get('category_id')
+                    product_name = product.get('name', 'Unknown')
+                    
+                    if category_id is None:
+                        uncategorized_count += 1
+                        self.log_test(f"Uncategorized Product Found", False, f"'{product_name}' has no category")
+                    else:
+                        # Determine which category group this belongs to
+                        found_group = False
+                        for group_name, group_category_ids in category_groups.items():
+                            if category_id in group_category_ids:
+                                if group_name in categorized_by_group:
+                                    categorized_by_group[group_name] += 1
+                                else:
+                                    categorized_by_group["Other"] += 1
+                                found_group = True
+                                break
+                        
+                        if not found_group:
+                            categorized_by_group["Other"] += 1
+                
+                # Report final categorization
+                if uncategorized_count == 0:
+                    self.log_test("Zero Kategorisiz Products", True, "All products have categories assigned")
+                else:
+                    self.log_test("Zero Kategorisiz Products", False, f"{uncategorized_count} products still uncategorized")
+                
+                for group_name, count in categorized_by_group.items():
+                    if count > 0:
+                        self.log_test(f"Products in {group_name}", True, f"{count} products")
+                        
+            except Exception as e:
+                self.log_test("Final Verification", False, f"Error: {e}")
+        
+        print(f"\n✅ Motokaravan - Kopya Package Debug Summary:")
+        print(f"   - Package ID: {package_id}")
+        print(f"   - Products checked for category assignments")
+        print(f"   - Category groups verified: Enerji Grubu, Cam ve Hekiler")
+        print(f"   - PDF generation tested")
+        print(f"   - Final verification completed")
+        
+        return True
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
