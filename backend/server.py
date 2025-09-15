@@ -2350,13 +2350,13 @@ class PDFPackageGenerator(PDFQuoteGenerator):
             story.append(Paragraph("<b>Notlar</b>", self.subtitle_style))
             story.append(Spacer(1, 10))
             
-            # Notları paragraf olarak ekle
+            # Notları paragraf olarak ekle (küçük font)
             notes_style = ParagraphStyle(
                 'Notes',
                 parent=self.styles['Normal'],
-                fontSize=10,
-                leading=14,
-                spaceAfter=12,
+                fontSize=8,  # 10'dan 8'e küçültüldü
+                leading=11,  # 14'ten 11'e küçültüldü
+                spaceAfter=8,  # 12'den 8'e küçültüldü
                 leftIndent=20,
                 fontName=self.get_font_name()
             )
