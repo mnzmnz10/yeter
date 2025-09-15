@@ -6522,6 +6522,281 @@ class KaravanAPITester:
         
         return True
 
+    def test_ergun_bey_package_debug(self):
+        """Debug the category group issue in PDF generation for Ergün Bey package"""
+        print("\n🔍 DEBUGGING ERGÜN BEY PACKAGE CATEGORY GROUP ISSUE...")
+        print("=" * 60)
+        
+        # Step 1: Find all packages to locate "Ergün Bey" package
+        print("\n📦 Step 1: Finding all packages...")
+        success, response = self.run_test(
+            "Get All Packages",
+            "GET",
+            "packages",
+            200
+        )
+        
+        ergun_bey_package = None
+        if success and response:
+            try:
+                packages = response.json()
+                print(f"Found {len(packages)} packages total")
+                
+                # Look for "Ergün Bey" package
+                for package in packages:
+                    package_name = package.get('name', '').lower()
+                    if 'ergün' in package_name or 'ergun' in package_name:
+                        ergun_bey_package = package
+                        self.log_test("Found Ergün Bey Package", True, f"Package: {package.get('name')} (ID: {package.get('id')})")
+                        break
+                
+                if not ergun_bey_package:
+                    # List all package names to help identify the correct one
+                    package_names = [p.get('name', 'Unknown') for p in packages]
+                    print(f"Available packages: {package_names}")
+                    self.log_test("Find Ergün Bey Package", False, f"Package not found. Available: {package_names}")
+                    return False
+                    
+            except Exception as e:
+                self.log_test("Get Packages", False, f"Error parsing packages: {e}")
+                return False
+        else:
+            self.log_test("Get Packages", False, "Failed to retrieve packages")
+            return False
+        
+        package_id = ergun_bey_package.get('id')
+        package_name = ergun_bey_package.get('name')
+        
+        # Step 2: Get detailed package information including products
+        print(f"\n📋 Step 2: Getting detailed info for package '{package_name}'...")
+        success, response = self.run_test(
+            f"Get Package Details - {package_name}",
+            "GET",
+            f"packages/{package_id}",
+            200
+        )
+        
+        package_products = []
+        if success and response:
+            try:
+                package_details = response.json()
+                package_products = package_details.get('products', [])
+                supplies = package_details.get('supplies', [])
+                
+                self.log_test("Package Products Retrieved", True, f"Found {len(package_products)} products, {len(supplies)} supplies")
+                
+                # Log each product's details
+                for i, product in enumerate(package_products):
+                    product_name = product.get('name', 'Unknown')
+                    category_id = product.get('category_id')
+                    print(f"  Product {i+1}: {product_name} (category_id: {category_id})")
+                    
+            except Exception as e:
+                self.log_test("Package Details", False, f"Error parsing package details: {e}")
+                return False
+        else:
+            self.log_test("Package Details", False, "Failed to get package details")
+            return False
+        
+        # Step 3: Check categories for each product
+        print(f"\n🏷️ Step 3: Investigating product categories...")
+        success, response = self.run_test(
+            "Get All Categories",
+            "GET",
+            "categories",
+            200
+        )
+        
+        categories_dict = {}
+        if success and response:
+            try:
+                categories = response.json()
+                categories_dict = {cat.get('id'): cat for cat in categories}
+                self.log_test("Categories Retrieved", True, f"Found {len(categories)} categories")
+                
+                # Check each product's category
+                for product in package_products:
+                    category_id = product.get('category_id')
+                    product_name = product.get('name', 'Unknown')
+                    
+                    if category_id and category_id in categories_dict:
+                        category = categories_dict[category_id]
+                        category_name = category.get('name', 'Unknown')
+                        print(f"  ✅ {product_name} → Category: {category_name} (ID: {category_id})")
+                    elif category_id:
+                        print(f"  ❌ {product_name} → Category ID {category_id} NOT FOUND in categories list")
+                        self.log_test(f"Category Exists - {category_id}", False, f"Category {category_id} not found")
+                    else:
+                        print(f"  ⚠️ {product_name} → NO CATEGORY ASSIGNED (will appear as 'Kategorisiz')")
+                        
+            except Exception as e:
+                self.log_test("Categories", False, f"Error parsing categories: {e}")
+                return False
+        else:
+            self.log_test("Categories", False, "Failed to get categories")
+            return False
+        
+        # Step 4: Check category groups
+        print(f"\n🗂️ Step 4: Investigating category groups...")
+        success, response = self.run_test(
+            "Get All Category Groups",
+            "GET",
+            "category-groups",
+            200
+        )
+        
+        category_groups = []
+        category_to_group_mapping = {}
+        if success and response:
+            try:
+                category_groups = response.json()
+                self.log_test("Category Groups Retrieved", True, f"Found {len(category_groups)} category groups")
+                
+                # Build mapping of category_id to group
+                for group in category_groups:
+                    group_name = group.get('name', 'Unknown')
+                    group_category_ids = group.get('category_ids', [])
+                    print(f"  Group: {group_name}")
+                    print(f"    Categories: {group_category_ids}")
+                    
+                    for cat_id in group_category_ids:
+                        category_to_group_mapping[cat_id] = group
+                        if cat_id in categories_dict:
+                            cat_name = categories_dict[cat_id].get('name', 'Unknown')
+                            print(f"      - {cat_name} (ID: {cat_id})")
+                        else:
+                            print(f"      - UNKNOWN CATEGORY (ID: {cat_id})")
+                            
+            except Exception as e:
+                self.log_test("Category Groups", False, f"Error parsing category groups: {e}")
+                return False
+        else:
+            self.log_test("Category Groups", False, "Failed to get category groups")
+            return False
+        
+        # Step 5: Analyze the mapping for package products
+        print(f"\n🔍 Step 5: Analyzing category group mapping for package products...")
+        
+        products_with_groups = 0
+        products_without_groups = 0
+        
+        for product in package_products:
+            product_name = product.get('name', 'Unknown')
+            category_id = product.get('category_id')
+            
+            if not category_id:
+                print(f"  ❌ {product_name} → NO CATEGORY → Will appear as 'Kategorisiz'")
+                products_without_groups += 1
+                continue
+                
+            if category_id not in categories_dict:
+                print(f"  ❌ {product_name} → INVALID CATEGORY ID ({category_id}) → Will appear as 'Kategorisiz'")
+                products_without_groups += 1
+                continue
+                
+            category_name = categories_dict[category_id].get('name', 'Unknown')
+            
+            if category_id in category_to_group_mapping:
+                group = category_to_group_mapping[category_id]
+                group_name = group.get('name', 'Unknown')
+                print(f"  ✅ {product_name} → Category: {category_name} → Group: {group_name}")
+                products_with_groups += 1
+            else:
+                print(f"  ⚠️ {product_name} → Category: {category_name} → NO GROUP ASSIGNED → Will appear as 'Kategorisiz'")
+                products_without_groups += 1
+        
+        self.log_test("Products with Category Groups", products_with_groups > 0, f"{products_with_groups} products have proper group mapping")
+        self.log_test("Products without Category Groups", products_without_groups == 0, f"{products_without_groups} products will appear as 'Kategorisiz'")
+        
+        # Step 6: Test PDF generation to see the actual issue
+        print(f"\n📄 Step 6: Testing PDF generation for '{package_name}'...")
+        
+        # Test PDF with prices
+        success, response = self.run_test(
+            f"Generate PDF with Prices - {package_name}",
+            "GET",
+            f"packages/{package_id}/pdf-with-prices",
+            200
+        )
+        
+        if success and response:
+            try:
+                # Check if we got a PDF response
+                content_type = response.headers.get('content-type', '')
+                if 'application/pdf' in content_type:
+                    pdf_size = len(response.content)
+                    self.log_test("PDF with Prices Generated", True, f"PDF size: {pdf_size} bytes")
+                else:
+                    self.log_test("PDF with Prices Generated", False, f"Wrong content type: {content_type}")
+            except Exception as e:
+                self.log_test("PDF with Prices", False, f"Error: {e}")
+        else:
+            self.log_test("PDF with Prices", False, "Failed to generate PDF")
+        
+        # Test PDF without prices
+        success, response = self.run_test(
+            f"Generate PDF without Prices - {package_name}",
+            "GET",
+            f"packages/{package_id}/pdf-without-prices",
+            200
+        )
+        
+        if success and response:
+            try:
+                content_type = response.headers.get('content-type', '')
+                if 'application/pdf' in content_type:
+                    pdf_size = len(response.content)
+                    self.log_test("PDF without Prices Generated", True, f"PDF size: {pdf_size} bytes")
+                else:
+                    self.log_test("PDF without Prices Generated", False, f"Wrong content type: {content_type}")
+            except Exception as e:
+                self.log_test("PDF without Prices", False, f"Error: {e}")
+        else:
+            self.log_test("PDF without Prices", False, "Failed to generate PDF")
+        
+        # Step 7: Root cause analysis and recommendations
+        print(f"\n🎯 Step 7: Root Cause Analysis...")
+        
+        if products_without_groups > 0:
+            print(f"\n❌ ROOT CAUSE IDENTIFIED:")
+            print(f"   {products_without_groups} out of {len(package_products)} products in '{package_name}' package")
+            print(f"   are appearing as 'Kategorisiz' because:")
+            
+            no_category_count = 0
+            invalid_category_count = 0
+            no_group_count = 0
+            
+            for product in package_products:
+                category_id = product.get('category_id')
+                if not category_id:
+                    no_category_count += 1
+                elif category_id not in categories_dict:
+                    invalid_category_count += 1
+                elif category_id not in category_to_group_mapping:
+                    no_group_count += 1
+            
+            if no_category_count > 0:
+                print(f"   - {no_category_count} products have NO category assigned")
+            if invalid_category_count > 0:
+                print(f"   - {invalid_category_count} products have INVALID category IDs")
+            if no_group_count > 0:
+                print(f"   - {no_group_count} products have categories that are NOT assigned to any group")
+                
+            print(f"\n💡 RECOMMENDATIONS:")
+            if no_category_count > 0:
+                print(f"   1. Assign proper categories to products without categories")
+            if invalid_category_count > 0:
+                print(f"   2. Fix or reassign invalid category IDs")
+            if no_group_count > 0:
+                print(f"   3. Assign categories to appropriate category groups")
+                
+        else:
+            print(f"\n✅ NO ISSUES FOUND:")
+            print(f"   All products in '{package_name}' package have proper category group assignments")
+            print(f"   The issue might be in the PDF generation logic itself")
+        
+        return True
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
