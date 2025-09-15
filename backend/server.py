@@ -3980,8 +3980,13 @@ async def get_products(
                     {"brand": {"$regex": f"^{search}", "$options": "i"}}
                 ]
         
-        # Optimize sorting: favorites first, then by name with index utilization
-        sort_criteria = [("is_favorite", -1), ("name", 1)]
+        # FAVORI ÜRÜNLER ÖNCELİKLİ SIRALAMA: Favori ürünler her zaman en üstte
+        if category_id:
+            # Kategori filtrelendiğinde: Favoriler önce, sonra alfabetik
+            sort_criteria = [("is_favorite", -1), ("name", 1)]
+        else:
+            # Genel listede: Favoriler önce, sonra alfabetik
+            sort_criteria = [("is_favorite", -1), ("name", 1)]
         
         # For backward compatibility - if skip_pagination is true, return all
         if skip_pagination:
