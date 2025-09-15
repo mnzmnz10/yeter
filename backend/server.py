@@ -168,6 +168,66 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# In-memory cache for performance
+cache = {}
+CACHE_DURATION = 300  # 5 minutes
+
+# Cache middleware
+@app.middleware("http")
+async def cache_middleware(request: Request, call_next):
+    """Simple in-memory cache middleware for GET requests"""
+    start_time = time.time()
+    
+    # Only cache GET requests to specific endpoints
+    if request.method == "GET" and any(path in str(request.url) for path in ["/api/products", "/api/companies", "/api/categories"]):
+        cache_key = str(request.url)
+        
+        # Check cache
+        if cache_key in cache:
+            cached_data, timestamp = cache[cache_key]
+            if time.time() - timestamp < CACHE_DURATION:
+                logger.info(f"Cache HIT for {cache_key}")
+                response = JSONResponse(content=cached_data)
+                response.headers["X-Cache"] = "HIT"
+                response.headers["X-Response-Time"] = f"{(time.time() - start_time) * 1000:.2f}ms"
+                return response
+    
+    # Process request
+    response = await call_next(request)
+    
+    # Cache successful GET responses
+    if (request.method == "GET" and 
+        response.status_code == 200 and 
+        any(path in str(request.url) for path in ["/api/products", "/api/companies", "/api/categories"])):
+        
+        cache_key = str(request.url)
+        if hasattr(response, 'body'):
+            import json
+            try:
+                body = json.loads(response.body.decode())
+                cache[cache_key] = (body, time.time())
+                logger.info(f"Cache SET for {cache_key}")
+            except:
+                pass
+    
+    response.headers["X-Response-Time"] = f"{(time.time() - start_time) * 1000:.2f}ms"
+    return response
+
+# Cache invalidation utility
+def invalidate_cache(pattern: str = None):
+    """Invalidate cache entries matching pattern"""
+    if pattern is None:
+        cache.clear()
+        logger.info("All cache cleared")
+    else:
+        keys_to_remove = [key for key in cache.keys() if pattern in key]
+        for key in keys_to_remove:
+            del cache[key]
+        logger.info(f"Cache cleared for pattern: {pattern}")
+
+# Thread pool for CPU intensive tasks
+thread_pool = ThreadPoolExecutor(max_workers=4)
+
 # Pydantic Models
 class Company(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
