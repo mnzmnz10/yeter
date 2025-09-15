@@ -12534,6 +12534,359 @@ class KaravanAPITester:
         
         return True
 
+    def test_favorite_product_sorting_comprehensive(self):
+        """Comprehensive test for favorite product sorting issue debugging"""
+        print("\n🔍 DEBUGGING FAVORITE PRODUCT SORTING ISSUE...")
+        print("=" * 80)
+        
+        # Step 1: Get all products and analyze current state
+        print("\n📊 STEP 1: ANALYZING CURRENT PRODUCT STATE")
+        success, response = self.run_test(
+            "Get All Products - Current State Analysis",
+            "GET",
+            "products?skip_pagination=true",
+            200
+        )
+        
+        if not success or not response:
+            self.log_test("Product State Analysis", False, "Failed to get products")
+            return False
+            
+        try:
+            all_products = response.json()
+            total_products = len(all_products)
+            favorite_products = [p for p in all_products if p.get('is_favorite') == True]
+            non_favorite_products = [p for p in all_products if p.get('is_favorite') != True]
+            
+            print(f"📈 TOTAL PRODUCTS: {total_products}")
+            print(f"⭐ FAVORITE PRODUCTS: {len(favorite_products)}")
+            print(f"📦 NON-FAVORITE PRODUCTS: {len(non_favorite_products)}")
+            
+            self.log_test("Product Count Analysis", True, f"Total: {total_products}, Favorites: {len(favorite_products)}")
+            
+            # Analyze is_favorite field types
+            favorite_field_types = {}
+            for product in all_products:
+                is_fav_value = product.get('is_favorite')
+                field_type = type(is_fav_value).__name__
+                if field_type not in favorite_field_types:
+                    favorite_field_types[field_type] = 0
+                favorite_field_types[field_type] += 1
+            
+            print(f"🔍 is_favorite FIELD TYPES: {favorite_field_types}")
+            self.log_test("is_favorite Field Type Analysis", True, f"Types found: {favorite_field_types}")
+            
+            # Check first 10 products in current order
+            print(f"\n📋 FIRST 10 PRODUCTS IN CURRENT ORDER:")
+            for i, product in enumerate(all_products[:10]):
+                is_fav = product.get('is_favorite')
+                name = product.get('name', 'Unknown')[:50]
+                print(f"   {i+1:2d}. {'⭐' if is_fav else '📦'} {name} (is_favorite: {is_fav})")
+            
+            # Check if favorites are at the top
+            favorites_at_top = True
+            first_non_favorite_index = None
+            for i, product in enumerate(all_products):
+                if product.get('is_favorite') != True:
+                    first_non_favorite_index = i
+                    break
+            
+            if first_non_favorite_index is not None:
+                # Check if any favorites appear after the first non-favorite
+                for i in range(first_non_favorite_index, len(all_products)):
+                    if all_products[i].get('is_favorite') == True:
+                        favorites_at_top = False
+                        print(f"❌ SORTING ISSUE FOUND: Favorite product '{all_products[i].get('name', 'Unknown')[:30]}' at position {i+1}, but non-favorites start at position {first_non_favorite_index+1}")
+                        break
+            
+            if favorites_at_top and len(favorite_products) > 0:
+                self.log_test("Favorites Sorting Check", True, f"All {len(favorite_products)} favorites are at the top")
+            elif len(favorite_products) == 0:
+                self.log_test("Favorites Sorting Check", True, "No favorites to sort")
+            else:
+                self.log_test("Favorites Sorting Check", False, "Favorites are NOT properly sorted to the top")
+                
+        except Exception as e:
+            self.log_test("Product State Analysis", False, f"Error analyzing products: {e}")
+            return False
+        
+        # Step 2: Test MongoDB sort criteria directly
+        print(f"\n🔍 STEP 2: TESTING MONGODB SORT CRITERIA")
+        
+        # Test with explicit sorting parameters
+        success, response = self.run_test(
+            "Get Products - Test Sorting Implementation",
+            "GET",
+            "products?limit=50",
+            200
+        )
+        
+        if success and response:
+            try:
+                sorted_products = response.json()
+                print(f"📊 FIRST 10 PRODUCTS WITH CURRENT SORTING:")
+                
+                sorting_correct = True
+                for i, product in enumerate(sorted_products[:10]):
+                    is_fav = product.get('is_favorite')
+                    name = product.get('name', 'Unknown')[:40]
+                    print(f"   {i+1:2d}. {'⭐' if is_fav else '📦'} {name}")
+                    
+                    # Check if we find a non-favorite before all favorites are listed
+                    if not is_fav and i < len(favorite_products):
+                        sorting_correct = False
+                
+                self.log_test("Sort Implementation Test", sorting_correct, f"Checked first 10 products")
+                
+            except Exception as e:
+                self.log_test("Sort Implementation Test", False, f"Error: {e}")
+        
+        # Step 3: Test aggregate pipeline functionality
+        print(f"\n🔍 STEP 3: TESTING AGGREGATE PIPELINE")
+        
+        # Test different page sizes to see if pagination affects sorting
+        for page_size in [10, 25, 50]:
+            success, response = self.run_test(
+                f"Test Pagination Page Size {page_size}",
+                "GET",
+                f"products?limit={page_size}&page=1",
+                200
+            )
+            
+            if success and response:
+                try:
+                    page_products = response.json()
+                    favorites_in_page = [p for p in page_products if p.get('is_favorite') == True]
+                    non_favorites_in_page = [p for p in page_products if p.get('is_favorite') != True]
+                    
+                    # Check if favorites come first in this page
+                    first_non_fav_pos = None
+                    for i, product in enumerate(page_products):
+                        if product.get('is_favorite') != True:
+                            first_non_fav_pos = i
+                            break
+                    
+                    if first_non_fav_pos is not None:
+                        # Check if any favorites appear after first non-favorite
+                        favorites_after_non_fav = any(
+                            page_products[i].get('is_favorite') == True 
+                            for i in range(first_non_fav_pos, len(page_products))
+                        )
+                        
+                        if favorites_after_non_fav:
+                            self.log_test(f"Page Size {page_size} Sorting", False, f"Favorites mixed with non-favorites")
+                        else:
+                            self.log_test(f"Page Size {page_size} Sorting", True, f"Favorites first, then non-favorites")
+                    else:
+                        self.log_test(f"Page Size {page_size} Sorting", True, f"All {len(page_products)} products are favorites")
+                        
+                except Exception as e:
+                    self.log_test(f"Page Size {page_size} Test", False, f"Error: {e}")
+        
+        # Step 4: Test database index effectiveness
+        print(f"\n🔍 STEP 4: TESTING DATABASE INDEX EFFECTIVENESS")
+        
+        # Test with different query patterns to see if indexes are working
+        test_queries = [
+            ("products", "Basic query"),
+            ("products?company_id=test", "Company filter"),
+            ("products?category_id=test", "Category filter"),
+            ("products?search=solar", "Search query")
+        ]
+        
+        for query, description in test_queries:
+            success, response = self.run_test(
+                f"Index Test - {description}",
+                "GET",
+                query,
+                200
+            )
+            
+            if success and response:
+                try:
+                    products = response.json()
+                    if products:
+                        # Check if first product is favorite (if any favorites exist)
+                        first_product_is_fav = products[0].get('is_favorite') == True
+                        has_favorites = any(p.get('is_favorite') == True for p in products)
+                        
+                        if has_favorites:
+                            if first_product_is_fav:
+                                self.log_test(f"Index Effectiveness - {description}", True, "First product is favorite")
+                            else:
+                                self.log_test(f"Index Effectiveness - {description}", False, "First product is not favorite despite favorites existing")
+                        else:
+                            self.log_test(f"Index Effectiveness - {description}", True, "No favorites in result set")
+                    else:
+                        self.log_test(f"Index Effectiveness - {description}", True, "Empty result set")
+                        
+                except Exception as e:
+                    self.log_test(f"Index Test - {description}", False, f"Error: {e}")
+        
+        # Step 5: Create test products to verify sorting with known data
+        print(f"\n🔍 STEP 5: CREATING TEST PRODUCTS FOR SORTING VERIFICATION")
+        
+        # Create a test company first
+        test_company_name = f"Favorite Sort Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Test Company for Sorting",
+            "POST",
+            "companies",
+            200,
+            data={"name": test_company_name}
+        )
+        
+        test_company_id = None
+        if success and response:
+            try:
+                company_data = response.json()
+                test_company_id = company_data.get('id')
+                if test_company_id:
+                    self.created_companies.append(test_company_id)
+                    self.log_test("Test Company Created", True, f"ID: {test_company_id}")
+            except Exception as e:
+                self.log_test("Test Company Creation", False, f"Error: {e}")
+        
+        if test_company_id:
+            # Create test products - some favorites, some not
+            test_products = [
+                {"name": "AAA Non-Favorite Product", "is_favorite": False},
+                {"name": "BBB Favorite Product", "is_favorite": True},
+                {"name": "CCC Non-Favorite Product", "is_favorite": False},
+                {"name": "DDD Favorite Product", "is_favorite": True},
+                {"name": "EEE Non-Favorite Product", "is_favorite": False}
+            ]
+            
+            created_test_products = []
+            for product_data in test_products:
+                product_payload = {
+                    "name": product_data["name"],
+                    "company_id": test_company_id,
+                    "list_price": 100.0,
+                    "currency": "USD",
+                    "is_favorite": product_data["is_favorite"]
+                }
+                
+                success, response = self.run_test(
+                    f"Create Test Product - {product_data['name'][:20]}",
+                    "POST",
+                    "products",
+                    200,
+                    data=product_payload
+                )
+                
+                if success and response:
+                    try:
+                        product_response = response.json()
+                        product_id = product_response.get('id')
+                        if product_id:
+                            created_test_products.append({
+                                'id': product_id,
+                                'name': product_data['name'],
+                                'is_favorite': product_data['is_favorite']
+                            })
+                            self.created_products.append(product_id)
+                            self.log_test(f"Test Product Created - {product_data['name'][:20]}", True, f"Favorite: {product_data['is_favorite']}")
+                    except Exception as e:
+                        self.log_test(f"Test Product Creation - {product_data['name'][:20]}", False, f"Error: {e}")
+            
+            # Step 6: Verify sorting with our test products
+            print(f"\n🔍 STEP 6: VERIFYING SORTING WITH TEST PRODUCTS")
+            
+            # Wait a moment for database consistency
+            time.sleep(2)
+            
+            success, response = self.run_test(
+                "Get Products After Test Creation",
+                "GET",
+                f"products?company_id={test_company_id}",
+                200
+            )
+            
+            if success and response:
+                try:
+                    company_products = response.json()
+                    print(f"📋 TEST COMPANY PRODUCTS ORDER:")
+                    
+                    expected_order = ["BBB Favorite Product", "DDD Favorite Product", "AAA Non-Favorite Product", "CCC Non-Favorite Product", "EEE Non-Favorite Product"]
+                    actual_order = [p.get('name') for p in company_products]
+                    
+                    for i, product in enumerate(company_products):
+                        is_fav = product.get('is_favorite')
+                        name = product.get('name')
+                        print(f"   {i+1}. {'⭐' if is_fav else '📦'} {name}")
+                    
+                    # Check if favorites come first
+                    favorites_first = True
+                    non_favorite_started = False
+                    for product in company_products:
+                        if product.get('is_favorite') != True:
+                            non_favorite_started = True
+                        elif non_favorite_started:
+                            favorites_first = False
+                            break
+                    
+                    if favorites_first:
+                        self.log_test("Test Products Sorting Verification", True, "Favorites correctly appear first")
+                    else:
+                        self.log_test("Test Products Sorting Verification", False, "Favorites are NOT sorted first")
+                        
+                        # Detailed analysis of the sorting issue
+                        print(f"❌ DETAILED SORTING ANALYSIS:")
+                        print(f"   Expected order (favorites first): {expected_order}")
+                        print(f"   Actual order: {actual_order}")
+                        
+                except Exception as e:
+                    self.log_test("Test Products Sorting Verification", False, f"Error: {e}")
+        
+        # Step 7: Test specific edge cases
+        print(f"\n🔍 STEP 7: TESTING EDGE CASES")
+        
+        # Test with search query
+        success, response = self.run_test(
+            "Favorite Sorting with Search Query",
+            "GET",
+            "products?search=solar&limit=20",
+            200
+        )
+        
+        if success and response:
+            try:
+                search_products = response.json()
+                if search_products:
+                    favorites_in_search = [p for p in search_products if p.get('is_favorite') == True]
+                    if favorites_in_search:
+                        first_is_favorite = search_products[0].get('is_favorite') == True
+                        self.log_test("Search Query Favorite Sorting", first_is_favorite, f"Found {len(favorites_in_search)} favorites in search")
+                    else:
+                        self.log_test("Search Query Favorite Sorting", True, "No favorites in search results")
+                else:
+                    self.log_test("Search Query Favorite Sorting", True, "No search results")
+            except Exception as e:
+                self.log_test("Search Query Favorite Sorting", False, f"Error: {e}")
+        
+        # Step 8: Summary and recommendations
+        print(f"\n📋 STEP 8: SUMMARY AND RECOMMENDATIONS")
+        print("=" * 80)
+        
+        if len(favorite_products) == 0:
+            print("⚠️  NO FAVORITE PRODUCTS FOUND - Cannot test sorting")
+            self.log_test("Favorite Sorting Issue Analysis", False, "No favorite products exist to test sorting")
+        elif favorites_at_top:
+            print("✅ FAVORITE SORTING APPEARS TO BE WORKING CORRECTLY")
+            self.log_test("Favorite Sorting Issue Analysis", True, "Favorites are properly sorted to the top")
+        else:
+            print("❌ FAVORITE SORTING ISSUE CONFIRMED")
+            print("🔧 POTENTIAL CAUSES:")
+            print("   1. MongoDB aggregate pipeline not working as expected")
+            print("   2. is_favorite field has inconsistent data types")
+            print("   3. Database index not being utilized properly")
+            print("   4. Cache middleware interfering with sorting")
+            
+            self.log_test("Favorite Sorting Issue Analysis", False, "Favorites are NOT sorted to the top - issue confirmed")
+        
+        return True
+
 if __name__ == "__main__":
     import sys
     tester = KaravanAPITester()
