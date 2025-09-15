@@ -1838,19 +1838,21 @@ class KaravanAPITester:
                     self.log_test("Package without Notes Created", True, f"ID: {package_without_notes_id}")
                     
                     # Add products to package
+                    products_to_add = []
                     for i, product_id in enumerate(created_pdf_product_ids[1:3]):
-                        product_data = {"product_id": product_id, "quantity": 2}
-                        success, response = self.run_test(
-                            f"Add Product {i+1} to Package (No Notes)",
-                            "POST",
-                            f"packages/{package_without_notes_id}/products",
-                            200,
-                            data=product_data
-                        )
-                        if success:
-                            self.log_test(f"Product {i+1} Added to Package (No Notes)", True, f"Product ID: {product_id}")
-                        else:
-                            self.log_test(f"Product {i+1} Added to Package (No Notes)", False, "Failed to add product")
+                        products_to_add.append({"product_id": product_id, "quantity": 2})
+                    
+                    success, response = self.run_test(
+                        "Add Products to Package without Notes",
+                        "POST",
+                        f"packages/{package_without_notes_id}/products",
+                        200,
+                        data=products_to_add
+                    )
+                    if success:
+                        self.log_test("Products Added to Package without Notes", True, f"Added {len(products_to_add)} products")
+                    else:
+                        self.log_test("Products Added to Package without Notes", False, "Failed to add products")
                 else:
                     self.log_test("Package without Notes Creation", False, "No package ID returned")
             except Exception as e:
