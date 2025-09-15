@@ -2268,13 +2268,22 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         story.append(self._create_package_products_table_with_groups(products, include_prices, categories, category_groups))
         story.append(Spacer(1, 25))
         
-        # Toplam hesaplama bölümü
+        # Toplam hesaplama bölümü (indirim ve işçilik ile)
         if include_prices:
-            # Fiyatlı listede otomatik toplam
-            total_amount = sum(float(p.get('list_price_try', 0)) * p.get('quantity', 1) for p in products)
-            story.extend(self._create_package_totals_section(total_amount, "Toplam Ürün Fiyatı"))
+            # Fiyatlı listede indirim ve işçilik hesaplaması
+            total_list_price = sum(float(p.get('list_price_try', 0)) * p.get('quantity', 1) for p in products)
+            discount_percentage = float(package_data.get('discount_percentage', 0))
+            labor_cost = float(package_data.get('labor_cost', 0))
+            
+            discount_amount = total_list_price * (discount_percentage / 100)
+            total_after_discount = total_list_price - discount_amount
+            final_total = total_after_discount + labor_cost
+            
+            story.extend(self._create_package_totals_section_with_discount_labor(
+                total_list_price, discount_percentage, discount_amount, labor_cost, final_total
+            ))
         else:
-            # Fiyatsız listede elle girilen satış fiyatı
+            # Fiyatsız listede sadece satış fiyatı
             sale_price = float(package_data.get('sale_price', 0))
             story.extend(self._create_package_totals_section(sale_price, "Paket Satış Fiyatı"))
         
