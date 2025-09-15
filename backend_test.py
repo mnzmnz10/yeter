@@ -8873,6 +8873,10 @@ class KaravanAPITester:
             print("\n🎯 PRIORITY 10: Ergün Bey Package Category Assignment Fix")
             self.test_ergun_bey_package_category_fix()
             
+            # PRIORITY 11: Ergün Bey Package Category Groups Comprehensive Testing (REVIEW REQUEST)
+            print("\n🎯 PRIORITY 11: Ergün Bey Package Category Groups Comprehensive Testing")
+            self.test_ergun_bey_package_category_groups_comprehensive()
+            
         finally:
             # Always cleanup
             self.cleanup_test_data()
