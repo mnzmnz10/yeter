@@ -2540,6 +2540,8 @@ async def update_category(category_id: str, update_data: CategoryCreate):
             update_dict["description"] = update_data.description
         if update_data.color:
             update_dict["color"] = update_data.color
+        if update_data.sort_order is not None:
+            update_dict["sort_order"] = update_data.sort_order
         
         if update_dict:
             result = await db.categories.update_one(
