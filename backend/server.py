@@ -2634,9 +2634,13 @@ async def download_package_pdf_without_prices(package_id: str):
                 }
                 products.append(product_data)
         
+        # Kategorileri ve kategori gruplarını önceden getir
+        categories = await db.categories.find().to_list(None)
+        category_groups = await db.category_groups.find().to_list(None)
+        
         # PDF oluştur
         generator = PDFPackageGenerator()
-        pdf_buffer = await generator.generate_package_pdf(package, products, include_prices=False)
+        pdf_buffer = await generator.generate_package_pdf(package, products, include_prices=False, categories=categories, category_groups=category_groups)
         
         # Dosya adı
         safe_name = "".join(c for c in package["name"] if c.isalnum() or c in (' ', '-', '_')).strip()
