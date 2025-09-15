@@ -3992,10 +3992,11 @@ async def change_upload_currency(upload_id: str, new_currency: str):
 # Category Groups CRUD Operations
 @api_router.get("/category-groups")
 async def get_category_groups():
-    """Get all category groups"""
+    """Get all category groups sorted by sort_order, then by name"""
     try:
         groups = []
-        async for group in db.category_groups.find():
+        # Kategorileri önce sort_order'a, sonra name'e göre sırala
+        async for group in db.category_groups.find().sort([("sort_order", 1), ("name", 1)]):
             # Remove MongoDB _id field
             group.pop('_id', None)
             groups.append(group)
