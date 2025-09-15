@@ -11830,8 +11830,6 @@ def main():
         print(f"\n❌ Unexpected error during testing: {e}")
         return 1
 
-if __name__ == "__main__":
-    sys.exit(main())
     def test_package_pdf_category_groups_debug(self):
         """Debug specific package PDF generation issue - Category Groups"""
         print("\n🔍 DEBUGGING PACKAGE PDF CATEGORY GROUPS ISSUE...")
