@@ -2354,14 +2354,14 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         story.append(Spacer(1, 25))
         
         # Paket notları (varsa)
-        package_notes = package_data.get('notes', '').strip()
+        package_notes = package_data.get('notes', '').strip() if package_data.get('notes') else ''
         if package_notes:
             # Küçük notlar başlığı
             notes_header_style = ParagraphStyle(
                 'NotesHeader',
                 parent=self.styles['Normal'],
                 fontSize=9,
-                fontName=self.get_font_name(bold=True),
+                fontName=self.get_font_name(is_bold=True),  # bold -> is_bold
                 spaceAfter=6,
                 leftIndent=20
             )
