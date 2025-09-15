@@ -2246,7 +2246,10 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle>Kategori Yönetimi</CardTitle>
-                <CardDescription>Ürünlerinizi kategorilere ayırın ve düzenleyin</CardDescription>
+                <CardDescription>
+                  Ürünlerinizi kategorilere ayırın ve düzenleyin. 
+                  <span className="text-blue-600 font-medium">💡 Kategorileri sürükleyerek sıralarını değiştirebilirsiniz</span>
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-6">
