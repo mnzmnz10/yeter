@@ -9461,8 +9461,23 @@ class KaravanAPITester:
         
         try:
             update_response = response.json()
-            if update_response.get('success'):
-                self.log_test("Package Update Success", True, f"Message: {update_response.get('message', 'Updated')}")
+            # The PUT endpoint returns the Package object directly, not a success wrapper
+            if update_response.get('id') == package_id:
+                self.log_test("Package Update Success", True, f"Package updated successfully")
+                
+                # Verify the discount and labor cost were updated in the response
+                response_discount = update_response.get('discount_percentage', 0)
+                response_labor_cost = update_response.get('labor_cost', 0)
+                
+                if response_discount == 20.0:
+                    self.log_test("Discount Update in Response", True, f"Discount: {response_discount}%")
+                else:
+                    self.log_test("Discount Update in Response", False, f"Expected 20.0%, got {response_discount}%")
+                
+                if response_labor_cost == 5000.0:
+                    self.log_test("Labor Cost Update in Response", True, f"Labor Cost: ₺{response_labor_cost}")
+                else:
+                    self.log_test("Labor Cost Update in Response", False, f"Expected ₺5000.0, got ₺{response_labor_cost}")
             else:
                 self.log_test("Package Update Success", False, f"Update failed: {update_response}")
                 return False
