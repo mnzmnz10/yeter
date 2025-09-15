@@ -1987,8 +1987,17 @@ class PDFQuoteGenerator:
         # Teklif notları (varsa)
         quote_notes = quote_data.get('notes', '').strip() if quote_data.get('notes') else ''
         if quote_notes:
-            story.append(Paragraph("<b>Notlar</b>", self.subtitle_style))
-            story.append(Spacer(1, 10))
+            # Küçük notlar başlığı
+            notes_header_style = ParagraphStyle(
+                'NotesHeader',
+                parent=self.styles['Normal'],
+                fontSize=9,
+                fontName=self.get_font_name(bold=True),
+                spaceAfter=6,
+                leftIndent=20
+            )
+            story.append(Paragraph("<b>Notlar</b>", notes_header_style))
+            story.append(Spacer(1, 5))  # 10'dan 5'e küçültüldü
             
             # Notları paragraf olarak ekle (küçük font)
             notes_style = ParagraphStyle(
