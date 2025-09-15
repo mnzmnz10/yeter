@@ -2546,7 +2546,8 @@ async def download_package_pdf_with_prices(package_id: str):
                 product_data = {
                     "name": product["name"],
                     "quantity": pp["quantity"],
-                    "list_price_try": product.get("list_price_try", 0)
+                    "list_price_try": product.get("list_price_try", 0),
+                    "category_id": product.get("category_id")  # Kategori bilgisi eklendi
                 }
                 products.append(product_data)
         
