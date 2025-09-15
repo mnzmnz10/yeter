@@ -2780,8 +2780,10 @@ async def download_package_pdf_with_prices(package_id: str):
         generator = PDFPackageGenerator()
         pdf_buffer = generator.generate_package_pdf(package, products, include_prices=True, categories=categories, category_groups=category_groups)
         
-        # Dosya adı
-        safe_name = "".join(c for c in package["name"] if c.isalnum() or c in (' ', '-', '_')).strip()
+        # Dosya adı - Turkish character safe
+        safe_name = package["name"].encode('ascii', 'ignore').decode('ascii')
+        if not safe_name:
+            safe_name = "paket"
         filename = f"paket_{safe_name}_fiyatli.pdf"
         
         return StreamingResponse(
