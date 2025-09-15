@@ -2524,6 +2524,90 @@ class PDFPackageGenerator(PDFQuoteGenerator):
         table.setStyle(TableStyle(styles_list))
         
         return table
+
+    def _create_package_totals_section_with_discount_labor(self, total_list_price, discount_percentage, discount_amount, labor_cost, final_total):
+        """Create package totals section with discount and labor cost calculations"""
+        from reportlab.platypus import Table as PDFTable
+        
+        elements = []
+        
+        # Başlık
+        elements.append(Paragraph("<b>Paket Fiyat Hesaplaması</b>", self.subtitle_style))
+        elements.append(Spacer(1, 10))
+        
+        # Tablo verisi
+        table_data = [
+            [Paragraph("<b>Açıklama</b>", self.header_style), Paragraph("<b>Tutar</b>", self.header_style)]
+        ]
+        
+        # Liste fiyatı toplamı
+        table_data.append([
+            Paragraph("Toplam Liste Fiyatı", self.data_style),
+            Paragraph(f"₺ {self._format_price_modern(total_list_price)}", self.data_style)
+        ])
+        
+        # İndirim (eğer varsa)
+        if discount_percentage > 0:
+            table_data.append([
+                Paragraph(f"İndirim (%{discount_percentage})", self.data_style),
+                Paragraph(f"- ₺ {self._format_price_modern(discount_amount)}", 
+                         ParagraphStyle('RedText', parent=self.data_style, textColor=colors.red))
+            ])
+            
+            table_data.append([
+                Paragraph("İndirim Sonrası Toplam", self.data_style),
+                Paragraph(f"₺ {self._format_price_modern(total_list_price - discount_amount)}", self.data_style)
+            ])
+        
+        # İşçilik maliyeti (eğer varsa)
+        if labor_cost > 0:
+            table_data.append([
+                Paragraph("İşçilik Maliyeti", self.data_style),
+                Paragraph(f"+ ₺ {self._format_price_modern(labor_cost)}", 
+                         ParagraphStyle('GreenText', parent=self.data_style, textColor=colors.green))
+            ])
+        
+        # Net toplam
+        table_data.append([
+            Paragraph("<b>Net Toplam</b>", 
+                     ParagraphStyle('BoldData', parent=self.data_style, fontName=self.get_font_name(is_bold=True))),
+            Paragraph(f"<b>₺ {self._format_price_modern(final_total)}</b>", 
+                     ParagraphStyle('BoldTotal', parent=self.data_style, 
+                                   fontName=self.get_font_name(is_bold=True), 
+                                   textColor=colors.HexColor('#2F4B68')))
+        ])
+        
+        # Tablo oluştur
+        table = PDFTable(table_data, colWidths=[10*cm, 6*cm])
+        table.setStyle(TableStyle([
+            # Header
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2F4B68')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), self.get_font_name(is_bold=True)),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            
+            # Veri satırları
+            ('ALIGN', (0, 1), (0, -1), 'LEFT'),
+            ('ALIGN', (1, 1), (1, -1), 'RIGHT'),
+            ('FONTNAME', (0, 1), (-1, -1), self.get_font_name()),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('LEFTPADDING', (0, 1), (-1, -1), 10),
+            ('RIGHTPADDING', (0, 1), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+            ('TOPPADDING', (0, 1), (-1, -1), 6),
+            
+            # Kenarlık
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+            ('LINEABOVE', (0, -1), (-1, -1), 2, colors.HexColor('#2F4B68')),  # Net toplam üstüne kalın çizgi
+            
+            # Zemin renkleri
+            ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.HexColor('#F9FAFB')]),
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#EDF2F7'))  # Net toplam arka planı
+        ]))
+        
+        elements.append(table)
+        return elements
     
     def _create_package_totals_section(self, amount, label):
         """Paket toplam bölümü"""
