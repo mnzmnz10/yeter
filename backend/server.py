@@ -3709,7 +3709,7 @@ async def get_products_count(
     category_id: Optional[str] = None,
     search: Optional[str] = None
 ):
-    """Get total count of products with optional filters"""
+    """Get optimized total count of products with optional filters"""
     try:
         query = {}
         if company_id:
@@ -3717,17 +3717,38 @@ async def get_products_count(
         if category_id:
             query["category_id"] = category_id
         if search:
-            # Case-insensitive search in product name and description
-            query["$or"] = [
-                {"name": {"$regex": search, "$options": "i"}},
-                {"description": {"$regex": search, "$options": "i"}}
-            ]
+            # Enhanced text search with index utilization (same as main endpoint)
+            search_term = search.strip()
+            if len(search_term) >= 2:  # Only search for 2+ characters for performance
+                query["$text"] = {"$search": search_term}
+            else:
+                # Fallback for short searches
+                query["$or"] = [
+                    {"name": {"$regex": f"^{search}", "$options": "i"}},
+                    {"brand": {"$regex": f"^{search}", "$options": "i"}}
+                ]
             
-        count = await db.products.count_documents(query)
+        # Use estimated count for better performance on large collections
+        if not query:  # If no filters, use fast count
+            count = await db.products.estimated_document_count()
+        else:
+            count = await db.products.count_documents(query)
+            
         return {"count": count}
     except Exception as e:
         logger.error(f"Error getting products count: {e}")
-        raise HTTPException(status_code=500, detail="Ürün sayısı getirilemedi")
+        # Fallback to basic count
+        try:
+            basic_query = {}
+            if company_id:
+                basic_query["company_id"] = company_id
+            if category_id:
+                basic_query["category_id"] = category_id
+            count = await db.products.count_documents(basic_query)
+            return {"count": count}
+        except Exception as fallback_error:
+            logger.error(f"Fallback count query failed: {fallback_error}")
+            raise HTTPException(status_code=500, detail="Ürün sayısı getirilemedi")
 
 @api_router.get("/products", response_model=List[Product])
 async def get_products(
