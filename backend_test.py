@@ -4709,8 +4709,14 @@ class KaravanAPITester:
             if success and response:
                 try:
                     update_result = response.json()
-                    if update_result.get('success'):
-                        self.log_test("Quote Notes Update", True, "Quote updated successfully")
+                    # Check if the response contains the updated quote data
+                    if update_result.get('id') == quote_id:
+                        # Verify the notes were updated
+                        returned_notes = update_result.get('notes')
+                        if returned_notes == updated_quote_notes:
+                            self.log_test("Quote Notes Update", True, f"Quote updated successfully with new notes: {returned_notes[:50]}...")
+                        else:
+                            self.log_test("Quote Notes Update", False, f"Notes not updated correctly. Expected: {updated_quote_notes[:50]}..., Got: {returned_notes}")
                     else:
                         self.log_test("Quote Notes Update", False, f"Update failed: {update_result}")
                 except Exception as e:
