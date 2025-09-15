@@ -361,9 +361,20 @@ function App() {
 
   const loadCompanies = async () => {
     try {
+      // PERFORMANCE: Check cache first
+      const cached = CacheManager.get('companies');
+      if (cached) {
+        setCompanies(cached);
+        setStats(prev => ({ ...prev, totalCompanies: cached.length }));
+        return;
+      }
+
       const response = await axios.get(`${API}/companies`);
       setCompanies(response.data);
       setStats(prev => ({ ...prev, totalCompanies: response.data.length }));
+      
+      // PERFORMANCE: Cache the result
+      CacheManager.set('companies', response.data);
     } catch (error) {
       console.error('Error loading companies:', error);
       toast.error('Firmalar yüklenemedi');
