@@ -6491,12 +6491,13 @@ class KaravanAPITester:
                 # Verify all supplies have the correct structure
                 all_valid = True
                 for supply in final_supplies:
-                    if not all(field in supply for field in ['product_id', 'quantity', 'note']):
+                    # Backend returns supplies with 'id' (product id), not 'product_id'
+                    if not all(field in supply for field in ['id', 'quantity', 'note']):
                         all_valid = False
                         break
                 
                 if all_valid and len(final_supplies) > 0:
-                    self.log_test("Fixed Data Structure Verification", True, f"All {len(final_supplies)} supplies have correct structure (product_id, quantity, note)")
+                    self.log_test("Fixed Data Structure Verification", True, f"All {len(final_supplies)} supplies have correct structure (id, quantity, note)")
                 else:
                     self.log_test("Fixed Data Structure Verification", False, f"Data structure issues found in supplies")
                     
