@@ -1272,6 +1272,7 @@ function App() {
     name: '',
     sale_price: '',
     discount_percentage: 0, // Paket indirim yüzdesi
+    notes: '', // Paket notları
     image_url: ''
   });
   const [selectedPackageForEdit, setSelectedPackageForEdit] = useState(null);
