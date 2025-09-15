@@ -6117,6 +6117,408 @@ class KaravanAPITester:
         
         return True
 
+    def test_package_supplies_functionality_comprehensive(self):
+        """Comprehensive test for the fixed package supplies adding functionality"""
+        print("\n🔍 Testing Package Supplies Adding Functionality (Fixed Implementation)...")
+        
+        # Step 1: Create a test company for supplies testing
+        supplies_company_name = f"Supplies Test Company {datetime.now().strftime('%H%M%S')}"
+        success, response = self.run_test(
+            "Create Supplies Test Company",
+            "POST",
+            "companies",
+            200,
+            data={"name": supplies_company_name}
+        )
+        
+        if not success or not response:
+            self.log_test("Supplies Test Setup", False, "Failed to create test company")
+            return False
+            
+        try:
+            company_data = response.json()
+            supplies_company_id = company_data.get('id')
+            if not supplies_company_id:
+                self.log_test("Supplies Test Setup", False, "No company ID returned")
+                return False
+            self.created_companies.append(supplies_company_id)
+        except Exception as e:
+            self.log_test("Supplies Test Setup", False, f"Error parsing company response: {e}")
+            return False
+
+        # Step 2: Create a test package
+        package_data = {
+            "name": "Test Package for Supplies",
+            "description": "Package for testing supplies functionality",
+            "sale_price": 5000.00,
+            "discount_percentage": 10.0
+        }
+        
+        success, response = self.run_test(
+            "Create Test Package for Supplies",
+            "POST",
+            "packages",
+            200,
+            data=package_data
+        )
+        
+        if not success or not response:
+            self.log_test("Package Creation for Supplies", False, "Failed to create test package")
+            return False
+            
+        try:
+            package_response = response.json()
+            test_package_id = package_response.get('id')
+            if not test_package_id:
+                self.log_test("Package Creation for Supplies", False, "No package ID returned")
+                return False
+        except Exception as e:
+            self.log_test("Package Creation for Supplies", False, f"Error parsing package response: {e}")
+            return False
+
+        # Step 3: Get supply products from /api/products/supplies
+        print("\n🔍 Testing GET /api/products/supplies endpoint...")
+        success, response = self.run_test(
+            "Get Supply Products",
+            "GET",
+            "products/supplies",
+            200
+        )
+        
+        supply_products = []
+        if success and response:
+            try:
+                supply_products = response.json()
+                if isinstance(supply_products, list):
+                    self.log_test("Supply Products Format", True, f"Found {len(supply_products)} supply products")
+                    
+                    # Check if we have enough supply products for testing
+                    if len(supply_products) >= 3:
+                        self.log_test("Sufficient Supply Products", True, f"Have {len(supply_products)} products for testing")
+                    else:
+                        # Create some supply products for testing
+                        print("\n🔍 Creating Supply Products for Testing...")
+                        
+                        # First, get or create the Sarf Malzemeleri category
+                        success_cat, response_cat = self.run_test(
+                            "Get Categories",
+                            "GET",
+                            "categories",
+                            200
+                        )
+                        
+                        supplies_category_id = None
+                        if success_cat and response_cat:
+                            try:
+                                categories = response_cat.json()
+                                supplies_category = next((cat for cat in categories if cat.get('name') == 'Sarf Malzemeleri'), None)
+                                if supplies_category:
+                                    supplies_category_id = supplies_category.get('id')
+                                    self.log_test("Found Supplies Category", True, f"ID: {supplies_category_id}")
+                            except Exception as e:
+                                self.log_test("Get Supplies Category", False, f"Error: {e}")
+                        
+                        if not supplies_category_id:
+                            # Create supplies category
+                            success_create_cat, response_create_cat = self.run_test(
+                                "Create Supplies Category",
+                                "POST",
+                                "categories",
+                                200,
+                                data={"name": "Sarf Malzemeleri", "description": "Test supplies category", "color": "#f97316"}
+                            )
+                            
+                            if success_create_cat and response_create_cat:
+                                try:
+                                    cat_data = response_create_cat.json()
+                                    supplies_category_id = cat_data.get('id')
+                                    self.log_test("Created Supplies Category", True, f"ID: {supplies_category_id}")
+                                except Exception as e:
+                                    self.log_test("Create Supplies Category", False, f"Error: {e}")
+                        
+                        # Create test supply products
+                        test_supplies = [
+                            {
+                                "name": "Test Tutkal 50ml",
+                                "company_id": supplies_company_id,
+                                "category_id": supplies_category_id,
+                                "list_price": 25.50,
+                                "currency": "TRY",
+                                "description": "Test tutkal sarf malzemesi"
+                            },
+                            {
+                                "name": "Test Vida M6x20",
+                                "company_id": supplies_company_id,
+                                "category_id": supplies_category_id,
+                                "list_price": 2.75,
+                                "currency": "TRY",
+                                "description": "Test vida sarf malzemesi"
+                            },
+                            {
+                                "name": "Test Kablo 2.5mm",
+                                "company_id": supplies_company_id,
+                                "category_id": supplies_category_id,
+                                "list_price": 15.00,
+                                "currency": "TRY",
+                                "description": "Test kablo sarf malzemesi"
+                            }
+                        ]
+                        
+                        for supply_data in test_supplies:
+                            success_supply, response_supply = self.run_test(
+                                f"Create Supply Product: {supply_data['name']}",
+                                "POST",
+                                "products",
+                                200,
+                                data=supply_data
+                            )
+                            
+                            if success_supply and response_supply:
+                                try:
+                                    supply_product = response_supply.json()
+                                    supply_products.append(supply_product)
+                                    self.created_products.append(supply_product.get('id'))
+                                    self.log_test(f"Created Supply Product: {supply_data['name']}", True, f"ID: {supply_product.get('id')}")
+                                except Exception as e:
+                                    self.log_test(f"Create Supply Product: {supply_data['name']}", False, f"Error: {e}")
+                else:
+                    self.log_test("Supply Products Format", False, "Response is not a list")
+                    return False
+            except Exception as e:
+                self.log_test("Supply Products Parsing", False, f"Error: {e}")
+                return False
+        else:
+            self.log_test("Get Supply Products", False, "Failed to get supply products")
+            return False
+
+        if len(supply_products) < 3:
+            self.log_test("Supply Products Available", False, f"Only {len(supply_products)} supply products available, need at least 3")
+            return False
+
+        # Step 4: Test adding multiple supply products to the package via POST /api/packages/{package_id}/supplies
+        print("\n🔍 Testing POST /api/packages/{package_id}/supplies endpoint...")
+        
+        # Prepare supplies data with correct structure: product_id, quantity, note
+        supplies_to_add = [
+            {
+                "product_id": supply_products[0].get('id'),
+                "quantity": 1,
+                "note": "Test note for first supply"
+            },
+            {
+                "product_id": supply_products[1].get('id'),
+                "quantity": 3,
+                "note": "Test note for second supply"
+            },
+            {
+                "product_id": supply_products[2].get('id'),
+                "quantity": 5,
+                "note": "Test note for third supply"
+            }
+        ]
+        
+        success, response = self.run_test(
+            "Add Multiple Supplies to Package",
+            "POST",
+            f"packages/{test_package_id}/supplies",
+            200,
+            data=supplies_to_add
+        )
+        
+        if success and response:
+            try:
+                add_response = response.json()
+                if add_response.get('success'):
+                    message = add_response.get('message', '')
+                    self.log_test("Supplies Added Successfully", True, f"Message: {message}")
+                    
+                    # Check if the message indicates correct number of supplies added
+                    if "3 sarf malzemesi pakete eklendi" in message:
+                        self.log_test("Correct Supplies Count", True, "3 supplies added as expected")
+                    else:
+                        self.log_test("Correct Supplies Count", False, f"Expected '3 sarf malzemesi pakete eklendi', got: {message}")
+                else:
+                    self.log_test("Supplies Added Successfully", False, f"Response indicates failure: {add_response}")
+            except Exception as e:
+                self.log_test("Add Supplies Response", False, f"Error parsing: {e}")
+        else:
+            self.log_test("Add Supplies to Package", False, "Failed to add supplies")
+            return False
+
+        # Step 5: Verify the supplies are properly added by getting the package details
+        print("\n🔍 Verifying supplies were added correctly...")
+        success, response = self.run_test(
+            "Get Package with Supplies",
+            "GET",
+            f"packages/{test_package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                package_details = response.json()
+                supplies = package_details.get('supplies', [])
+                
+                if len(supplies) == 3:
+                    self.log_test("Supplies Count Verification", True, f"Package has {len(supplies)} supplies as expected")
+                    
+                    # Verify each supply has correct structure and quantities
+                    expected_quantities = [1, 3, 5]
+                    for i, supply in enumerate(supplies):
+                        if 'product_id' in supply and 'quantity' in supply and 'note' in supply:
+                            self.log_test(f"Supply {i+1} Structure", True, f"Has all required fields")
+                            
+                            # Check quantity
+                            if supply['quantity'] in expected_quantities:
+                                self.log_test(f"Supply {i+1} Quantity", True, f"Quantity: {supply['quantity']}")
+                            else:
+                                self.log_test(f"Supply {i+1} Quantity", False, f"Unexpected quantity: {supply['quantity']}")
+                        else:
+                            self.log_test(f"Supply {i+1} Structure", False, f"Missing required fields: {supply}")
+                else:
+                    self.log_test("Supplies Count Verification", False, f"Expected 3 supplies, found {len(supplies)}")
+            except Exception as e:
+                self.log_test("Package Supplies Verification", False, f"Error: {e}")
+
+        # Step 6: Test error handling - Try adding supplies to non-existent package
+        print("\n🔍 Testing Error Handling...")
+        
+        fake_package_id = "non-existent-package-id"
+        success, response = self.run_test(
+            "Add Supplies to Non-existent Package",
+            "POST",
+            f"packages/{fake_package_id}/supplies",
+            404,  # Expecting 404 error
+            data=supplies_to_add
+        )
+        
+        if success and response:
+            try:
+                error_response = response.json()
+                if "bulunamadı" in error_response.get('detail', '').lower():
+                    self.log_test("Non-existent Package Error Message", True, f"Correct Turkish error: {error_response.get('detail')}")
+                else:
+                    self.log_test("Non-existent Package Error Message", False, f"Unexpected error message: {error_response}")
+            except Exception as e:
+                self.log_test("Non-existent Package Error", False, f"Error parsing: {e}")
+
+        # Step 7: Test adding non-existent products as supplies
+        fake_supplies = [
+            {
+                "product_id": "non-existent-product-id",
+                "quantity": 1,
+                "note": "Test with fake product"
+            }
+        ]
+        
+        success, response = self.run_test(
+            "Add Non-existent Product as Supply",
+            "POST",
+            f"packages/{test_package_id}/supplies",
+            200,  # Should succeed but add 0 supplies
+            data=fake_supplies
+        )
+        
+        if success and response:
+            try:
+                add_response = response.json()
+                if add_response.get('success'):
+                    message = add_response.get('message', '')
+                    if "0 sarf malzemesi pakete eklendi" in message:
+                        self.log_test("Non-existent Product Handling", True, "Correctly handled non-existent product (0 supplies added)")
+                    else:
+                        self.log_test("Non-existent Product Handling", False, f"Unexpected message: {message}")
+                else:
+                    self.log_test("Non-existent Product Handling", False, f"Response indicates failure: {add_response}")
+            except Exception as e:
+                self.log_test("Non-existent Product Response", False, f"Error parsing: {e}")
+
+        # Step 8: Test data structure validation - Test with different quantities
+        print("\n🔍 Testing Data Structure with Different Quantities...")
+        
+        varied_supplies = [
+            {
+                "product_id": supply_products[0].get('id'),
+                "quantity": 1,
+                "note": "Single quantity test"
+            },
+            {
+                "product_id": supply_products[1].get('id'),
+                "quantity": 3,
+                "note": "Triple quantity test"
+            },
+            {
+                "product_id": supply_products[2].get('id'),
+                "quantity": 5,
+                "note": "Five quantity test"
+            }
+        ]
+        
+        success, response = self.run_test(
+            "Add Supplies with Varied Quantities",
+            "POST",
+            f"packages/{test_package_id}/supplies",
+            200,
+            data=varied_supplies
+        )
+        
+        if success and response:
+            try:
+                add_response = response.json()
+                if add_response.get('success'):
+                    self.log_test("Varied Quantities Test", True, f"Successfully added supplies with quantities 1, 3, 5")
+                else:
+                    self.log_test("Varied Quantities Test", False, f"Failed to add varied quantities: {add_response}")
+            except Exception as e:
+                self.log_test("Varied Quantities Response", False, f"Error parsing: {e}")
+
+        # Step 9: Final verification - Check that the fixed data structure works
+        print("\n🔍 Final Verification - Fixed Data Structure...")
+        success, response = self.run_test(
+            "Final Package Verification",
+            "GET",
+            f"packages/{test_package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                final_package = response.json()
+                final_supplies = final_package.get('supplies', [])
+                
+                # Verify all supplies have the correct structure
+                all_valid = True
+                for supply in final_supplies:
+                    if not all(field in supply for field in ['product_id', 'quantity', 'note']):
+                        all_valid = False
+                        break
+                
+                if all_valid and len(final_supplies) > 0:
+                    self.log_test("Fixed Data Structure Verification", True, f"All {len(final_supplies)} supplies have correct structure (product_id, quantity, note)")
+                else:
+                    self.log_test("Fixed Data Structure Verification", False, f"Data structure issues found in supplies")
+                    
+                # Check if quantities are preserved correctly
+                quantities_found = [supply.get('quantity') for supply in final_supplies]
+                if set(quantities_found) == {1, 3, 5}:
+                    self.log_test("Quantities Preserved", True, f"Quantities {quantities_found} correctly preserved")
+                else:
+                    self.log_test("Quantities Preserved", False, f"Unexpected quantities: {quantities_found}")
+                    
+            except Exception as e:
+                self.log_test("Final Verification", False, f"Error: {e}")
+
+        print(f"\n✅ Package Supplies Functionality Test Summary:")
+        print(f"   - Tested complete workflow for adding supplies to packages")
+        print(f"   - Verified GET /api/products/supplies endpoint")
+        print(f"   - Tested POST /api/packages/{{package_id}}/supplies with correct data structure")
+        print(f"   - Verified supplies are properly added with correct quantities (1, 3, 5)")
+        print(f"   - Tested error handling for non-existent packages and products")
+        print(f"   - Confirmed fixed data structure (product_id, quantity, note) works correctly")
+        print(f"   - Verified success messages are returned in Turkish")
+        
+        return True
+
     def cleanup(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
