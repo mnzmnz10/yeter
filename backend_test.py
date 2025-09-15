@@ -11786,50 +11786,6 @@ class KaravanAPITester:
         
         return True
 
-def main():
-    """Main test runner - Focus on Ergün Bey Package Async Category Groups Fix"""
-    print("🚀 Starting Ergün Bey Package Async Category Groups Fix Test")
-    print("=" * 80)
-    
-    tester = KaravanAPITester()
-    
-    try:
-        # Test the fixed PDF generation with async category groups (as requested in review)
-        print("\n🔍 Running Ergün Bey Package Async Category Groups Fix Test...")
-        fix_test_success = tester.test_ergun_bey_package_async_category_groups_fix()
-        
-        # Also test root endpoint to verify basic connectivity
-        print("\n🔍 Running Basic Connectivity Test...")
-        root_success = tester.test_root_endpoint()
-        
-        # Clean up test data
-        tester.cleanup()
-        
-        # Print final summary
-        print(f"\n" + "=" * 80)
-        print(f"📊 ERGÜN BEY PACKAGE ASYNC FIX TEST SUMMARY")
-        print(f"=" * 80)
-        print(f"Total Tests Run: {tester.tests_run}")
-        print(f"Tests Passed: {tester.tests_passed}")
-        print(f"Tests Failed: {tester.tests_run - tester.tests_passed}")
-        print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%" if tester.tests_run > 0 else "No tests run")
-        
-        overall_success = fix_test_success and root_success
-        
-        if overall_success:
-            print(f"✅ ERGÜN BEY PACKAGE ASYNC FIX TEST COMPLETED SUCCESSFULLY")
-        else:
-            print(f"❌ ERGÜN BEY PACKAGE ASYNC FIX TEST COMPLETED WITH ISSUES")
-            
-        return 0 if overall_success else 1
-        
-    except KeyboardInterrupt:
-        print("\n⚠️  Tests interrupted by user")
-        return 1
-    except Exception as e:
-        print(f"\n❌ Unexpected error during testing: {e}")
-        return 1
-
     def test_package_pdf_category_groups_debug(self):
         """Debug specific package PDF generation issue - Category Groups"""
         print("\n🔍 DEBUGGING PACKAGE PDF CATEGORY GROUPS ISSUE...")
