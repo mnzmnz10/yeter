@@ -1508,7 +1508,7 @@ function App() {
     
     // Set package discount and labor cost states
     setPackageDiscount(pkg.discount_percentage || 0);
-    setPackageLaborCost(0); // Reset labor cost for each edit
+    setPackageLaborCost(pkg.labor_cost || 0); // Paket labor_cost'ını yükle
     
     loadPackageWithProducts(pkg.id);
     
