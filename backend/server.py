@@ -2590,7 +2590,8 @@ async def download_package_pdf_without_prices(package_id: str):
             if product:
                 product_data = {
                     "name": product["name"],
-                    "quantity": pp["quantity"]
+                    "quantity": pp["quantity"],
+                    "category_id": product.get("category_id")  # Kategori bilgisi eklendi
                 }
                 products.append(product_data)
         
