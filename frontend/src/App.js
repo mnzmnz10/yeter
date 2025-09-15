@@ -129,11 +129,12 @@ function App() {
     currency: 'USD'
   });
 
-  // Pagination ve performance için state'ler
+  // Pagination ve performance için state'ler - OPTIMIZE EDİLDİ
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
-  const [productsPerPage] = useState(100); // İyileştirilmiş: Daha iyi performans için sayfa başına 100 ürün
+  const [productsPerPage] = useState(50); // OPTİMİZE: 50 ürün/sayfa daha hızlı yükleme
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [hasMoreProducts, setHasMoreProducts] = useState(true); // Infinite scroll için
 
   // Kategori renk paleti sistemi
   const categoryColorPalette = [
