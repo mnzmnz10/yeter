@@ -1315,13 +1315,14 @@ function App() {
         name: packageForm.name,
         sale_price: parseFloat(packageForm.sale_price) || 0,
         discount_percentage: parseFloat(packageForm.discount_percentage) || 0,
+        notes: packageForm.notes || null,
         image_url: packageForm.image_url || null
       });
       
       if (response.data) {
         toast.success('Paket başarıyla oluşturuldu');
         setShowPackageDialog(false);
-        setPackageForm({ name: '', sale_price: '', discount_percentage: 0, image_url: '' });
+        setPackageForm({ name: '', sale_price: '', discount_percentage: 0, notes: '', image_url: '' });
         await loadPackages();
       }
     } catch (error) {
