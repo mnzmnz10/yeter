@@ -1161,6 +1161,10 @@ function App() {
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [showSuppliesSection, setShowSuppliesSection] = useState(false); // Sarf malzemesi bölümü açık/kapalı
   
+  // Category sorting states
+  const [draggedCategoryId, setDraggedCategoryId] = useState(null);
+  const [dragOverCategoryId, setDragOverCategoryId] = useState(null);
+  
   // Package discount and labor cost states (similar to quotes)
   const [packageDiscount, setPackageDiscount] = useState(0);
   const [packageLaborCost, setPackageLaborCost] = useState(0);
