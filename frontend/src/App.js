@@ -1523,9 +1523,9 @@ function App() {
     if (!selectedPackageForEdit) return;
     
     try {
-      const supplies = Array.from(packageSelectedSupplies.entries()).map(([productId, quantity]) => ({
+      const supplies = Array.from(packageSelectedSupplies.entries()).map(([productId, supplyData]) => ({
         product_id: productId,
-        quantity: quantity,
+        quantity: supplyData.quantity,  // supplyData objesinden quantity'yi al
         note: "Sarf malzemesi"
       }));
       
@@ -1535,6 +1535,8 @@ function App() {
         await loadPackages();
         // Reload package details
         await loadPackageWithProducts(selectedPackageForEdit.id);
+        // Clear selected supplies
+        setPackageSelectedSupplies(new Map());
       }
     } catch (error) {
       console.error('Error adding supplies to package:', error);
