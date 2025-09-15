@@ -2298,7 +2298,20 @@ function App() {
                   </Card>
                   
                   {categories.map((category) => (
-                    <Card key={category.id} className="border-slate-200">
+                    <Card 
+                      key={category.id} 
+                      className={`border-slate-200 cursor-move transition-all duration-200 ${
+                        draggedCategoryId === category.id ? 'opacity-50 scale-95' : ''
+                      } ${
+                        dragOverCategoryId === category.id ? 'ring-2 ring-blue-400 ring-opacity-50 scale-105' : ''
+                      }`}
+                      draggable={true}
+                      onDragStart={(e) => handleCategoryDragStart(e, category.id)}
+                      onDragOver={(e) => handleCategoryDragOver(e, category.id)}
+                      onDragLeave={handleCategoryDragLeave}
+                      onDrop={(e) => handleCategoryDrop(e, category.id)}
+                      onDragEnd={handleCategoryDragEnd}
+                    >
                       <CardHeader className="pb-3" style={{borderLeft: `4px solid ${category.color}`}}>
                         <CardTitle className="text-lg flex items-center gap-2">
                           <div 
