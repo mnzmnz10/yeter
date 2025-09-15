@@ -2342,7 +2342,7 @@ class PDFPackageGenerator(PDFQuoteGenerator):
                 leading=14,
                 spaceAfter=12,
                 leftIndent=20,
-                fontName='Montserrat-Regular'
+                fontName=self.get_font_name()
             )
             story.append(Paragraph(package_notes, notes_style))
             story.append(Spacer(1, 25))
