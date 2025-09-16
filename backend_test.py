@@ -10789,7 +10789,10 @@ class KaravanAPITester:
             # PRIORITY 7: Core API Tests
             print("\n🎯 PRIORITY 7: Core API Functionality")
             self.test_root_endpoint()
-            self.test_exchange_rates_comprehensive()
+            
+            # PRIORITY 7.1: FreeCurrencyAPI Integration Testing (REVIEW REQUEST)
+            print("\n🎯 PRIORITY 7.1: FreeCurrencyAPI Integration Testing (REVIEW REQUEST)")
+            self.test_freecurrency_api_comprehensive()
             
             # PRIORITY 8: Company and Product Management
             print("\n🎯 PRIORITY 8: Company & Product Management")
