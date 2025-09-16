@@ -715,12 +715,14 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Quote Editing Functionality - Update Instead of Duplicate Creation"
+    - "FreeCurrencyAPI Integration Testing"
+    - "Currency Service Functions Testing"
   stuck_tasks:
-    - "Quote Editing Functionality - Update Instead of Duplicate Creation"
+    - "Currency Service Functions Testing"
   test_all: false
   test_priority: "high_first"
   completed_tests:
+    - "FreeCurrencyAPI Integration Testing"
     - "Debug Ergün Bey Package Category Group Issue in PDF Generation"
     - "Motokaravan - Kopya Package PDF Category Groups Fix"
     - "Backend Performance Optimizations Testing"
