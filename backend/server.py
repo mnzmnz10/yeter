@@ -3849,6 +3849,8 @@ async def update_package_product(package_id: str, package_product_id: str, updat
         elif hasattr(update_data, 'custom_price') and update_data.custom_price is None:
             # Explicitly set to None to remove custom price
             update_fields["custom_price"] = None
+        if update_data.notes is not None:
+            update_fields["notes"] = update_data.notes
         
         if not update_fields:
             raise HTTPException(status_code=400, detail="Güncellenecek veri bulunamadı")
