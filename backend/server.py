@@ -2910,11 +2910,23 @@ async def download_package_pdf_with_prices(package_id: str):
         for pp in package_products:
             product = await db.products.find_one({"id": pp["product_id"]})
             if product:
+                # Use custom price if available, otherwise use original prices
+                custom_price = pp.get("custom_price")
+                
+                if custom_price is not None:
+                    # Custom price is set for this product in the package
+                    effective_price_try = float(custom_price)
+                else:
+                    # Use original product prices
+                    effective_price_try = float(product.get("discounted_price_try") or product.get("list_price_try", 0))
+                
                 product_data = {
                     "name": product["name"],
                     "quantity": pp["quantity"],
-                    "list_price_try": product.get("list_price_try", 0),
-                    "category_id": product.get("category_id")  # Kategori bilgisi eklendi
+                    "list_price_try": effective_price_try,  # Use effective price (custom or original)
+                    "category_id": product.get("category_id"),  # Kategori bilgisi eklendi
+                    "custom_price": custom_price,  # PDF generator'a custom price bilgisi
+                    "has_custom_price": custom_price is not None  # PDF'de gösterim için
                 }
                 products.append(product_data)
         
