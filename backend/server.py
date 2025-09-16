@@ -3455,25 +3455,39 @@ async def get_package_with_products(package_id: str):
         for pp in package_products:
             product = await db.products.find_one({"id": pp["product_id"]})
             if product:
+                # Use custom price if available, otherwise use original prices
+                custom_price = pp.get("custom_price")
+                
+                if custom_price is not None:
+                    # Custom price is set for this product in the package
+                    effective_price_try = Decimal(str(custom_price))
+                    effective_discounted_price = custom_price
+                    effective_list_price = custom_price
+                else:
+                    # Use original product prices
+                    effective_price_try = Decimal(str(product.get("discounted_price_try") or product.get("list_price_try", 0)))
+                    effective_discounted_price = product.get("discounted_price")
+                    effective_list_price = product.get("list_price", 0)
+                
                 product_data = {
                     "id": product["id"],
                     "name": product["name"],
-                    "list_price": product.get("list_price", 0),
-                    "discounted_price": product.get("discounted_price"),
-                    "list_price_try": product.get("list_price_try", 0),
-                    "discounted_price_try": product.get("discounted_price_try"),
+                    "list_price": effective_list_price,
+                    "discounted_price": effective_discounted_price,
+                    "list_price_try": float(effective_price_try),
+                    "discounted_price_try": float(effective_price_try),
                     "currency": product.get("currency", "USD"),
                     "quantity": pp["quantity"],
                     "company_id": product.get("company_id"),
-                    "category_id": product.get("category_id")
+                    "category_id": product.get("category_id"),
+                    "package_product_id": pp["id"],  # Paket ürün ID'si (güncelleme için)
+                    "custom_price": custom_price,  # Özel fiyat (varsa)
+                    "has_custom_price": custom_price is not None  # Özel fiyat var mı?
                 }
                 products.append(product_data)
                 
-                # Calculate discounted price total
-                if product.get("discounted_price_try"):
-                    total_discounted_price += Decimal(str(product["discounted_price_try"])) * pp["quantity"]
-                else:
-                    total_discounted_price += Decimal(str(product.get("list_price_try", 0))) * pp["quantity"]
+                # Calculate total using effective price
+                total_discounted_price += effective_price_try * pp["quantity"]
 
         # Get package supplies (sarf malzemeleri)
         package_supplies = await db.package_supplies.find({"package_id": package_id}).to_list(None)
