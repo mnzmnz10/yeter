@@ -2991,7 +2991,9 @@ async def download_package_pdf_without_prices(package_id: str):
                 product_data = {
                     "name": product["name"],
                     "quantity": pp["quantity"],
-                    "category_id": product.get("category_id")  # Kategori bilgisi eklendi
+                    "category_id": product.get("category_id"),  # Kategori bilgisi eklendi
+                    "notes": pp.get("notes"),  # Ürün notları PDF'de gösterilecek
+                    "has_notes": bool(pp.get("notes", "").strip())  # Not var mı?
                 }
                 products.append(product_data)
         
