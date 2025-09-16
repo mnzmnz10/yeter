@@ -361,6 +361,16 @@ class PackageCreate(BaseModel):
     image_url: Optional[str] = None
     is_pinned: bool = False
 
+class PackageUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    sale_price: Optional[Decimal] = None
+    discount_percentage: Optional[float] = None
+    labor_cost: Optional[float] = None
+    notes: Optional[str] = None
+    image_url: Optional[str] = None
+    is_pinned: Optional[bool] = None
+
 class PackageProduct(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     package_id: str
