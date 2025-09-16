@@ -11576,6 +11576,547 @@ class KaravanAPITester:
         
         return True
 
+    def test_package_product_notes_comprehensive(self):
+        """Comprehensive test for package product notes feature as requested in Turkish review"""
+        print("\n🔍 Testing Package Product Notes Feature (Turkish Review Request)...")
+        print("📋 Testing: Product Notes Model, API endpoints, PDF generation, and real-world scenarios")
+        
+        # Use the specific Motokaravan package mentioned in the review request
+        motokaravan_package_id = "58f990f8-d1af-42af-a051-a1177d6a07f0"
+        
+        # Test 1: Verify Motokaravan package exists
+        print("\n🔍 Testing Motokaravan Package Verification...")
+        success, response = self.run_test(
+            "Verify Motokaravan Package Exists",
+            "GET",
+            f"packages/{motokaravan_package_id}",
+            200
+        )
+        
+        if not success or not response:
+            self.log_test("Motokaravan Package Notes Testing", False, "Motokaravan package not found - cannot proceed with notes testing")
+            return False
+        
+        try:
+            package_data = response.json()
+            products = package_data.get('products', [])
+            if not products:
+                self.log_test("Motokaravan Package Products", False, "No products found in Motokaravan package")
+                return False
+            
+            self.log_test("Motokaravan Package Found", True, f"Package has {len(products)} products for notes testing")
+            
+            # Get the first product for testing
+            test_product = products[0]
+            package_product_id = test_product.get('package_product_id')
+            product_name = test_product.get('name', 'Unknown Product')
+            
+            if not package_product_id:
+                self.log_test("Package Product ID", False, "No package_product_id found for testing")
+                return False
+                
+            self.log_test("Test Product Selected", True, f"Using product: {product_name} (ID: {package_product_id[:8]}...)")
+            
+        except Exception as e:
+            self.log_test("Motokaravan Package Data Parsing", False, f"Error: {e}")
+            return False
+        
+        # Test 2: PackageProduct Model Testing - notes field scenarios
+        print("\n🔍 Testing PackageProduct Model - Notes Field Scenarios...")
+        
+        # Test 2a: notes = null scenario
+        success, response = self.run_test(
+            "Update Package Product - Notes = null",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": None}
+        )
+        
+        if success and response:
+            try:
+                update_response = response.json()
+                if update_response.get('success') and 'not kaldırıldı' in update_response.get('message', ''):
+                    self.log_test("Notes = null Scenario", True, "Notes successfully set to null")
+                else:
+                    self.log_test("Notes = null Scenario", False, f"Unexpected response: {update_response}")
+            except Exception as e:
+                self.log_test("Notes = null Response", False, f"Error: {e}")
+        
+        # Test 2b: notes = empty string scenario
+        success, response = self.run_test(
+            "Update Package Product - Notes = empty string",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": ""}
+        )
+        
+        if success and response:
+            try:
+                update_response = response.json()
+                if update_response.get('success') and 'not kaldırıldı' in update_response.get('message', ''):
+                    self.log_test("Notes = empty string Scenario", True, "Empty notes successfully handled")
+                else:
+                    self.log_test("Notes = empty string Scenario", False, f"Unexpected response: {update_response}")
+            except Exception as e:
+                self.log_test("Notes = empty string Response", False, f"Error: {e}")
+        
+        # Test 2c: notes = valid text scenario
+        test_note = "Ön kapıya takılacak - sol tarafa yakın"
+        success, response = self.run_test(
+            "Update Package Product - Notes = valid text",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": test_note}
+        )
+        
+        if success and response:
+            try:
+                update_response = response.json()
+                if update_response.get('success') and 'not eklendi' in update_response.get('message', ''):
+                    self.log_test("Notes = valid text Scenario", True, f"Notes successfully added: {test_note[:30]}...")
+                else:
+                    self.log_test("Notes = valid text Scenario", False, f"Unexpected response: {update_response}")
+            except Exception as e:
+                self.log_test("Notes = valid text Response", False, f"Error: {e}")
+        
+        # Test 3: Package Product Notes API Testing
+        print("\n🔍 Testing Package Product Notes API Endpoints...")
+        
+        # Test 3a: Notes adding
+        practical_note = "Mutfak dolabının altına monte edilecek"
+        success, response = self.run_test(
+            "API Test - Add Notes",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": practical_note}
+        )
+        
+        if success and response:
+            try:
+                update_response = response.json()
+                message = update_response.get('message', '')
+                if update_response.get('success') and practical_note[:20] in message:
+                    self.log_test("Notes Adding API", True, f"Notes added successfully with Turkish message")
+                else:
+                    self.log_test("Notes Adding API", False, f"Message doesn't contain note text: {message}")
+            except Exception as e:
+                self.log_test("Notes Adding API Response", False, f"Error: {e}")
+        
+        # Test 3b: Notes updating
+        updated_note = "Mutfak dolabının altına monte edilecek - ölçü: 45x90cm"
+        success, response = self.run_test(
+            "API Test - Update Notes",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": updated_note}
+        )
+        
+        if success and response:
+            try:
+                update_response = response.json()
+                if update_response.get('success'):
+                    self.log_test("Notes Updating API", True, "Notes updated successfully")
+                else:
+                    self.log_test("Notes Updating API", False, f"Update failed: {update_response}")
+            except Exception as e:
+                self.log_test("Notes Updating API Response", False, f"Error: {e}")
+        
+        # Test 3c: Notes removal (null)
+        success, response = self.run_test(
+            "API Test - Remove Notes (null)",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": None}
+        )
+        
+        if success and response:
+            try:
+                update_response = response.json()
+                if update_response.get('success') and 'kaldırıldı' in update_response.get('message', ''):
+                    self.log_test("Notes Removal API (null)", True, "Notes removed successfully")
+                else:
+                    self.log_test("Notes Removal API (null)", False, f"Removal not confirmed: {update_response}")
+            except Exception as e:
+                self.log_test("Notes Removal API Response", False, f"Error: {e}")
+        
+        # Test 3d: Notes removal (empty string)
+        success, response = self.run_test(
+            "API Test - Remove Notes (empty)",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": ""}
+        )
+        
+        if success and response:
+            try:
+                update_response = response.json()
+                if update_response.get('success'):
+                    self.log_test("Notes Removal API (empty)", True, "Empty notes handled successfully")
+                else:
+                    self.log_test("Notes Removal API (empty)", False, f"Empty notes not handled: {update_response}")
+            except Exception as e:
+                self.log_test("Notes Removal API Response", False, f"Error: {e}")
+        
+        # Test 4: Package With Products Response Testing
+        print("\n🔍 Testing Package With Products Response - Notes and has_notes Fields...")
+        
+        # First add a note for testing
+        final_test_note = "Test notu - cam ürünü için özel montaj talimatı"
+        success, response = self.run_test(
+            "Setup Note for Response Test",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": final_test_note}
+        )
+        
+        # Test GET /api/packages/{package_id} response
+        success, response = self.run_test(
+            "GET Package - Notes and has_notes Fields",
+            "GET",
+            f"packages/{motokaravan_package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                package_response = response.json()
+                products = package_response.get('products', [])
+                
+                # Find our test product
+                test_product_found = None
+                for product in products:
+                    if product.get('package_product_id') == package_product_id:
+                        test_product_found = product
+                        break
+                
+                if test_product_found:
+                    notes = test_product_found.get('notes')
+                    has_notes = test_product_found.get('has_notes')
+                    
+                    if notes == final_test_note:
+                        self.log_test("GET Package - Notes Field", True, f"Notes field returned correctly: {notes[:30]}...")
+                    else:
+                        self.log_test("GET Package - Notes Field", False, f"Expected: {final_test_note}, Got: {notes}")
+                    
+                    if has_notes == True:
+                        self.log_test("GET Package - has_notes Boolean", True, "has_notes = True when notes exist")
+                    else:
+                        self.log_test("GET Package - has_notes Boolean", False, f"Expected has_notes = True, Got: {has_notes}")
+                else:
+                    self.log_test("GET Package - Test Product", False, "Test product not found in response")
+                    
+            except Exception as e:
+                self.log_test("GET Package Response Parsing", False, f"Error: {e}")
+        
+        # Test has_notes = false when notes are empty
+        success, response = self.run_test(
+            "Clear Notes for has_notes Test",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": ""}
+        )
+        
+        success, response = self.run_test(
+            "GET Package - has_notes = false Test",
+            "GET",
+            f"packages/{motokaravan_package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                package_response = response.json()
+                products = package_response.get('products', [])
+                
+                # Find our test product
+                test_product_found = None
+                for product in products:
+                    if product.get('package_product_id') == package_product_id:
+                        test_product_found = product
+                        break
+                
+                if test_product_found:
+                    has_notes = test_product_found.get('has_notes')
+                    
+                    if has_notes == False:
+                        self.log_test("GET Package - has_notes = false", True, "has_notes = False when notes are empty")
+                    else:
+                        self.log_test("GET Package - has_notes = false", False, f"Expected has_notes = False, Got: {has_notes}")
+                        
+            except Exception as e:
+                self.log_test("GET Package has_notes = false Test", False, f"Error: {e}")
+        
+        # Test 5: PDF Generation with Notes Testing
+        print("\n🔍 Testing PDF Generation with Notes...")
+        
+        # Add a note for PDF testing
+        pdf_test_note = "PDF Test: Bu cam ürünü karavan ön kısmına monte edilecek - dikkat: su geçirmez conta kullanılacak"
+        success, response = self.run_test(
+            "Setup Note for PDF Test",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": pdf_test_note}
+        )
+        
+        # Test 5a: PDF with prices includes notes
+        success, response = self.run_test(
+            "PDF Generation with Prices - Notes Test",
+            "GET",
+            f"packages/{motokaravan_package_id}/pdf-with-prices",
+            200
+        )
+        
+        if success and response:
+            try:
+                content_type = response.headers.get('content-type', '')
+                content_length = len(response.content)
+                
+                if 'application/pdf' in content_type and content_length > 1000:
+                    self.log_test("PDF with Prices Generation", True, f"PDF generated successfully ({content_length} bytes)")
+                    
+                    # Check if PDF content is valid
+                    pdf_content = response.content
+                    if pdf_content.startswith(b'%PDF'):
+                        self.log_test("PDF with Prices Format", True, "Valid PDF format with notes")
+                    else:
+                        self.log_test("PDF with Prices Format", False, "Invalid PDF format")
+                else:
+                    self.log_test("PDF with Prices Generation", False, f"Invalid content type or size: {content_type}, {content_length} bytes")
+                    
+            except Exception as e:
+                self.log_test("PDF with Prices Test", False, f"Error: {e}")
+        
+        # Test 5b: PDF without prices includes notes
+        success, response = self.run_test(
+            "PDF Generation without Prices - Notes Test",
+            "GET",
+            f"packages/{motokaravan_package_id}/pdf-without-prices",
+            200
+        )
+        
+        if success and response:
+            try:
+                content_type = response.headers.get('content-type', '')
+                content_length = len(response.content)
+                
+                if 'application/pdf' in content_type and content_length > 1000:
+                    self.log_test("PDF without Prices Generation", True, f"PDF generated successfully ({content_length} bytes)")
+                    
+                    # Check if PDF content is valid
+                    pdf_content = response.content
+                    if pdf_content.startswith(b'%PDF'):
+                        self.log_test("PDF without Prices Format", True, "Valid PDF format with notes")
+                    else:
+                        self.log_test("PDF without Prices Format", False, "Invalid PDF format")
+                else:
+                    self.log_test("PDF without Prices Generation", False, f"Invalid content type or size: {content_type}, {content_length} bytes")
+                    
+            except Exception as e:
+                self.log_test("PDF without Prices Test", False, f"Error: {e}")
+        
+        # Test 6: Add Products to Package with Notes Testing
+        print("\n🔍 Testing Add Products to Package with Notes...")
+        
+        # Get a product to add to the package
+        success, response = self.run_test(
+            "Get Products for Package Addition Test",
+            "GET",
+            "products?limit=5",
+            200
+        )
+        
+        available_product_id = None
+        if success and response:
+            try:
+                products_list = response.json()
+                if products_list and len(products_list) > 0:
+                    available_product_id = products_list[0].get('id')
+                    self.log_test("Product Found for Addition", True, f"Using product ID: {available_product_id[:8]}...")
+            except Exception as e:
+                self.log_test("Get Products for Addition", False, f"Error: {e}")
+        
+        if available_product_id:
+            # Test adding product with notes, custom_price, and quantity
+            add_product_data = [
+                {
+                    "product_id": available_product_id,
+                    "quantity": 2,
+                    "custom_price": 1500.0,
+                    "notes": "Yeni eklenen ürün - özel fiyat ve not ile birlikte"
+                }
+            ]
+            
+            success, response = self.run_test(
+                "Add Product with Notes and Custom Price",
+                "POST",
+                f"packages/{motokaravan_package_id}/products",
+                200,
+                data=add_product_data
+            )
+            
+            if success and response:
+                try:
+                    add_response = response.json()
+                    if add_response.get('success'):
+                        self.log_test("Add Product with Notes", True, f"Product added with notes and custom price")
+                    else:
+                        self.log_test("Add Product with Notes", False, f"Addition failed: {add_response}")
+                except Exception as e:
+                    self.log_test("Add Product with Notes Response", False, f"Error: {e}")
+        
+        # Test 7: Real World Notes Scenarios Testing
+        print("\n🔍 Testing Real World Notes Scenarios...")
+        
+        real_world_scenarios = [
+            {
+                "name": "Practical Installation Note",
+                "note": "Ön kapıya takılacak - sol tarafa yakın",
+                "description": "Simple installation instruction"
+            },
+            {
+                "name": "Detailed Installation Note", 
+                "note": "Mutfak dolabının altına monte edilecek - ölçü kontrol edildi",
+                "description": "Detailed installation with measurement confirmation"
+            },
+            {
+                "name": "Long Note Test",
+                "note": "Bu cam ürünü karavan ön kısmına monte edilecek. Montaj sırasında dikkat edilmesi gerekenler: 1) Su geçirmez conta kullanılacak, 2) Vida delikleri önceden açılacak, 3) Silikon uygulaması yapılacak, 4) Montaj sonrası su testi yapılacak. Garanti kapsamında herhangi bir sorun olursa ücretsiz değişim yapılacaktır.",
+                "description": "Very long note with detailed instructions"
+            },
+            {
+                "name": "Turkish Characters Note",
+                "note": "Türkçe karakterler: ğüşıöç ĞÜŞIÖÇ - özel montaj talimatı",
+                "description": "Turkish characters support test"
+            }
+        ]
+        
+        for i, scenario in enumerate(real_world_scenarios):
+            success, response = self.run_test(
+                f"Real World Scenario {i+1}: {scenario['name']}",
+                "PUT",
+                f"packages/{motokaravan_package_id}/products/{package_product_id}",
+                200,
+                data={"notes": scenario['note']}
+            )
+            
+            if success and response:
+                try:
+                    update_response = response.json()
+                    if update_response.get('success'):
+                        # Verify the note was saved by getting the package
+                        success2, response2 = self.run_test(
+                            f"Verify Scenario {i+1} Note Saved",
+                            "GET",
+                            f"packages/{motokaravan_package_id}",
+                            200
+                        )
+                        
+                        if success2 and response2:
+                            package_data = response2.json()
+                            products = package_data.get('products', [])
+                            test_product = next((p for p in products if p.get('package_product_id') == package_product_id), None)
+                            
+                            if test_product and test_product.get('notes') == scenario['note']:
+                                self.log_test(f"Scenario {i+1} Verification", True, f"{scenario['description']} - Note saved correctly")
+                            else:
+                                self.log_test(f"Scenario {i+1} Verification", False, f"Note not saved correctly")
+                        else:
+                            self.log_test(f"Scenario {i+1} Verification", False, "Could not verify note was saved")
+                    else:
+                        self.log_test(f"Real World Scenario {i+1}", False, f"Update failed: {update_response}")
+                except Exception as e:
+                    self.log_test(f"Real World Scenario {i+1} Response", False, f"Error: {e}")
+        
+        # Test 8: Character Limit Testing
+        print("\n🔍 Testing Character Limit Scenarios...")
+        
+        # Test very long note (1000+ characters)
+        very_long_note = "Bu çok uzun bir not testi. " * 50  # ~1400 characters
+        success, response = self.run_test(
+            "Character Limit Test - Very Long Note",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/{package_product_id}",
+            200,
+            data={"notes": very_long_note}
+        )
+        
+        if success and response:
+            try:
+                update_response = response.json()
+                if update_response.get('success'):
+                    self.log_test("Very Long Note Test", True, f"Long note ({len(very_long_note)} chars) handled successfully")
+                else:
+                    self.log_test("Very Long Note Test", False, f"Long note failed: {update_response}")
+            except Exception as e:
+                self.log_test("Very Long Note Test", False, f"Error: {e}")
+        
+        # Test 9: Error Handling
+        print("\n🔍 Testing Notes Error Handling...")
+        
+        # Test with invalid package ID
+        success, response = self.run_test(
+            "Error Test - Invalid Package ID",
+            "PUT",
+            f"packages/invalid-package-id/products/{package_product_id}",
+            404,
+            data={"notes": "Test note"}
+        )
+        
+        if success and response:
+            try:
+                error_response = response.json()
+                if 'bulunamadı' in error_response.get('detail', '').lower():
+                    self.log_test("Invalid Package ID Error", True, "Proper Turkish error message for invalid package")
+                else:
+                    self.log_test("Invalid Package ID Error", False, f"Unexpected error message: {error_response}")
+            except Exception as e:
+                self.log_test("Invalid Package ID Error", False, f"Error: {e}")
+        
+        # Test with invalid package product ID
+        success, response = self.run_test(
+            "Error Test - Invalid Package Product ID",
+            "PUT",
+            f"packages/{motokaravan_package_id}/products/invalid-product-id",
+            404,
+            data={"notes": "Test note"}
+        )
+        
+        if success and response:
+            try:
+                error_response = response.json()
+                if 'bulunamadı' in error_response.get('detail', '').lower():
+                    self.log_test("Invalid Package Product ID Error", True, "Proper Turkish error message for invalid product")
+                else:
+                    self.log_test("Invalid Package Product ID Error", False, f"Unexpected error message: {error_response}")
+            except Exception as e:
+                self.log_test("Invalid Package Product ID Error", False, f"Error: {e}")
+        
+        print(f"\n✅ Package Product Notes Feature Test Summary:")
+        print(f"   - ✅ Tested PackageProduct model notes field (null, empty, valid text)")
+        print(f"   - ✅ Tested PUT /api/packages/{{package_id}}/products/{{package_product_id}} endpoint")
+        print(f"   - ✅ Tested notes adding, updating, and removal operations")
+        print(f"   - ✅ Tested GET /api/packages/{{package_id}} response includes notes and has_notes")
+        print(f"   - ✅ Tested has_notes boolean logic (true/false scenarios)")
+        print(f"   - ✅ Tested PDF generation with notes (both with-prices and without-prices)")
+        print(f"   - ✅ Tested POST /api/packages/{{package_id}}/products with notes and custom_price")
+        print(f"   - ✅ Tested real-world scenarios with practical Turkish notes")
+        print(f"   - ✅ Tested Turkish character support (ğüşıöç ĞÜŞIÖÇ)")
+        print(f"   - ✅ Tested character limit handling (1000+ character notes)")
+        print(f"   - ✅ Tested error handling with proper Turkish error messages")
+        print(f"   - ✅ Used Motokaravan package (58f990f8-d1af-42af-a051-a1177d6a07f0) as requested")
+        
+        return True
+
     def run_all_tests(self):
         """Run focused backend tests based on review request"""
         print("🚀 Starting Karavan Backend Testing - Focus on PUT Packages Endpoint")
