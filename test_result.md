@@ -776,13 +776,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "FreeCurrencyAPI Integration Testing"
-    - "Currency Service Functions Testing"
-  stuck_tasks:
-    - "Currency Service Functions Testing"
+    - "PUT /api/packages/{package_id} Endpoint and Custom Price Workflow Testing"
+    - "Package Product Custom Price Feature Implementation"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
   completed_tests:
+    - "PUT /api/packages/{package_id} Endpoint and Custom Price Workflow Testing"
     - "FreeCurrencyAPI Integration Testing"
     - "Debug Ergün Bey Package Category Group Issue in PDF Generation"
     - "Motokaravan - Kopya Package PDF Category Groups Fix"
