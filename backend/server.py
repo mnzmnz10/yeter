@@ -3458,6 +3458,65 @@ async def get_packages():
         logger.error(f"Error getting packages: {e}")
         raise HTTPException(status_code=500, detail="Paketler getirilemedi")
 
+@api_router.put("/packages/{package_id}")
+async def update_package(package_id: str, package_data: PackageUpdate):
+    """Update a package"""
+    try:
+        # Check if package exists
+        existing_package = await db.packages.find_one({"id": package_id})
+        if not existing_package:
+            raise HTTPException(status_code=404, detail="Paket bulunamadı")
+        
+        # Prepare update data (only include non-None fields)
+        update_fields = {}
+        
+        if package_data.name is not None:
+            update_fields["name"] = package_data.name
+        if package_data.description is not None:
+            update_fields["description"] = package_data.description
+        if package_data.sale_price is not None:
+            update_fields["sale_price"] = float(package_data.sale_price)
+        if package_data.discount_percentage is not None:
+            update_fields["discount_percentage"] = package_data.discount_percentage
+        if package_data.labor_cost is not None:
+            update_fields["labor_cost"] = package_data.labor_cost
+        if package_data.notes is not None:
+            update_fields["notes"] = package_data.notes
+        if package_data.image_url is not None:
+            update_fields["image_url"] = package_data.image_url
+        if package_data.is_pinned is not None:
+            update_fields["is_pinned"] = package_data.is_pinned
+        
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="Güncellenecek veri bulunamadı")
+        
+        # Add updated timestamp
+        update_fields["updated_at"] = datetime.now(timezone.utc)
+        
+        # Update package
+        result = await db.packages.update_one(
+            {"id": package_id},
+            {"$set": update_fields}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Paket bulunamadı")
+        
+        # Get updated package
+        updated_package = await db.packages.find_one({"id": package_id})
+        
+        return {
+            "success": True,
+            "message": f"'{updated_package['name']}' paketi başarıyla güncellendi",
+            "package": Package(**updated_package)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating package: {e}")
+        raise HTTPException(status_code=500, detail="Paket güncellenemedi")
+
 @api_router.get("/packages/{package_id}", response_model=PackageWithProducts)
 async def get_package_with_products(package_id: str):
     """Get package with its products"""
