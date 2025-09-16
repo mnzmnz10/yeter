@@ -461,56 +461,86 @@ class User(BaseModel):
 # Currency conversion service
 class CurrencyService:
     def __init__(self):
-        self.api_url = "https://www.tcmb.gov.tr/kurlar/today.xml"
+        self.api_key = os.environ.get('FREECURRENCY_API_KEY')
+        self.api_url = "https://api.freecurrencyapi.com/v1/latest"
         self.rates_cache = {}
         self.last_update = None
     
     async def get_exchange_rates(self) -> Dict[str, Decimal]:
-        """Get current exchange rates from TCMB (Turkish Central Bank) XML API"""
+        """Get current exchange rates from FreeCurrencyAPI"""
         try:
-            response = requests.get(self.api_url, timeout=15)
+            if not self.api_key:
+                raise Exception("FREECURRENCY_API_KEY not found in environment variables")
+            
+            # Get rates with TRY as base currency to get foreign currencies in terms of TRY
+            params = {
+                'apikey': self.api_key,
+                'base_currency': 'TRY',
+                'currencies': 'USD,EUR,GBP'
+            }
+            
+            response = requests.get(self.api_url, params=params, timeout=15)
             response.raise_for_status()
+            data = response.json()
             
-            # Parse XML response
-            import xml.etree.ElementTree as ET
-            root = ET.fromstring(response.content)
+            if 'data' not in data:
+                raise Exception(f"Invalid API response format: {data}")
             
+            rates_data = data['data']
+            
+            # FreeCurrencyAPI gives us rates FROM TRY TO other currencies
+            # But we need rates FROM other currencies TO TRY
+            # So we need to invert the rates
             rates = {'TRY': Decimal('1')}  # Base currency
             
-            # Parse each currency from XML
-            for currency_elem in root.findall('Currency'):
-                currency_code = currency_elem.get('CurrencyCode')
-                if not currency_code:
-                    continue
-                
-                # Get BanknoteSelling rate (selling rate for banknotes)
-                # This is the rate TCMB sells foreign currency for TRY
-                banknote_selling = currency_elem.find('BanknoteSelling')
-                forex_selling = currency_elem.find('ForexSelling')
-                
-                # Prefer BanknoteSelling, fallback to ForexSelling
-                rate_value = None
-                if banknote_selling is not None and banknote_selling.text:
-                    rate_value = banknote_selling.text.strip()
-                elif forex_selling is not None and forex_selling.text:
-                    rate_value = forex_selling.text.strip()
-                
-                if rate_value and rate_value != '':
-                    try:
-                        # TCMB gives rate as: 1 USD = X TRY
-                        # So we store X as the rate (foreign currency to TRY)
-                        rates[currency_code] = Decimal(rate_value)
-                    except (ValueError, Exception) as e:
-                        logger.warning(f"Could not parse rate for {currency_code}: {rate_value}, error: {e}")
-                        continue
+            for currency, rate_value in rates_data.items():
+                if rate_value and rate_value > 0:
+                    # Convert to TRY rate (invert the rate)
+                    # If 1 TRY = 0.036 USD, then 1 USD = 1/0.036 = 27.77 TRY
+                    try_to_foreign = Decimal(str(rate_value))
+                    foreign_to_try = Decimal('1') / try_to_foreign
+                    rates[currency] = foreign_to_try
             
-            # Ensure we have the major currencies
+            # Fallback: if above doesn't work, try with USD as base
+            if len(rates) <= 1:  # Only TRY in rates
+                params = {
+                    'apikey': self.api_key,
+                    'base_currency': 'USD',
+                    'currencies': 'TRY,EUR,GBP'
+                }
+                
+                response = requests.get(self.api_url, params=params, timeout=15)
+                response.raise_for_status()
+                data = response.json()
+                
+                if 'data' in data:
+                    rates_data = data['data']
+                    
+                    # USD is base, so TRY rate is direct
+                    if 'TRY' in rates_data:
+                        usd_to_try = Decimal(str(rates_data['TRY']))
+                        rates['USD'] = usd_to_try
+                    
+                    # For EUR and GBP, we need to convert via USD
+                    if 'EUR' in rates_data and 'TRY' in rates_data:
+                        eur_to_usd = Decimal(str(rates_data['EUR']))
+                        usd_to_try = Decimal(str(rates_data['TRY']))
+                        eur_to_try = eur_to_usd * usd_to_try
+                        rates['EUR'] = eur_to_try
+                    
+                    if 'GBP' in rates_data and 'TRY' in rates_data:
+                        gbp_to_usd = Decimal(str(rates_data['GBP']))
+                        usd_to_try = Decimal(str(rates_data['TRY']))
+                        gbp_to_try = gbp_to_usd * usd_to_try
+                        rates['GBP'] = gbp_to_try
+            
+            # Ensure we have the major currencies with fallback values
             if 'USD' not in rates:
-                logger.warning("USD rate not found in TCMB data")
+                rates['USD'] = Decimal('27.5')  # Fallback
             if 'EUR' not in rates:
-                logger.warning("EUR rate not found in TCMB data")
+                rates['EUR'] = Decimal('30.0')  # Fallback  
             if 'GBP' not in rates:
-                logger.warning("GBP rate not found in TCMB data")
+                rates['GBP'] = Decimal('35.0')  # Fallback
             
             self.rates_cache = rates
             self.last_update = datetime.now(timezone.utc)
@@ -527,17 +557,20 @@ class CurrencyService:
                     upsert=True
                 )
             
-            logger.info(f"TCMB exchange rates updated: {rates}")
+            logger.info(f"FreeCurrencyAPI exchange rates updated: {rates}")
             return rates
             
         except Exception as e:
-            logger.error(f"Failed to fetch TCMB exchange rates: {e}")
+            logger.error(f"Failed to fetch FreeCurrencyAPI exchange rates: {e}")
             # Try to get from database as fallback
             rates_from_db = await db.exchange_rates.find().to_list(None)
             if rates_from_db:
-                return {rate['currency']: Decimal(str(rate['rate_to_try'])) for rate in rates_from_db}
+                fallback_rates = {rate['currency']: Decimal(str(rate['rate_to_try'])) for rate in rates_from_db}
+                logger.info(f"Using fallback rates from database: {fallback_rates}")
+                return fallback_rates
             
-            # Default rates as fallback (approximate values)
+            # Default rates as final fallback
+            logger.warning("Using default fallback exchange rates")
             return {
                 'USD': Decimal('27.5'),
                 'EUR': Decimal('30.0'),
