@@ -3272,6 +3272,17 @@ function App() {
                                               {product.custom_price === 0 && <span className="ml-1 font-medium">(HEDİYE)</span>}
                                             </div>
                                           )}
+                                          
+                                          {/* Ürün Notları Göstergesi */}
+                                          {product.has_notes && (
+                                            <div className="mt-2 text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded border-l-2 border-amber-400">
+                                              <div className="flex items-start gap-1">
+                                                <StickyNote className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                                <span className="font-medium">Not:</span>
+                                                <span className="italic">{product.notes}</span>
+                                              </div>
+                                            </div>
+                                          )}
                                         </div>
                                       ))}
                                     </div>
