@@ -3172,7 +3172,11 @@ function App() {
                                                 <span>Adet: {product.quantity}</span>
                                                 <span>•</span>
                                                 <span>
-                                                  {showPackageDiscountedPrices && product.discounted_price_try ? (
+                                                  {product.has_custom_price ? (
+                                                    <span className="text-purple-600 font-medium">
+                                                      ₺ {formatPrice(product.custom_price)} (özel fiyat)
+                                                    </span>
+                                                  ) : showPackageDiscountedPrices && product.discounted_price_try ? (
                                                     <>
                                                       <span className="line-through text-slate-400">₺ {formatPrice(product.list_price_try || 0)}</span>
                                                       {' → '}
@@ -3184,17 +3188,59 @@ function App() {
                                                 </span>
                                               </div>
                                             </div>
-                                            <Badge 
-                                              variant="outline" 
-                                              className="text-xs"
-                                              style={{ 
-                                                borderColor: groupData.color,
-                                                color: groupData.color
-                                              }}
-                                            >
-                                              {product.quantity}x
-                                            </Badge>
+                                            <div className="flex items-center gap-2">
+                                              {/* Özel Fiyat Düzenleme Butonu */}
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-7 px-2 text-xs"
+                                                onClick={() => {
+                                                  const currentPrice = product.has_custom_price ? product.custom_price : (product.discounted_price_try || product.list_price_try || 0);
+                                                  const newPrice = prompt(
+                                                    `"${product.name}" için özel fiyat girin:\n\n` +
+                                                    `Mevcut fiyat: ₺${formatPrice(currentPrice)}\n` +
+                                                    `Orijinal fiyat: ₺${formatPrice(product.list_price_try || 0)}\n\n` +
+                                                    `Özel fiyat (₺): (0 = hediye, boş = orijinal fiyata dön)`,
+                                                    product.has_custom_price ? product.custom_price.toString() : ''
+                                                  );
+                                                  
+                                                  if (newPrice !== null) {
+                                                    const parsedPrice = newPrice.trim() === '' ? null : parseFloat(newPrice);
+                                                    if (newPrice.trim() === '' || (!isNaN(parsedPrice) && parsedPrice >= 0)) {
+                                                      updatePackageProduct(product.package_product_id, {
+                                                        custom_price: parsedPrice
+                                                      });
+                                                    } else {
+                                                      toast.error('Geçerli bir fiyat girin (0 veya daha büyük)');
+                                                    }
+                                                  }
+                                                }}
+                                                title={product.has_custom_price ? "Özel fiyatı düzenle" : "Özel fiyat belirle"}
+                                              >
+                                                <DollarSign className="w-3 h-3" />
+                                              </Button>
+                                              
+                                              {/* Adet Badge */}
+                                              <Badge 
+                                                variant="outline" 
+                                                className="text-xs"
+                                                style={{ 
+                                                  borderColor: groupData.color,
+                                                  color: groupData.color
+                                                }}
+                                              >
+                                                {product.quantity}x
+                                              </Badge>
+                                            </div>
                                           </div>
+                                          
+                                          {/* Özel Fiyat Bilgi Göstergesi */}
+                                          {product.has_custom_price && (
+                                            <div className="mt-2 text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                                              <span className="font-medium">Özel fiyat uygulandı:</span> ₺{formatPrice(product.custom_price)} 
+                                              {product.custom_price === 0 && <span className="ml-1 font-medium">(HEDİYE)</span>}
+                                            </div>
+                                          )}
                                         </div>
                                       ))}
                                     </div>
