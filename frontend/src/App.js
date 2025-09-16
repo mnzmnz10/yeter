@@ -1717,6 +1717,21 @@ function App() {
     }
   };
 
+  const updatePackageProduct = async (packageProductId, updateData) => {
+    if (!selectedPackageForEdit) return;
+    
+    try {
+      const response = await axios.put(`${API}/packages/${selectedPackageForEdit.id}/products/${packageProductId}`, updateData);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await loadPackageWithProducts(selectedPackageForEdit.id);
+      }
+    } catch (error) {
+      console.error('Error updating package product:', error);
+      toast.error('Paket ürünü güncellenemedi');
+    }
+  };
+
   const updateSupplyQuantity = async (supplyId, newQuantity) => {
     if (!selectedPackageForEdit || newQuantity <= 0) return;
     
