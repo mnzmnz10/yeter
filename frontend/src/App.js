@@ -3189,6 +3189,37 @@ function App() {
                                               </div>
                                             </div>
                                             <div className="flex items-center gap-2">
+                                              {/* Not Düzenleme Butonu */}
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-7 px-2 text-xs"
+                                                onClick={() => {
+                                                  const currentNotes = product.notes || '';
+                                                  const newNotes = prompt(
+                                                    `"${product.name}" için not girin:\n\n` +
+                                                    `Örnek: "Ön kapıya takılacak - sol tarafa yakın"\n` +
+                                                    `Örnek: "Mutfak dolabının altına monte edilecek"\n\n` +
+                                                    `Not: (boş bırakırsanız not kaldırılır)`,
+                                                    currentNotes
+                                                  );
+                                                  
+                                                  if (newNotes !== null) {
+                                                    updatePackageProduct(product.package_product_id, {
+                                                      notes: newNotes.trim() || null
+                                                    });
+                                                  }
+                                                }}
+                                                title={product.has_notes ? "Notu düzenle" : "Not ekle"}
+                                                style={{
+                                                  backgroundColor: product.has_notes ? '#fef3c7' : 'transparent',
+                                                  borderColor: product.has_notes ? '#f59e0b' : '#e5e7eb',
+                                                  color: product.has_notes ? '#92400e' : '#6b7280'
+                                                }}
+                                              >
+                                                <StickyNote className="w-3 h-3" />
+                                              </Button>
+                                              
                                               {/* Özel Fiyat Düzenleme Butonu */}
                                               <Button
                                                 size="sm"
