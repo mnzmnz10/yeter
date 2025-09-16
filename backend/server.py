@@ -3875,6 +3875,11 @@ async def update_package_product(package_id: str, package_product_id: str, updat
             message_parts.append(f"özel fiyat: ₺{update_data.custom_price}")
         elif hasattr(update_data, 'custom_price') and update_data.custom_price is None:
             message_parts.append("özel fiyat kaldırıldı (orijinal fiyat kullanılacak)")
+        if update_data.notes is not None:
+            if update_data.notes.strip():
+                message_parts.append(f"not eklendi: '{update_data.notes[:30]}{'...' if len(update_data.notes) > 30 else ''}'")
+            else:
+                message_parts.append("not kaldırıldı")
         
         return {
             "success": True,
