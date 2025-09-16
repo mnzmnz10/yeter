@@ -3723,6 +3723,72 @@ async def add_products_to_package(package_id: str, products: List[PackageProduct
     except Exception as e:
         logger.error(f"Error adding products to package: {e}")
         raise HTTPException(status_code=500, detail="Ürünler pakete eklenemedi")
+
+@api_router.put("/packages/{package_id}/products/{package_product_id}")
+async def update_package_product(package_id: str, package_product_id: str, update_data: PackageProductUpdate):
+    """Update a specific product in a package (quantity and/or custom price)"""
+    try:
+        # Check if package exists
+        package = await db.packages.find_one({"id": package_id})
+        if not package:
+            raise HTTPException(status_code=404, detail="Paket bulunamadı")
+        
+        # Check if package product exists
+        package_product = await db.package_products.find_one({
+            "id": package_product_id,
+            "package_id": package_id
+        })
+        if not package_product:
+            raise HTTPException(status_code=404, detail="Paket ürünü bulunamadı")
+        
+        # Prepare update data
+        update_fields = {}
+        if update_data.quantity is not None:
+            update_fields["quantity"] = update_data.quantity
+        if update_data.custom_price is not None:
+            update_fields["custom_price"] = float(update_data.custom_price)
+        elif hasattr(update_data, 'custom_price') and update_data.custom_price is None:
+            # Explicitly set to None to remove custom price
+            update_fields["custom_price"] = None
+        
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="Güncellenecek veri bulunamadı")
+        
+        # Update package product
+        result = await db.package_products.update_one(
+            {"id": package_product_id, "package_id": package_id},
+            {"$set": update_fields}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Paket ürünü bulunamadı")
+        
+        # Get updated product info for response
+        updated_product = await db.package_products.find_one({"id": package_product_id})
+        original_product = await db.products.find_one({"id": updated_product["product_id"]})
+        
+        message_parts = []
+        if update_data.quantity is not None:
+            message_parts.append(f"miktar: {update_data.quantity}")
+        if update_data.custom_price is not None:
+            message_parts.append(f"özel fiyat: ₺{update_data.custom_price}")
+        elif hasattr(update_data, 'custom_price') and update_data.custom_price is None:
+            message_parts.append("özel fiyat kaldırıldı (orijinal fiyat kullanılacak)")
+        
+        return {
+            "success": True,
+            "message": f"'{original_product.get('name', 'Ürün')}' güncellendi: {', '.join(message_parts)}",
+            "updated_fields": update_fields
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating package product: {e}")
+        raise HTTPException(status_code=500, detail="Paket ürünü güncellenemedi")
+
+@api_router.get("/products/favorites")
+async def get_favorite_products():
+    """Get all favorite products"""
     try:
         products = await db.products.find({"is_favorite": True}).sort("name", 1).to_list(None)
         return [Product(**product) for product in products]
