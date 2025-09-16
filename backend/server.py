@@ -377,16 +377,19 @@ class PackageProduct(BaseModel):
     product_id: str
     quantity: int = 1
     custom_price: Optional[Decimal] = None  # Paket içinde özel fiyat (None = orijinal fiyat kullan)
+    notes: Optional[str] = None  # Ürün için özel notlar (PDF'de gösterilir)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class PackageProductCreate(BaseModel):
     product_id: str
     quantity: int = 1
     custom_price: Optional[Decimal] = None  # Paket içinde özel fiyat
+    notes: Optional[str] = None  # Ürün için özel notlar
 
 class PackageProductUpdate(BaseModel):
     quantity: Optional[int] = None
     custom_price: Optional[Decimal] = None  # Paket içinde özel fiyat güncelleme
+    notes: Optional[str] = None  # Ürün notları güncelleme
 
 class PackageWithProducts(BaseModel):
     id: str
