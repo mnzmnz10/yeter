@@ -11652,6 +11652,10 @@ class KaravanAPITester:
             print("\n🎯 PRIORITY 16: Notes Functionality for Packages and Quotes")
             self.test_notes_functionality_comprehensive()
             
+            # PRIORITY 17: Package Product Notes Feature Testing (TURKISH REVIEW REQUEST)
+            print("\n🎯 PRIORITY 17: Package Product Notes Feature Comprehensive Testing")
+            self.test_package_product_notes_comprehensive()
+            
         finally:
             # Always cleanup
             self.cleanup_test_data()
