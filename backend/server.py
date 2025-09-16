@@ -3808,6 +3808,7 @@ async def add_products_to_package(package_id: str, products: List[PackageProduct
                 "product_id": product.product_id,
                 "quantity": product.quantity,
                 "custom_price": float(product.custom_price) if product.custom_price is not None else None,
+                "notes": product.notes,  # Ürün notları
                 "created_at": datetime.now(timezone.utc)
             }
             package_products.append(package_product)
