@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timezone
 
 # API endpoint
-API_BASE = "https://performance-up.preview.emergentagent.com/api"
+API_BASE = "https://doviz-auto.preview.emergentagent.com/api"
 COMPANY_ID = "fdd84f9d-4276-41aa-afeb-4637879f30c3"  # Test Firma Bağlantı
 
 print("🧪 Para Birimi Değişikliği Test Sistemi")

@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime
 
 class PackageCopyTester:
-    def __init__(self, base_url="https://performance-up.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://doviz-auto.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
