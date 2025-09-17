@@ -783,6 +783,9 @@ function App() {
 
     try {
       await axios.delete(`${API}/categories/${categoryId}`);
+      
+      // PERFORMANCE: Invalidate cache before reload
+      CacheManager.remove('categories');
       await loadCategories();
       await loadProducts(1, true); // Refresh products to show updated category info
       toast.success('Kategori silindi');
