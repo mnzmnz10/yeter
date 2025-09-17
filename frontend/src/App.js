@@ -2858,7 +2858,7 @@ function App() {
                     </CardTitle>
                     <CardDescription className="text-indigo-100 text-sm">Paket temel bilgilerini düzenleyin</CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="py-4 px-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <Label htmlFor="edit-package-name">Paket Adı</Label>
