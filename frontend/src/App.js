@@ -3536,24 +3536,24 @@ function App() {
                     {/* Sarf Malzemeleri Ekleme */}
                     <Card className="bg-gradient-to-br from-purple-50 to-violet-100 border-purple-300 shadow-lg">
                       <CardHeader 
-                        className="bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-t-sm cursor-pointer hover:from-purple-600 hover:to-violet-700 transition-all"
+                        className="bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-t-sm cursor-pointer hover:from-purple-600 hover:to-violet-700 transition-all py-3 px-4"
                         onClick={() => setShowSuppliesSection(!showSuppliesSection)}
                       >
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
                             <div className={`transition-transform ${showSuppliesSection ? 'rotate-90' : ''}`}>
-                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                               </svg>
                             </div>
                             <div>
-                              <CardTitle className="text-white flex items-center gap-2">
-                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                              <CardTitle className="text-lg text-white flex items-center gap-2">
+                                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm">
                                   🔧
                                 </div>
                                 Sarf Malzemesi Ekle
                               </CardTitle>
-                              <CardDescription className="text-purple-100">
+                              <CardDescription className="text-purple-100 text-sm">
                                 {showSuppliesSection ? 'Tik işaretiyle seçin' : 'Genişletmek için tıklayın'}
                               </CardDescription>
                             </div>
