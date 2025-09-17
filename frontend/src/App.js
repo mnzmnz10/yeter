@@ -3192,7 +3192,7 @@ function App() {
                   {/* Sağ Taraf - Ürün Ekleme/Çıkarma */}
                   <div className="space-y-6">
                     {/* Kategori Ürünleri Ekleme */}
-                    <Card className="bg-gradient-to-br from-amber-50 to-orange-100 border-amber-300 shadow-lg">
+                    <Card className="bg-white border-slate-200 shadow-sm">
                       <CardHeader className="bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-t-sm py-3 px-4">
                         <div className="flex justify-between items-center">
                           <div>
