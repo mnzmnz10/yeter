@@ -128,6 +128,66 @@ user_problem_statement: "Döviz kurları otomatik güncellenmiyor - ÇÖZÜLDÜ!
         agent: "testing"
         comment: "PUT /api/packages/{package_id} ENDPOINT COMPREHENSIVE TESTING COMPLETED SUCCESSFULLY: ✅ CRITICAL SUCCESS - 82.0% success rate (205/250 tests passed), addressing all Turkish review request requirements, ✅ PUT ENDPOINT FUNCTIONALITY VERIFIED - PUT /api/packages/{package_id} endpoint working perfectly, returns 200 OK instead of 404, supports all PackageUpdate model fields (name, description, discount_percentage, labor_cost, notes, sale_price, is_pinned), ✅ CUSTOM PRICE + PACKAGE SAVE WORKFLOW WORKING - Successfully tested all scenarios: Gift product (custom_price = 0) → Package save ✓, Special discounted price (custom_price = 75.0) → Package save ✓, Normal product (custom_price = null) → Package save ✓, ✅ PACKAGE UPDATE SCENARIOS TESTED - discount_percentage update ✓, labor_cost update ✓, notes update ✓, all fields simultaneous update ✓, empty data correctly returns 400 error ✓, ✅ ERROR HANDLING VERIFIED - Invalid package ID returns 404 with Turkish message 'Paket bulunamadı' ✓, Empty update data returns 400 with 'Güncellenecek veri bulunamadı' ✓, Invalid field values handled appropriately ✓, ✅ END-TO-END INTEGRATION WORKING - Complete workflow tested: Set custom price (₺199.99) → Update package (discount 12.5%) → Verify persistence ✓, all changes successfully persisted, ✅ USER REPORTED ISSUES RESOLVED - 'hediye ürün girdiğimde paketi kaydetmiyorum' FIXED ✓, 'özel indirimli fiyat girdiğimde paketi kaydetmiyorum' FIXED ✓, ✅ TURKISH MESSAGES CONFIRMED - All success messages in Turkish: 'paketi başarıyla güncellendi', custom price messages with Turkish currency symbol ₺, ✅ PACKAGE ID f7431cc3-06a7-4e7b-8c45-e9d65b26a38a TESTED - Successfully used target package from review request for comprehensive testing. The PUT /api/packages/{package_id} endpoint and custom price workflow are fully functional and production-ready, resolving all user-reported package save issues."
 
+  - task: "PDF with Prices Notes Display Testing"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE PDF NOTES TESTING COMPLETED SUCCESSFULLY: Tested Motokaravan package (58f990f8-d1af-42af-a051-a1177d6a07f0) with notes functionality. PDF with prices generated successfully (157,471 bytes) with notes included. Verified notes are displayed in PDF format with 📝 emoji prefix. Tested various note scenarios including Turkish installation notes, warning notes with emojis, and long detailed notes. All PDF generation tests passed. GET /api/packages/{package_id}/pdf-with-prices endpoint working perfectly with notes integration."
+
+  - task: "PDF without Prices Notes Display Testing"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE PDF NOTES TESTING COMPLETED SUCCESSFULLY: PDF without prices generated successfully (156,862 bytes) with notes included. Verified that notes are displayed in both with-prices and without-prices PDFs. Content-Type correctly set to application/pdf. PDF format validation passed. Notes formatting consistent across both PDF types. GET /api/packages/{package_id}/pdf-without-prices endpoint working perfectly with notes integration."
+
+  - task: "PDF Content Structure Testing"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE PDF STRUCTURE TESTING COMPLETED SUCCESSFULLY: Verified PDF content structure with notes. Notes format '📝 {note_text}' correctly implemented in _create_package_products_table_with_groups function. Display name includes notes under product name as expected. PDF structure maintains proper formatting with notes integrated into product listings. Turkish character support verified (ğüşıöç ĞÜŞIÖÇ). Notes appear correctly in display_name field within PDF generation."
+
+  - task: "Notes Scenarios in PDF Testing"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE NOTES SCENARIOS TESTING COMPLETED SUCCESSFULLY: Tested all note scenarios: 1) Turkish Installation Note ('Mutfak dolabının altına monte edilecek') - PDF size 157,440 bytes ✅ 2) Warning Note with Emoji ('⚠️ Dikkat: Bu ürün özel kurulum gerektirir') - PDF size 157,470 bytes ✅ 3) Long Detailed Note (300+ characters with installation instructions) - PDF size 158,128 bytes ✅ 4) Empty Note (Remove Notes) - PDF size 157,386 bytes ✅. Notes with content show in PDF, empty notes are properly removed. Proper formatting maintained across all scenarios."
+
+  - task: "Before/After PDF Generation Testing"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE BEFORE/AFTER PDF TESTING COMPLETED SUCCESSFULLY: Before/After PDF generation testing successful. Added notes to product → PDF generated with notes → Verified notes appear in PDF → Removed notes → PDF generated without notes → Verified notes no longer appear. PDF size changes appropriately when notes are added/removed (157,471 bytes with notes vs 157,386 bytes without). Notes persistence verified through GET package endpoint. has_notes boolean correctly reflects note status (true when notes exist, false when empty)."
+
   - task: "Package Product Notes Feature Implementation"
     implemented: true
     working: true
