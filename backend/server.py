@@ -2947,7 +2947,7 @@ async def download_package_pdf_with_prices(package_id: str):
                     "custom_price": custom_price,  # PDF generator'a custom price bilgisi
                     "has_custom_price": custom_price is not None,  # PDF'de gösterim için
                     "notes": pp.get("notes"),  # Ürün notları PDF'de gösterilecek
-                    "has_notes": bool(pp.get("notes", "").strip())  # Not var mı?
+                    "has_notes": bool(pp.get("notes") and pp.get("notes").strip())  # Not var mı?
                 }
                 products.append(product_data)
         
