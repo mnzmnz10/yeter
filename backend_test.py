@@ -12982,6 +12982,10 @@ class KaravanAPITester:
             print("\n🎯 PRIORITY 17: Package Product Notes Feature Comprehensive Testing")
             self.test_package_product_notes_comprehensive()
             
+            # PRIORITY 18: Single Product Creation System Fix Testing (TURKISH REVIEW REQUEST)
+            print("\n🎯 PRIORITY 18: Single Product Creation System Fix - Manual vs Excel Parity")
+            self.test_single_product_creation_comprehensive()
+            
         finally:
             # Always cleanup
             self.cleanup_test_data()
