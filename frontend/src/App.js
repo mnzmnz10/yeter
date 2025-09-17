@@ -2887,30 +2887,22 @@ function App() {
                   </div>
                 </div>
 
-                {/* Package Information - Enhanced Colorful Design */}
-                <Card className="mb-6 bg-gradient-to-br from-indigo-50 to-blue-100 border-indigo-300 shadow-lg">
-                  <CardHeader className="bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-t-lg py-3 px-4">
-                    <CardTitle className="text-white flex items-center gap-2 text-lg">
-                      <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm">
-                        📋
-                      </div>
-                      Paket Bilgileri
-                    </CardTitle>
-                    <CardDescription className="text-indigo-100 text-sm">Paket temel bilgilerini düzenleyin</CardDescription>
-                  </CardHeader>
-                  <CardContent className="py-4 px-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Compact Package Information */}
+                <Card className="mb-4 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200">
+                  <CardContent className="py-3 px-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                       <div>
-                        <Label htmlFor="edit-package-name">Paket Adı</Label>
+                        <Label htmlFor="edit-package-name" className="text-xs">Paket Adı</Label>
                         <Input
                           id="edit-package-name"
                           value={packageForm.name}
                           onChange={(e) => setPackageForm({...packageForm, name: e.target.value})}
                           placeholder="Paket adı"
+                          className="h-8 text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="edit-package-price">Satış Fiyatı (₺)</Label>
+                        <Label htmlFor="edit-package-price" className="text-xs">Satış Fiyatı (₺)</Label>
                         <Input
                           id="edit-package-price"
                           type="number"
@@ -2918,44 +2910,30 @@ function App() {
                           value={packageForm.sale_price}
                           onChange={(e) => setPackageForm({...packageForm, sale_price: e.target.value})}
                           placeholder="0.00"
+                          className="h-8 text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="edit-package-image">Görsel URL</Label>
+                        <Label htmlFor="edit-package-image" className="text-xs">Görsel URL</Label>
                         <Input
                           id="edit-package-image"
                           value={packageForm.image_url}
                           onChange={(e) => setPackageForm({...packageForm, image_url: e.target.value})}
                           placeholder="https://example.com/image.jpg"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-package-notes" className="text-xs">Notlar</Label>
+                        <Input
+                          id="edit-package-notes"
+                          value={packageForm.notes || ''}
+                          onChange={(e) => setPackageForm({...packageForm, notes: e.target.value})}
+                          placeholder="Kısa açıklama..."
+                          className="h-8 text-sm"
                         />
                       </div>
                     </div>
-                    
-                    {/* Package Notes Section */}
-                    <div className="mt-4">
-                      <Label htmlFor="edit-package-notes">Paket Notları</Label>
-                      <textarea
-                        id="edit-package-notes"
-                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1"
-                        value={packageForm.notes || ''}
-                        onChange={(e) => setPackageForm({...packageForm, notes: e.target.value})}
-                        placeholder="Paket ile ilgili özel notlar, açıklamalar..."
-                      />
-                    </div>
-                    
-                    {packageWithProducts && showPackageDiscountedPrices && (
-                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg space-y-2 mt-4">
-                        <div className="text-sm text-amber-800">
-                          <strong>Ürünler Toplamı:</strong> ₺ {formatPrice(packageWithProducts.total_discounted_price || 0)}
-                        </div>
-                        {packageWithProducts.supplies && packageWithProducts.supplies.length > 0 && (
-                          <div className="text-sm text-amber-800">
-                            <strong>Sarf Malzemeleri dahil:</strong> ₺ {formatPrice(packageWithProducts.total_discounted_price_with_supplies || 0)}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {/* Image preview removed to save space */}
                   </CardContent>
                 </Card>
 
