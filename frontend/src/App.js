@@ -2008,6 +2008,21 @@ function App() {
     }
   };
 
+  // Görsel önizleme fonksiyonu
+  const openImagePreview = (imageUrl, title) => {
+    if (imageUrl && imageUrl.trim()) {
+      setPreviewImageUrl(imageUrl);
+      setPreviewImageTitle(title || 'Ürün Görseli');
+      setShowImagePreview(true);
+    }
+  };
+
+  const closeImagePreview = () => {
+    setShowImagePreview(false);
+    setPreviewImageUrl('');
+    setPreviewImageTitle('');
+  };
+
   const formatPrice = (price) => {
     // Handle NaN, null, undefined cases
     if (isNaN(price) || price === null || price === undefined) {
