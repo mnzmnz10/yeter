@@ -3618,7 +3618,6 @@ function App() {
                 )}
               </>
             )}
-          </div>
           </TabsContent>
           <TabsContent value="upload" className="space-y-6">
             <Card>
