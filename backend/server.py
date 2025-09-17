@@ -4366,65 +4366,6 @@ async def create_product(product: ProductCreate):
     except Exception as e:
         logger.error(f"Error creating product: {e}")
         raise HTTPException(status_code=500, detail="Ürün oluşturulamadı")
-        
-        # Verify category exists (if provided)
-        if product.category_id:
-            category = await db.categories.find_one({"id": product.category_id})
-            if not category:
-                raise HTTPException(status_code=404, detail="Kategori bulunamadı")
-        
-        # Get current exchange rates for TRY conversion
-        await currency_service.get_exchange_rates()
-        
-        # Convert prices to TRY
-        try:
-            list_price_try = await currency_service.convert_to_try(
-                product.list_price, 
-                product.currency
-            )
-        except Exception as e:
-            logger.warning(f"Failed to convert price to TRY for product {product.name}: {e}")
-            # Fallback: Use original price as TRY if conversion fails
-            list_price_try = product.list_price
-        
-        discounted_price_try = None
-        if product.discounted_price:
-            try:
-                discounted_price_try = await currency_service.convert_to_try(
-                    product.discounted_price, 
-                    product.currency
-                )
-            except Exception as e:
-                logger.warning(f"Failed to convert discounted price to TRY for product {product.name}: {e}")
-                discounted_price_try = product.discounted_price
-        
-        # Create product
-        product_dict = {
-            "id": str(uuid.uuid4()),
-            "name": product.name,
-            "company_id": product.company_id,
-            "category_id": product.category_id,
-            "description": product.description,
-            "image_url": product.image_url,
-            "list_price": float(product.list_price),
-            "discounted_price": float(product.discounted_price) if product.discounted_price else None,
-            "currency": product.currency.upper(),
-            "list_price_try": float(list_price_try),
-            "discounted_price_try": float(discounted_price_try) if discounted_price_try else None,
-            "is_favorite": product.is_favorite,  # Include is_favorite field
-            "created_at": datetime.now(timezone.utc)
-        }
-        
-        await db.products.insert_one(product_dict)
-        
-        return Product(**product_dict)
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error creating product: {e}")
-        raise HTTPException(status_code=500, detail="Ürün oluşturulamadı")
-
 
 
 @api_router.post("/refresh-prices")
