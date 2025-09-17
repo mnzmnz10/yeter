@@ -4335,14 +4335,12 @@ async def create_product(product: ProductCreate):
         exchange_rates = await currency_service.get_exchange_rates()
         
         # Create product with currency conversion
-        product_data = product.dict()
-        product_data["id"] = str(uuid.uuid4())
-        product_data["created_at"] = datetime.now(timezone.utc)
+        from fastapi.encoders import jsonable_encoder
         
-        # Convert Decimal fields to float for MongoDB compatibility
-        product_data["list_price"] = float(product.list_price)
-        if product.discounted_price:
-            product_data["discounted_price"] = float(product.discounted_price)
+        # Use jsonable_encoder to properly convert Decimal to float
+        product_data = jsonable_encoder(product.dict())
+        product_data["id"] = str(uuid.uuid4())  
+        product_data["created_at"] = datetime.now(timezone.utc)
         
         # Convert prices to TRY
         if product.currency == 'USD':
