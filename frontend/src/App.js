@@ -2941,16 +2941,16 @@ function App() {
                 {/* Main Layout: Package Products and Add Products */}
                 <div className="grid grid-cols-2 gap-8 mb-6">
                   {/* Sol Taraf - Paket Ürünleri */}
-                  <Card className="bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-300 shadow-lg">
-                    <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-t-sm py-3 px-4">
+                  <Card className="bg-white border-slate-200 shadow-sm">
+                    <CardHeader className="bg-slate-50 border-b border-slate-200 py-3 px-4">
                       <div>
-                        <CardTitle className="text-lg text-white flex items-center gap-2">
-                          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm">
+                        <CardTitle className="text-lg text-slate-700 flex items-center gap-2">
+                          <div className="w-6 h-6 bg-slate-400 text-white rounded-full flex items-center justify-center text-sm">
                             📦
                           </div>
                           Paket Ürünleri
                         </CardTitle>
-                        <CardDescription className="text-emerald-100 text-sm">
+                        <CardDescription className="text-slate-500 text-sm">
                           {packageWithProducts ? 
                             `${packageWithProducts.products.length} ürün seçili` : 
                             'Ürünler yükleniyor...'
