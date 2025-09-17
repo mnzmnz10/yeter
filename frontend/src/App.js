@@ -2847,11 +2847,16 @@ function App() {
                   </div>
                 </div>
 
-                {/* Package Information - Horizontal Layout */}
-                <Card className="mb-6 bg-blue-50 border-blue-200">
-                  <CardHeader className="bg-blue-100/50">
-                    <CardTitle className="text-blue-900">📋 Paket Bilgileri</CardTitle>
-                    <CardDescription className="text-blue-700">Paket temel bilgilerini düzenleyin</CardDescription>
+                {/* Package Information - Enhanced Colorful Design */}
+                <Card className="mb-6 bg-gradient-to-br from-indigo-50 to-blue-100 border-indigo-300 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-t-lg">
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                        📋
+                      </div>
+                      Paket Bilgileri
+                    </CardTitle>
+                    <CardDescription className="text-indigo-100">Paket temel bilgilerini düzenleyin</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
