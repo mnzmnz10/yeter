@@ -2849,14 +2849,14 @@ function App() {
 
                 {/* Package Information - Enhanced Colorful Design */}
                 <Card className="mb-6 bg-gradient-to-br from-indigo-50 to-blue-100 border-indigo-300 shadow-lg">
-                  <CardHeader className="bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-t-lg">
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                  <CardHeader className="bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-t-lg py-3 px-4">
+                    <CardTitle className="text-white flex items-center gap-2 text-lg">
+                      <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm">
                         📋
                       </div>
                       Paket Bilgileri
                     </CardTitle>
-                    <CardDescription className="text-indigo-100">Paket temel bilgilerini düzenleyin</CardDescription>
+                    <CardDescription className="text-indigo-100 text-sm">Paket temel bilgilerini düzenleyin</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
