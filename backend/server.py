@@ -4320,6 +4320,32 @@ async def get_products(
             if category_id:
                 basic_query["category_id"] = category_id
             
+            # CRITICAL FIX: Add search logic to fallback query
+            if search:
+                search_term = search.strip()
+                if len(search_term) >= 1:
+                    # Turkish character mapping for fallback search
+                    def normalize_turkish(text):
+                        replacements = {
+                            'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u',
+                            'Ç': 'C', 'Ğ': 'G', 'I': 'I', 'Ö': 'O', 'Ş': 'S', 'Ü': 'U'
+                        }
+                        for tr, en in replacements.items():
+                            text = text.replace(tr, en)
+                        return text
+                    
+                    normalized_search = normalize_turkish(search_term)
+                    
+                    # Same search logic as main query
+                    basic_query["$or"] = [
+                        {"name": {"$regex": search_term, "$options": "i"}},
+                        {"name": {"$regex": normalized_search, "$options": "i"}},
+                        {"description": {"$regex": search_term, "$options": "i"}},
+                        {"brand": {"$regex": search_term, "$options": "i"}},
+                        {"description": {"$regex": normalized_search, "$options": "i"}},
+                        {"brand": {"$regex": normalized_search, "$options": "i"}}
+                    ]
+            
             skip = (page - 1) * limit if not skip_pagination else 0
             # IMPORTANT: Use the same sorting as aggregate pipeline - FAVORITES FIRST!
             products = await db.products.find(basic_query).sort([("is_favorite", -1), ("name", 1)]).skip(skip).limit(limit).to_list(limit)
