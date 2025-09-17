@@ -3621,6 +3621,7 @@ function App() {
               </div>
             </div>
           )}
+          </TabsContent>
           <TabsContent value="upload" className="space-y-6">
             <Card>
               <CardHeader>
