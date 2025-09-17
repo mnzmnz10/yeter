@@ -3017,12 +3017,6 @@ function App() {
                                                     <span className="text-purple-600 font-medium">
                                                       ₺ {formatPrice(product.custom_price)} (özel fiyat)
                                                     </span>
-                                                  ) : showPackageDiscountedPrices && product.discounted_price_try ? (
-                                                    <>
-                                                      <span className="line-through text-slate-400">₺ {formatPrice(product.list_price_try || 0)}</span>
-                                                      {' → '}
-                                                      <span className="text-green-600 font-medium">₺ {formatPrice(product.discounted_price_try)}</span>
-                                                    </>
                                                   ) : (
                                                     <>₺ {formatPrice(product.list_price_try || 0)}</>
                                                   )}
