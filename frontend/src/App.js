@@ -3127,15 +3127,15 @@ function App() {
                 <div className="grid grid-cols-2 gap-8">
                   {/* Sol Taraf - Paket Ürünleri */}
                   <Card className="bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-300 shadow-lg">
-                    <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-t-sm">
+                    <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-t-sm py-3 px-4">
                       <div>
-                        <CardTitle className="text-xl text-white flex items-center gap-2">
-                          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                        <CardTitle className="text-lg text-white flex items-center gap-2">
+                          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm">
                             📦
                           </div>
                           Paket Ürünleri
                         </CardTitle>
-                        <CardDescription className="text-emerald-100">
+                        <CardDescription className="text-emerald-100 text-sm">
                           {packageWithProducts ? 
                             `${packageWithProducts.products.length} ürün seçili` : 
                             'Ürünler yükleniyor...'
