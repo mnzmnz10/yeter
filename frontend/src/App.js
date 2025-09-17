@@ -3318,6 +3318,17 @@ function App() {
                                                 <DollarSign className="w-3 h-3" />
                                               </Button>
                                               
+                                              {/* Ürünü Paketten Çıkar Butonu */}
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                                onClick={() => removeProductFromPackage(product.package_product_id, product.name)}
+                                                title="Ürünü paketten çıkar"
+                                              >
+                                                <X className="w-4 h-4" />
+                                              </Button>
+                                              
                                               {/* Adet Badge */}
                                               <Badge 
                                                 variant="outline" 
