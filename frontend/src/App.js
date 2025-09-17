@@ -560,6 +560,9 @@ function App() {
   const deleteCompany = async (companyId) => {
     try {
       await axios.delete(`${API}/companies/${companyId}`);
+      
+      // PERFORMANCE: Invalidate cache before reload
+      CacheManager.remove('companies');
       await loadCompanies();
       await loadProducts(1, true);
       toast.success('Firma silindi');
