@@ -1947,9 +1947,10 @@ function App() {
       return sum + (price * quantity);
     }, 0);
     
-    // Toplam indirimli fiyat hesapla (ürünlerin kendi indirimli fiyatları)
+    // Toplam indirimli fiyat hesapla (sadece özel fiyatlı ürünler için, diğerleri liste fiyatı)
     const totalDiscountedPrice = packageWithProducts.products.reduce((sum, p) => {
-      const price = parseFloat(p.discounted_price_try || p.list_price_try) || 0;
+      // Özel fiyat varsa onu kullan, yoksa liste fiyatını kullan
+      const price = p.has_custom_price ? (parseFloat(p.custom_price) || 0) : (parseFloat(p.list_price_try) || 0);
       const quantity = p.quantity || 1;
       return sum + (price * quantity);
     }, 0);
