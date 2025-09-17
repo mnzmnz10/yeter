@@ -758,6 +758,8 @@ function App() {
       setNewCategoryName('');
       setNewCategoryDescription('');
       
+      // PERFORMANCE: Invalidate cache before reload
+      CacheManager.remove('categories');
       // Kategorileri yeniden yükle
       await loadCategories();
       
