@@ -3474,6 +3474,212 @@ function App() {
                       )}
                     </Card>
                   </div>
+                </div>
+
+                {/* Package discount, labor cost and summary - Moved to bottom */}
+                {packageWithProducts && (
+                  <div className="space-y-4 mt-6">
+                    {/* İndirim Bölümü */}
+                    <div className="bg-gradient-to-br from-yellow-50 to-amber-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center">
+                            <TrendingUp className="w-3 h-3" />
+                          </div>
+                          <span className="font-medium text-yellow-800 text-sm">İndirim</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="1"
+                            placeholder="0"
+                            value={packageDiscount}
+                            onChange={(e) => setPackageDiscount(parseFloat(e.target.value) || 0)}
+                            className="w-16 text-sm"
+                          />
+                          <span className="text-amber-700 text-sm">%</span>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPackageDiscount(10)}
+                            className="text-xs px-2"
+                          >
+                            10%
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPackageDiscount(15)}
+                            className="text-xs px-2"
+                          >
+                            15%
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* İşçilik Maliyeti Bölümü */}
+                    <div className="bg-gradient-to-br from-cyan-50 to-blue-100 border-2 border-cyan-300 rounded-lg p-4 shadow-md">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-cyan-500 text-white rounded-full flex items-center justify-center">
+                            <Wrench className="w-3 h-3" />
+                          </div>
+                          <span className="font-medium text-cyan-800">İşçilik Maliyeti</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-cyan-700">₺</span>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            value={packageLaborCost}
+                            onChange={(e) => setPackageLaborCost(parseFloat(e.target.value) || 0)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && packageLaborCost > 0) {
+                                toast.success(`₺${formatPrice(packageLaborCost)} işçilik maliyeti eklendi!`);
+                              }
+                            }}
+                            className="w-32"
+                          />
+                          {/* Yeşil Tik Butonu - İşçilik Tutarını Temizle */}
+                          {packageLaborCost > 0 && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                const previousAmount = packageLaborCost;
+                                setPackageLaborCost(0);
+                                toast.success(`₺${formatPrice(previousAmount)} işçilik maliyeti kaldırıldı!`);
+                              }}
+                              className="bg-green-600 hover:bg-green-700 px-2"
+                              title="İşçilik tutarını temizle"
+                            >
+                              <Check className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <div className="flex gap-2 ml-auto">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPackageLaborCost(2000)}
+                          >
+                            ₺2000
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPackageLaborCost(5000)}
+                          >
+                            ₺5000
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPackageLaborCost(10000)}
+                          >
+                            ₺10000
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPackageLaborCost(20000)}
+                          >
+                            ₺20000
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Package Summary */}
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-300 rounded-lg p-4 shadow-lg">
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="font-semibold text-green-800 flex items-center gap-2">
+                          <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center">
+                            💰
+                          </div>
+                          Paket Özeti
+                        </h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowPackageDiscountedPrices(!showPackageDiscountedPrices)}
+                          className="p-2"
+                          title={showPackageDiscountedPrices ? "Liste fiyatlarını göster" : "İndirimli fiyatları göster"}
+                        >
+                          {showPackageDiscountedPrices ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-emerald-800">
+                            {calculatePackageTotals.productCount}
+                          </div>
+                          <div className="text-sm text-emerald-600">Ürün Sayısı</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-emerald-800">
+                            ₺ {formatPrice(
+                              showPackageDiscountedPrices 
+                                ? calculatePackageTotals.totalDiscountedPrice 
+                                : calculatePackageTotals.totalListPrice
+                            )}
+                          </div>
+                          <div className="text-sm text-emerald-600">
+                            {showPackageDiscountedPrices ? "Toplam İndirimli Fiyat" : "Toplam Liste Fiyatı"}
+                          </div>
+                          {showPackageDiscountedPrices && calculatePackageTotals.totalDiscountedPrice < calculatePackageTotals.totalListPrice && (
+                            <div className="text-xs text-slate-500 line-through">
+                              ₺ {formatPrice(calculatePackageTotals.totalListPrice)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-red-600">
+                            - ₺ {formatPrice(calculatePackageTotals.discountAmount)}
+                          </div>
+                          <div className="text-sm text-red-500">İndirim ({packageDiscount}%)</div>
+                        </div>
+                        {packageLaborCost > 0 && (
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-600">
+                              + ₺ {formatPrice(calculatePackageTotals.laborCost)}
+                            </div>
+                            <div className="text-sm text-green-500">İşçilik</div>
+                          </div>
+                        )}
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-emerald-800">
+                            ₺ {formatPrice(calculatePackageTotals.totalNetPrice)}
+                          </div>
+                          <div className="text-sm text-emerald-600">Net Toplam</div>
+                        </div>
+                      </div>
+                      
+                      {(packageDiscount > 0 || packageLaborCost > 0) && (
+                        <div className="mt-4 p-3 bg-white rounded border border-emerald-300">
+                          <div className="text-sm text-emerald-700">
+                            {packageDiscount > 0 && (
+                              <div><strong>İndirim:</strong> Liste fiyatı üzerinden %{packageDiscount} indirim uygulandı. Kâr: <strong>₺ {formatPrice(calculatePackageTotals.discountAmount)}</strong></div>
+                            )}
+                            {packageLaborCost > 0 && (
+                              <div><strong>İşçilik:</strong> Ek işçilik maliyeti eklendi. Tutar: <strong>₺ {formatPrice(calculatePackageTotals.laborCost)}</strong></div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
 
                 </div>
