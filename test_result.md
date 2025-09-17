@@ -118,7 +118,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Döviz kurları otomatik güncellenmiyor - ÇÖZÜLDÜ! FreeCurrencyAPI entegrasyonu ile güncel kurlar alınıyor. Sistem siteye giriş yaparken ve manuel güncelleme ile çalışıyor."
+user_problem_statement: "Paket ürünleri kısmında paket eklediğim ürünü kolayca çıkarmak için kenarlarında ufak bir kırmızı x işareti olsun - YENİ ÖZELLİK EKLENİYOR"
 
   - task: "PUT /api/packages/{package_id} Endpoint and Custom Price Workflow Testing"
     implemented: true
