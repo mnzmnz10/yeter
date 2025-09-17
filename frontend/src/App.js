@@ -4660,7 +4660,7 @@ function App() {
                           <span className="font-medium text-cyan-800">İşçilik Maliyeti</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-green-700">₺</span>
+                          <span className="text-cyan-700">₺</span>
                           <Input
                             type="number"
                             min="0"
