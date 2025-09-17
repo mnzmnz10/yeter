@@ -3569,12 +3569,15 @@ async def get_package_with_products(package_id: str):
                 if custom_price is not None:
                     # Custom price is set for this product in the package
                     effective_price_try = Decimal(str(custom_price))
+                    list_price_try_value = custom_price
+                    discounted_price_try_value = custom_price
                     effective_discounted_price = custom_price
                     effective_list_price = custom_price
                 else:
-                    # Use original product prices
-                    original_list_price_try = Decimal(str(product.get("list_price_try", 0)))
-                    original_discounted_price_try = Decimal(str(product.get("discounted_price_try") or product.get("list_price_try", 0)))
+                    # Use original product prices - keep them separate
+                    list_price_try_value = float(product.get("list_price_try", 0))
+                    discounted_price_try_value = float(product.get("discounted_price_try") or product.get("list_price_try", 0))
+                    effective_price_try = Decimal(str(discounted_price_try_value))  # For totals calculation
                     effective_discounted_price = product.get("discounted_price")
                     effective_list_price = product.get("list_price", 0)
                 
@@ -3583,8 +3586,8 @@ async def get_package_with_products(package_id: str):
                     "name": product["name"],
                     "list_price": effective_list_price,
                     "discounted_price": effective_discounted_price,
-                    "list_price_try": float(original_list_price_try) if 'original_list_price_try' in locals() else float(effective_price_try),
-                    "discounted_price_try": float(original_discounted_price_try) if 'original_discounted_price_try' in locals() else float(effective_price_try),
+                    "list_price_try": list_price_try_value,
+                    "discounted_price_try": discounted_price_try_value,
                     "currency": product.get("currency", "USD"),
                     "quantity": pp["quantity"],
                     "company_id": product.get("company_id"),
@@ -3597,8 +3600,8 @@ async def get_package_with_products(package_id: str):
                 }
                 products.append(product_data)
                 
-                # Calculate total using discounted price for totals
-                total_discounted_price += (original_discounted_price_try if 'original_discounted_price_try' in locals() else effective_price_try) * pp["quantity"]
+                # Calculate total using effective price
+                total_discounted_price += effective_price_try * pp["quantity"]
 
         # Get package supplies (sarf malzemeleri)
         package_supplies = await db.package_supplies.find({"package_id": package_id}).to_list(None)
