@@ -120,6 +120,50 @@
 
 user_problem_statement: "Paket ürünleri kısmında paket eklediğim ürünü kolayca çıkarmak için kenarlarında ufak bir kırmızı x işareti olsun - YENİ ÖZELLİK EKLENİYOR"
 
+backend:
+  - task: "Package Product Remove Feature - Backend API Endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "YENİ ÖZELLİK EKLENDİ: DELETE /api/packages/{package_id}/products/{package_product_id} endpoint'i eklendi. Paketten ürün çıkarma fonksiyonalitesi backend'de implement edildi. Test bekliyor."
+
+frontend:
+  - task: "Package Product Remove Feature - Red X Button UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "YENİ ÖZELLİK EKLENDİ: removeProductFromPackage fonksiyonu ve kırmızı X butonu eklendi. Paket ürünleri listesinde her ürünün kenarında kırmızı X işareti ile kolayca çıkarma özelliği implement edildi. Onay dialog'u ile güvenli silme sağlandı."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Package Product Remove Feature - Backend API Endpoint"
+    - "Package Product Remove Feature - Red X Button UI"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "YENİ ÖZELLİK EKLEME TAMAMLANDI: Kullanıcının 'paket ürünleri kısmında paket eklediğim ürünü kolayca çıkarmak için kenarlarında ufak bir kırmızı x işareti olsun' isteği için backend ve frontend implementation tamamlandı. ✅ Backend: DELETE /api/packages/{package_id}/products/{package_product_id} endpoint'i eklendi, ✅ Frontend: removeProductFromPackage fonksiyonu ve kırmızı X butonu UI'da eklendi, ✅ Güvenlik: Kullanıcıdan onay dialog'u ile güvenli silme, ✅ UX: Kırmızı renk kullanarak görsel açıklık, hover efektleri eklendi. Backend testing'e hazır."
+
   - task: "PUT /api/packages/{package_id} Endpoint and Custom Price Workflow Testing"
     implemented: true
     working: true
