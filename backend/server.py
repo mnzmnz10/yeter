@@ -3273,11 +3273,25 @@ async def update_supply_quantity(package_id: str, supply_id: str, quantity: int)
     except Exception as e:
         logger.error(f"Error updating supply quantity: {e}")
         raise HTTPException(status_code=500, detail="Sarf malzemesi adeti güncellenemedi")
-        if result.deleted_count == 0:
-            raise HTTPException(status_code=404, detail="Kategori bulunamadı")
+
+@api_router.delete("/packages/{package_id}/products/{package_product_id}")
+async def remove_product_from_package(package_id: str, package_product_id: str):
+    """Paketten ürün çıkar"""
+    try:
+        result = await db.package_products.delete_one({
+            "id": package_product_id,
+            "package_id": package_id
+        })
         
-        return {"success": True, "message": "Kategori silindi"}
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Paket ürünü bulunamadı")
+        
+        return {"success": True, "message": "Ürün paketten çıkarıldı"}
     except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error removing product from package: {e}")
+        raise HTTPException(status_code=500, detail="Ürün paketten çıkarılamadı")
         raise
     except Exception as e:
         logger.error(f"Error deleting category: {e}")
