@@ -2735,20 +2735,26 @@ class PDFPackageGenerator(PDFQuoteGenerator):
             for product in group_products:
                 quantity = product.get('quantity', 1)
                 product_name = product.get('name', '')
+                product_notes = product.get('notes', '')
+                
+                # Ürün adı ile notları birleştir
+                display_name = f"• {product_name}"
+                if product_notes and product_notes.strip():
+                    display_name += f"\n  📝 {product_notes.strip()}"
                 
                 if include_prices:
                     unit_price = float(product.get('list_price_try', 0))
                     line_total = unit_price * quantity
                     
                     row = [
-                        Paragraph(f"• {product_name}", small_data_style),
+                        Paragraph(display_name, small_data_style),
                         Paragraph(str(quantity), small_data_style),
                         Paragraph(f"₺ {self._format_price_modern(unit_price)}", small_data_style),
                         Paragraph(f"₺ {self._format_price_modern(line_total)}", small_data_style)
                     ]
                 else:
                     row = [
-                        Paragraph(f"• {product_name}", small_data_style),
+                        Paragraph(display_name, small_data_style),
                         Paragraph(str(quantity), small_data_style)
                     ]
                 
