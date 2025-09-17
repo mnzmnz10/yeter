@@ -4217,15 +4217,45 @@ async def get_products(
         if category_id:
             query["category_id"] = category_id
         if search:
-            # Enhanced text search with index utilization
-            search_term = search.strip()
-            if len(search_term) >= 2:  # Only search for 2+ characters for performance
-                query["$text"] = {"$search": search_term}
-            else:
-                # Fallback for short searches
+            # Enhanced flexible search with Turkish character support
+            search_term = search.strip().lower()
+            if len(search_term) >= 1:  # Allow single character searches
+                # Create flexible search patterns
+                # Support both Turkish and non-Turkish character variants
+                search_patterns = []
+                
+                # Original search term
+                search_patterns.append(search_term)
+                
+                # Turkish character normalization patterns
+                turkish_replacements = {
+                    'ç': '[çc]', 'ğ': '[ğg]', 'ı': '[ıi]', 'ö': '[öo]', 'ş': '[şs]', 'ü': '[üu]',
+                    'c': '[çc]', 'g': '[ğg]', 'i': '[ıi]', 'o': '[öo]', 's': '[şs]', 'u': '[üu]'
+                }
+                
+                # Build flexible pattern
+                flexible_pattern = search_term
+                for tr_char, pattern in turkish_replacements.items():
+                    flexible_pattern = flexible_pattern.replace(tr_char, pattern)
+                
+                # Multiple search strategies for better results
                 query["$or"] = [
-                    {"name": {"$regex": f"^{search}", "$options": "i"}},
-                    {"brand": {"$regex": f"^{search}", "$options": "i"}}
+                    # 1. Flexible regex with Turkish char support - case insensitive  
+                    {"name": {"$regex": flexible_pattern, "$options": "i"}},
+                    {"description": {"$regex": flexible_pattern, "$options": "i"}},
+                    {"brand": {"$regex": flexible_pattern, "$options": "i"}},
+                    
+                    # 2. Word boundaries - for exact word matches
+                    {"name": {"$regex": f"\\b{flexible_pattern}\\b", "$options": "i"}},
+                    {"description": {"$regex": f"\\b{flexible_pattern}\\b", "$options": "i"}},
+                    
+                    # 3. Starts with - for prefix searches
+                    {"name": {"$regex": f"^{flexible_pattern}", "$options": "i"}},
+                    {"brand": {"$regex": f"^{flexible_pattern}", "$options": "i"}},
+                    
+                    # 4. Contains anywhere - for partial matches
+                    {"name": {"$regex": f".*{flexible_pattern}.*", "$options": "i"}},
+                    {"description": {"$regex": f".*{flexible_pattern}.*", "$options": "i"}}
                 ]
         
         # FAVORI ÜRÜNLER ÖNCELİKLİ SIRALAMA: Aggregate ile güçlü sıralama
