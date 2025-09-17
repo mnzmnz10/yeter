@@ -3117,11 +3117,16 @@ function App() {
 
                 <div className="grid grid-cols-2 gap-8">
                   {/* Sol Taraf - Paket Ürünleri */}
-                  <Card className="bg-teal-50 border-teal-200">
-                    <CardHeader className="bg-teal-100/50">
+                  <Card className="bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-300 shadow-lg">
+                    <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-t-sm">
                       <div>
-                        <CardTitle className="text-xl text-teal-900">📦 Paket Ürünleri</CardTitle>
-                        <CardDescription className="text-teal-700">
+                        <CardTitle className="text-xl text-white flex items-center gap-2">
+                          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                            📦
+                          </div>
+                          Paket Ürünleri
+                        </CardTitle>
+                        <CardDescription className="text-emerald-100">
                           {packageWithProducts ? 
                             `${packageWithProducts.products.length} ürün seçili` : 
                             'Ürünler yükleniyor...'
