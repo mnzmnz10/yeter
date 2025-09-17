@@ -13732,8 +13732,12 @@ class KaravanAPITester:
         print("=" * 80)
         
         try:
-            # PRIORITY 1: REVIEW REQUEST - PUT /api/packages/{package_id} Endpoint Testing
-            print("\n🎯 PRIORITY 1: REVIEW REQUEST - PUT /api/packages/{package_id} Endpoint and Custom Price Workflow Testing")
+            # PRIORITY 1: TURKISH REVIEW REQUEST - Package Product Remove Feature Testing
+            print("\n🎯 PRIORITY 1: TURKISH REVIEW REQUEST - Package Product Remove Feature Testing")
+            self.test_package_product_remove_feature_comprehensive()
+            
+            # PRIORITY 2: REVIEW REQUEST - PUT /api/packages/{package_id} Endpoint Testing
+            print("\n🎯 PRIORITY 2: REVIEW REQUEST - PUT /api/packages/{package_id} Endpoint and Custom Price Workflow Testing")
             self.test_put_packages_endpoint_comprehensive()
             
             # PRIORITY 2: REVIEW REQUEST - PDF Generation with Notes Testing
