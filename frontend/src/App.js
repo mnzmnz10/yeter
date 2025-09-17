@@ -3036,9 +3036,14 @@ function App() {
                     </div>
 
                     {/* Package Summary */}
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-300 rounded-lg p-4 shadow-lg">
                       <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-semibold text-emerald-900">Paket Özeti</h4>
+                        <h4 className="font-semibold text-green-800 flex items-center gap-2">
+                          <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center">
+                            💰
+                          </div>
+                          Paket Özeti
+                        </h4>
                         <Button
                           variant="outline"
                           size="sm"
