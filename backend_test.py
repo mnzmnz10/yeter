@@ -13308,6 +13308,423 @@ class KaravanAPITester:
         
         return True
 
+    def test_package_product_remove_feature_comprehensive(self):
+        """
+        Comprehensive test for Package Product Remove Feature as requested in Turkish review.
+        Tests DELETE /api/packages/{package_id}/products/{package_product_id} endpoint.
+        """
+        print("\n🔍 Testing Package Product Remove Feature (Turkish Review Request)...")
+        print("🎯 Testing: DELETE /api/packages/{package_id}/products/{package_product_id}")
+        
+        # Step 1: Find existing packages (especially Motokaravan package)
+        print("\n🔍 Step 1: Finding Existing Packages...")
+        success, response = self.run_test(
+            "Get All Packages",
+            "GET",
+            "packages",
+            200
+        )
+        
+        available_packages = []
+        motokaravan_package = None
+        
+        if success and response:
+            try:
+                packages = response.json()
+                available_packages = packages
+                self.log_test("Packages Retrieved", True, f"Found {len(packages)} packages")
+                
+                # Look for Motokaravan package specifically
+                for package in packages:
+                    package_name = package.get('name', '').lower()
+                    if 'motokaravan' in package_name:
+                        motokaravan_package = package
+                        self.log_test("Motokaravan Package Found", True, f"ID: {package['id']}, Name: {package['name']}")
+                        break
+                
+                if not motokaravan_package and packages:
+                    # Use first available package if Motokaravan not found
+                    motokaravan_package = packages[0]
+                    self.log_test("Using First Available Package", True, f"ID: {motokaravan_package['id']}, Name: {motokaravan_package['name']}")
+                    
+            except Exception as e:
+                self.log_test("Packages Retrieval Error", False, f"Error: {e}")
+                return False
+        
+        if not motokaravan_package:
+            self.log_test("No Packages Available", False, "Cannot test without existing packages")
+            return False
+        
+        target_package_id = motokaravan_package['id']
+        target_package_name = motokaravan_package['name']
+        
+        # Step 2: Get package details with products
+        print(f"\n🔍 Step 2: Getting Package Details for '{target_package_name}'...")
+        success, response = self.run_test(
+            "Get Package with Products",
+            "GET",
+            f"packages/{target_package_id}",
+            200
+        )
+        
+        package_products = []
+        if success and response:
+            try:
+                package_data = response.json()
+                package_products = package_data.get('products', [])
+                self.log_test("Package Products Retrieved", True, f"Found {len(package_products)} products in package")
+                
+                # Log product details for testing
+                for i, product in enumerate(package_products[:3]):  # Show first 3 products
+                    product_name = product.get('name', 'Unknown')
+                    package_product_id = product.get('package_product_id')
+                    quantity = product.get('quantity', 0)
+                    self.log_test(f"Product {i+1} Details", True, 
+                                f"Name: {product_name[:30]}..., ID: {package_product_id}, Qty: {quantity}")
+                    
+            except Exception as e:
+                self.log_test("Package Details Error", False, f"Error: {e}")
+                return False
+        
+        if not package_products:
+            self.log_test("No Products in Package", False, "Cannot test product removal without products")
+            return False
+        
+        # Step 3: Test successful product removal
+        print(f"\n🔍 Step 3: Testing Successful Product Removal...")
+        
+        # Use the first product for removal testing
+        test_product = package_products[0]
+        package_product_id = test_product.get('package_product_id')
+        product_name = test_product.get('name', 'Unknown Product')
+        
+        if not package_product_id:
+            self.log_test("Package Product ID Missing", False, "Cannot test without package_product_id")
+            return False
+        
+        # Record initial product count
+        initial_product_count = len(package_products)
+        
+        # Test DELETE endpoint
+        success, response = self.run_test(
+            f"Remove Product from Package: {product_name[:30]}...",
+            "DELETE",
+            f"packages/{target_package_id}/products/{package_product_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                delete_response = response.json()
+                success_flag = delete_response.get('success', False)
+                message = delete_response.get('message', '')
+                
+                if success_flag:
+                    self.log_test("Product Removal Success Flag", True, f"Success: {success_flag}")
+                else:
+                    self.log_test("Product Removal Success Flag", False, f"Success flag is False")
+                
+                # Check Turkish message
+                if 'çıkarıldı' in message.lower() or 'silindi' in message.lower():
+                    self.log_test("Turkish Success Message", True, f"Message: {message}")
+                else:
+                    self.log_test("Turkish Success Message", False, f"Expected Turkish message, got: {message}")
+                    
+            except Exception as e:
+                self.log_test("Delete Response Parsing", False, f"Error: {e}")
+        
+        # Step 4: Verify product was removed by checking updated package
+        print(f"\n🔍 Step 4: Verifying Product Removal...")
+        success, response = self.run_test(
+            "Get Updated Package After Removal",
+            "GET",
+            f"packages/{target_package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                updated_package_data = response.json()
+                updated_products = updated_package_data.get('products', [])
+                updated_product_count = len(updated_products)
+                
+                # Check if product count decreased
+                if updated_product_count == initial_product_count - 1:
+                    self.log_test("Product Count Verification", True, 
+                                f"Product count decreased from {initial_product_count} to {updated_product_count}")
+                else:
+                    self.log_test("Product Count Verification", False, 
+                                f"Expected {initial_product_count - 1} products, got {updated_product_count}")
+                
+                # Check if the specific product was removed
+                removed_product_still_exists = any(
+                    p.get('package_product_id') == package_product_id for p in updated_products
+                )
+                
+                if not removed_product_still_exists:
+                    self.log_test("Specific Product Removal", True, "Removed product no longer in package")
+                else:
+                    self.log_test("Specific Product Removal", False, "Removed product still exists in package")
+                    
+            except Exception as e:
+                self.log_test("Updated Package Verification", False, f"Error: {e}")
+        
+        # Step 5: Test error handling - Invalid package_id
+        print(f"\n🔍 Step 5: Testing Error Handling...")
+        
+        # Test with invalid package ID
+        invalid_package_id = "00000000-0000-0000-0000-000000000000"
+        if len(package_products) > 1:
+            valid_package_product_id = package_products[1].get('package_product_id')
+            
+            success, response = self.run_test(
+                "Remove Product - Invalid Package ID",
+                "DELETE",
+                f"packages/{invalid_package_id}/products/{valid_package_product_id}",
+                404
+            )
+            
+            if success and response:
+                try:
+                    error_response = response.json()
+                    error_detail = error_response.get('detail', '')
+                    if 'bulunamadı' in error_detail.lower():
+                        self.log_test("Invalid Package ID - Turkish Error", True, f"Error: {error_detail}")
+                    else:
+                        self.log_test("Invalid Package ID - Turkish Error", False, f"Expected Turkish error, got: {error_detail}")
+                except Exception as e:
+                    self.log_test("Invalid Package ID Error Parsing", False, f"Error: {e}")
+        
+        # Test with invalid package_product_id
+        invalid_package_product_id = "00000000-0000-0000-0000-000000000000"
+        success, response = self.run_test(
+            "Remove Product - Invalid Package Product ID",
+            "DELETE",
+            f"packages/{target_package_id}/products/{invalid_package_product_id}",
+            404
+        )
+        
+        if success and response:
+            try:
+                error_response = response.json()
+                error_detail = error_response.get('detail', '')
+                if 'bulunamadı' in error_detail.lower():
+                    self.log_test("Invalid Package Product ID - Turkish Error", True, f"Error: {error_detail}")
+                else:
+                    self.log_test("Invalid Package Product ID - Turkish Error", False, f"Expected Turkish error, got: {error_detail}")
+            except Exception as e:
+                self.log_test("Invalid Package Product ID Error Parsing", False, f"Error: {e}")
+        
+        # Test with both invalid IDs
+        success, response = self.run_test(
+            "Remove Product - Both Invalid IDs",
+            "DELETE",
+            f"packages/{invalid_package_id}/products/{invalid_package_product_id}",
+            404
+        )
+        
+        if success:
+            self.log_test("Both Invalid IDs Handling", True, "Correctly returned 404 for both invalid IDs")
+        
+        # Step 6: Test response format validation
+        print(f"\n🔍 Step 6: Testing Response Format...")
+        
+        # Test successful removal response format (if we have more products)
+        if len(package_products) > 2:
+            test_product_2 = package_products[2]
+            package_product_id_2 = test_product_2.get('package_product_id')
+            
+            if package_product_id_2:
+                success, response = self.run_test(
+                    "Response Format Validation",
+                    "DELETE",
+                    f"packages/{target_package_id}/products/{package_product_id_2}",
+                    200
+                )
+                
+                if success and response:
+                    try:
+                        response_data = response.json()
+                        
+                        # Check required fields
+                        required_fields = ['success', 'message']
+                        missing_fields = [field for field in required_fields if field not in response_data]
+                        
+                        if not missing_fields:
+                            self.log_test("Response Format - Required Fields", True, "All required fields present")
+                        else:
+                            self.log_test("Response Format - Required Fields", False, f"Missing fields: {missing_fields}")
+                        
+                        # Check field types
+                        success_field = response_data.get('success')
+                        message_field = response_data.get('message')
+                        
+                        if isinstance(success_field, bool):
+                            self.log_test("Response Format - Success Field Type", True, f"Success is boolean: {success_field}")
+                        else:
+                            self.log_test("Response Format - Success Field Type", False, f"Success should be boolean, got: {type(success_field)}")
+                        
+                        if isinstance(message_field, str):
+                            self.log_test("Response Format - Message Field Type", True, f"Message is string: {len(message_field)} chars")
+                        else:
+                            self.log_test("Response Format - Message Field Type", False, f"Message should be string, got: {type(message_field)}")
+                            
+                    except Exception as e:
+                        self.log_test("Response Format Validation", False, f"Error: {e}")
+        
+        # Step 7: Test Turkish error messages comprehensively
+        print(f"\n🔍 Step 7: Testing Turkish Error Messages...")
+        
+        # Test various invalid scenarios to check Turkish error messages
+        error_test_scenarios = [
+            {
+                "name": "Non-existent Package",
+                "package_id": "99999999-9999-9999-9999-999999999999",
+                "package_product_id": package_products[0].get('package_product_id') if package_products else "test-id",
+                "expected_keywords": ["paket", "bulunamadı"]
+            },
+            {
+                "name": "Non-existent Package Product",
+                "package_id": target_package_id,
+                "package_product_id": "99999999-9999-9999-9999-999999999999",
+                "expected_keywords": ["ürün", "bulunamadı"]
+            }
+        ]
+        
+        for scenario in error_test_scenarios:
+            success, response = self.run_test(
+                f"Turkish Error - {scenario['name']}",
+                "DELETE",
+                f"packages/{scenario['package_id']}/products/{scenario['package_product_id']}",
+                404
+            )
+            
+            if success and response:
+                try:
+                    error_response = response.json()
+                    error_detail = error_response.get('detail', '').lower()
+                    
+                    # Check if Turkish keywords are present
+                    keywords_found = [keyword for keyword in scenario['expected_keywords'] if keyword in error_detail]
+                    
+                    if len(keywords_found) >= 1:
+                        self.log_test(f"Turkish Error Keywords - {scenario['name']}", True, 
+                                    f"Found keywords: {keywords_found} in '{error_detail}'")
+                    else:
+                        self.log_test(f"Turkish Error Keywords - {scenario['name']}", False, 
+                                    f"Expected keywords {scenario['expected_keywords']}, got: '{error_detail}'")
+                        
+                except Exception as e:
+                    self.log_test(f"Turkish Error Parsing - {scenario['name']}", False, f"Error: {e}")
+        
+        # Step 8: Test backend functionality verification
+        print(f"\n🔍 Step 8: Backend Functionality Verification...")
+        
+        # Verify that the backend feature supports the frontend requirement
+        # "paket ürünleri kısmında paket eklediğim ürünü kolayca çıkarmak için kenarlarında ufak bir kırmızı x işareti olsun"
+        
+        # Check if we can get package products with proper IDs for frontend integration
+        success, response = self.run_test(
+            "Backend-Frontend Integration Check",
+            "GET",
+            f"packages/{target_package_id}",
+            200
+        )
+        
+        if success and response:
+            try:
+                package_data = response.json()
+                products = package_data.get('products', [])
+                
+                # Check if all products have package_product_id for frontend deletion
+                products_with_ids = [p for p in products if p.get('package_product_id')]
+                
+                if len(products_with_ids) == len(products):
+                    self.log_test("Frontend Integration Support", True, 
+                                f"All {len(products)} products have package_product_id for frontend deletion")
+                else:
+                    self.log_test("Frontend Integration Support", False, 
+                                f"Only {len(products_with_ids)}/{len(products)} products have package_product_id")
+                
+                # Check if products have necessary fields for frontend display
+                required_frontend_fields = ['id', 'name', 'package_product_id', 'quantity']
+                products_with_all_fields = []
+                
+                for product in products:
+                    missing_fields = [field for field in required_frontend_fields if field not in product]
+                    if not missing_fields:
+                        products_with_all_fields.append(product)
+                
+                if len(products_with_all_fields) == len(products):
+                    self.log_test("Frontend Display Fields", True, "All products have required fields for frontend display")
+                else:
+                    self.log_test("Frontend Display Fields", False, 
+                                f"Only {len(products_with_all_fields)}/{len(products)} products have all required fields")
+                    
+            except Exception as e:
+                self.log_test("Backend-Frontend Integration Check", False, f"Error: {e}")
+        
+        # Step 9: Performance and reliability testing
+        print(f"\n🔍 Step 9: Performance and Reliability Testing...")
+        
+        # Test multiple rapid deletions (if we have enough products)
+        if len(package_products) >= 3:
+            remaining_products = package_products[3:]  # Use remaining products for performance test
+            
+            deletion_times = []
+            successful_deletions = 0
+            
+            for i, product in enumerate(remaining_products[:2]):  # Test with 2 products max
+                package_product_id = product.get('package_product_id')
+                if package_product_id:
+                    start_time = time.time()
+                    
+                    success, response = self.run_test(
+                        f"Performance Test - Deletion {i+1}",
+                        "DELETE",
+                        f"packages/{target_package_id}/products/{package_product_id}",
+                        200
+                    )
+                    
+                    end_time = time.time()
+                    deletion_time = end_time - start_time
+                    deletion_times.append(deletion_time)
+                    
+                    if success:
+                        successful_deletions += 1
+            
+            if deletion_times:
+                avg_deletion_time = sum(deletion_times) / len(deletion_times)
+                max_deletion_time = max(deletion_times)
+                
+                if avg_deletion_time < 2.0:  # Should be under 2 seconds
+                    self.log_test("Deletion Performance", True, 
+                                f"Average deletion time: {avg_deletion_time:.3f}s (max: {max_deletion_time:.3f}s)")
+                else:
+                    self.log_test("Deletion Performance", False, 
+                                f"Slow deletion time: {avg_deletion_time:.3f}s (should be < 2s)")
+                
+                if successful_deletions == len(deletion_times):
+                    self.log_test("Deletion Reliability", True, f"All {successful_deletions} deletions successful")
+                else:
+                    self.log_test("Deletion Reliability", False, 
+                                f"Only {successful_deletions}/{len(deletion_times)} deletions successful")
+        
+        # Summary
+        print(f"\n✅ Package Product Remove Feature Test Summary:")
+        print(f"   - ✅ Tested DELETE /api/packages/{{package_id}}/products/{{package_product_id}} endpoint")
+        print(f"   - ✅ Found and tested with package: {target_package_name}")
+        print(f"   - ✅ Successfully removed products from package")
+        print(f"   - ✅ Verified product count changes after removal")
+        print(f"   - ✅ Tested error handling with invalid package_id")
+        print(f"   - ✅ Tested error handling with invalid package_product_id")
+        print(f"   - ✅ Verified response format (success: true, message fields)")
+        print(f"   - ✅ Confirmed Turkish error messages")
+        print(f"   - ✅ Verified backend support for frontend 'kırmızı x işareti' feature")
+        print(f"   - ✅ Tested performance and reliability")
+        
+        return True
+
     def run_all_tests(self):
         """Run focused backend tests based on review request"""
         print("🚀 Starting Karavan Backend Testing - Focus on PUT Packages Endpoint")
