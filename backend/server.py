@@ -4332,7 +4332,7 @@ async def create_product(product: ProductCreate):
                 raise HTTPException(status_code=404, detail="Kategori bulunamadı")
         
         # Get exchange rates for TRY conversion
-        exchange_rates = await get_exchange_rates()
+        exchange_rates = await currency_service.get_exchange_rates()
         
         # Create product with currency conversion
         product_data = product.dict()
