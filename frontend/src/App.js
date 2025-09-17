@@ -4281,8 +4281,10 @@ function App() {
                                                 <img 
                                                   src={product.image_url} 
                                                   alt={product.name}
-                                                  className="w-12 h-12 object-cover rounded border"
+                                                  className="w-12 h-12 object-cover rounded border cursor-pointer hover:opacity-75 transition-opacity"
                                                   onError={(e) => {e.target.style.display = 'none'}}
+                                                  onClick={() => openImagePreview(product.image_url, product.name)}
+                                                  title="Görseli büyük boyutta görüntülemek için tıklayın"
                                                 />
                                               )}
                                               <div className="flex-1 min-w-0">
