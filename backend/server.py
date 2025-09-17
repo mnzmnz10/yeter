@@ -4339,6 +4339,11 @@ async def create_product(product: ProductCreate):
         product_data["id"] = str(uuid.uuid4())
         product_data["created_at"] = datetime.now(timezone.utc)
         
+        # Convert Decimal fields to float for MongoDB compatibility
+        product_data["list_price"] = float(product.list_price)
+        if product.discounted_price:
+            product_data["discounted_price"] = float(product.discounted_price)
+        
         # Convert prices to TRY
         if product.currency == 'USD':
             product_data["list_price_try"] = float(product.list_price * exchange_rates.get('USD', 1))
