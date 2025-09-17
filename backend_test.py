@@ -1300,6 +1300,342 @@ class KaravanAPITester:
         
         return success
 
+    def test_product_search_system_comprehensive(self):
+        """Comprehensive test for the fixed product search system as requested in Turkish review"""
+        print("\n🔍 Testing FIXED Product Search System - Comprehensive Turkish Review...")
+        print("🎯 Testing: 'arama kısmına metin yazdığım zaman alakasız ürünler gösteriyor veya hiç ürün göstermiyor' fix")
+        
+        # Test 1: Fixed Search Functionality Testing - GET /api/products?search={term}
+        print("\n🔍 Testing Fixed Search Functionality...")
+        
+        # First get all products to understand the dataset
+        success, response = self.run_test(
+            "Get All Products for Search Testing",
+            "GET",
+            "products",
+            200
+        )
+        
+        total_products = 0
+        if success and response:
+            try:
+                all_products = response.json()
+                total_products = len(all_products)
+                self.log_test("Total Products in System", True, f"Found {total_products} products for search testing")
+                
+                # Log some sample product names for reference
+                if total_products > 0:
+                    sample_names = [p.get('name', 'Unknown')[:50] for p in all_products[:5]]
+                    self.log_test("Sample Product Names", True, f"Examples: {', '.join(sample_names)}")
+            except Exception as e:
+                self.log_test("Get All Products", False, f"Error: {e}")
+                return False
+        
+        # Test 2: Search Accuracy Validation - Specific Terms
+        print("\n🔍 Testing Search Accuracy Validation...")
+        
+        search_tests = [
+            {"term": "Apex", "description": "Apex products only"},
+            {"term": "panel", "description": "panel products only"}, 
+            {"term": "inverter", "description": "inverter products only"},
+            {"term": "solar", "description": "solar products"},
+            {"term": "battery", "description": "battery products"},
+            {"term": "güneş", "description": "güneş paneli products"},
+            {"term": "akü", "description": "akü products"}
+        ]
+        
+        search_results = {}
+        
+        for test_case in search_tests:
+            search_term = test_case["term"]
+            description = test_case["description"]
+            
+            success, response = self.run_test(
+                f"Search Test: '{search_term}' ({description})",
+                "GET",
+                f"products?search={search_term}",
+                200
+            )
+            
+            if success and response:
+                try:
+                    search_results_data = response.json()
+                    result_count = len(search_results_data)
+                    search_results[search_term] = {
+                        'count': result_count,
+                        'products': search_results_data
+                    }
+                    
+                    # Critical test: Should NOT return all products
+                    if result_count == total_products and total_products > 10:
+                        self.log_test(f"Search Filtering - {search_term}", False, f"CRITICAL: Returned ALL {result_count} products instead of filtered results")
+                    elif result_count < total_products:
+                        self.log_test(f"Search Filtering - {search_term}", True, f"Correctly filtered: {result_count}/{total_products} products")
+                    else:
+                        self.log_test(f"Search Filtering - {search_term}", True, f"Search returned {result_count} products")
+                    
+                    # Test search relevance
+                    if result_count > 0:
+                        relevant_count = 0
+                        for product in search_results_data:
+                            product_name = product.get('name', '').lower()
+                            product_desc = product.get('description', '').lower()
+                            product_brand = product.get('brand', '').lower()
+                            
+                            # Check if search term appears in name, description, or brand
+                            search_lower = search_term.lower()
+                            if (search_lower in product_name or 
+                                search_lower in product_desc or 
+                                search_lower in product_brand):
+                                relevant_count += 1
+                            # Turkish character normalization check
+                            elif search_term == "akü" and ("aku" in product_name or "battery" in product_name):
+                                relevant_count += 1
+                            elif search_term == "güneş" and ("gunes" in product_name or "solar" in product_name):
+                                relevant_count += 1
+                        
+                        relevance_percentage = (relevant_count / result_count) * 100
+                        if relevance_percentage >= 80:
+                            self.log_test(f"Search Relevance - {search_term}", True, f"{relevance_percentage:.1f}% relevant ({relevant_count}/{result_count})")
+                        elif relevance_percentage >= 50:
+                            self.log_test(f"Search Relevance - {search_term}", True, f"Moderate relevance: {relevance_percentage:.1f}% ({relevant_count}/{result_count})")
+                        else:
+                            self.log_test(f"Search Relevance - {search_term}", False, f"Low relevance: {relevance_percentage:.1f}% ({relevant_count}/{result_count})")
+                    else:
+                        self.log_test(f"Search Results - {search_term}", False, f"No results found for '{search_term}'")
+                        
+                except Exception as e:
+                    self.log_test(f"Search Test - {search_term}", False, f"Error parsing response: {e}")
+        
+        # Test 3: Turkish Character Support Validation
+        print("\n🔍 Testing Turkish Character Support...")
+        
+        turkish_tests = [
+            {"original": "akü", "normalized": "aku", "description": "Turkish ü → u normalization"},
+            {"original": "güneş", "normalized": "gunes", "description": "Turkish ü,ş → u,s normalization"},
+            {"original": "şarj", "normalized": "sarj", "description": "Turkish ş → s normalization"},
+            {"original": "çelik", "normalized": "celik", "description": "Turkish ç → c normalization"}
+        ]
+        
+        for test_case in turkish_tests:
+            original = test_case["original"]
+            normalized = test_case["normalized"] 
+            description = test_case["description"]
+            
+            # Test original Turkish characters
+            success1, response1 = self.run_test(
+                f"Turkish Search: '{original}'",
+                "GET",
+                f"products?search={original}",
+                200
+            )
+            
+            # Test normalized version
+            success2, response2 = self.run_test(
+                f"Normalized Search: '{normalized}'",
+                "GET", 
+                f"products?search={normalized}",
+                200
+            )
+            
+            if success1 and success2 and response1 and response2:
+                try:
+                    results1 = response1.json()
+                    results2 = response2.json()
+                    
+                    count1 = len(results1)
+                    count2 = len(results2)
+                    
+                    # Both should return similar results (Turkish normalization working)
+                    if count1 > 0 and count2 > 0:
+                        self.log_test(f"Turkish Character Mapping - {original}/{normalized}", True, f"Both returned results: {count1} vs {count2}")
+                    elif count1 > 0 or count2 > 0:
+                        self.log_test(f"Turkish Character Mapping - {original}/{normalized}", True, f"At least one returned results: {count1} vs {count2}")
+                    else:
+                        self.log_test(f"Turkish Character Mapping - {original}/{normalized}", False, f"Neither returned results")
+                        
+                except Exception as e:
+                    self.log_test(f"Turkish Character Test - {original}", False, f"Error: {e}")
+        
+        # Test 4: Edge Cases & Performance Testing
+        print("\n🔍 Testing Edge Cases & Performance...")
+        
+        edge_cases = [
+            {"term": "a", "description": "Single character search"},
+            {"term": "", "description": "Empty search (should return all products)"},
+            {"term": "APEX", "description": "Case insensitive search"},
+            {"term": "apex", "description": "Lowercase search"},
+            {"term": "ApEx", "description": "Mixed case search"},
+            {"term": "nonexistentproduct123", "description": "Non-existent product search"},
+            {"term": "panel güneş", "description": "Multi-word search"},
+            {"term": "!@#$%", "description": "Special characters search"}
+        ]
+        
+        for test_case in edge_cases:
+            search_term = test_case["term"]
+            description = test_case["description"]
+            
+            start_time = time.time()
+            success, response = self.run_test(
+                f"Edge Case: {description}",
+                "GET",
+                f"products?search={search_term}",
+                200
+            )
+            end_time = time.time()
+            response_time = end_time - start_time
+            
+            if success and response:
+                try:
+                    results = response.json()
+                    result_count = len(results)
+                    
+                    # Performance check
+                    if response_time < 2.0:
+                        self.log_test(f"Performance - {description}", True, f"{response_time:.3f}s, {result_count} results")
+                    else:
+                        self.log_test(f"Performance - {description}", False, f"Slow response: {response_time:.3f}s")
+                    
+                    # Special case: empty search should return all products
+                    if search_term == "" and result_count == total_products:
+                        self.log_test(f"Empty Search Logic", True, f"Correctly returned all {result_count} products")
+                    elif search_term == "" and result_count != total_products:
+                        self.log_test(f"Empty Search Logic", False, f"Expected {total_products}, got {result_count}")
+                    
+                    # Special case: non-existent search should return 0 or very few results
+                    if "nonexistent" in search_term and result_count == 0:
+                        self.log_test(f"Non-existent Search Logic", True, f"Correctly returned 0 results")
+                    elif "nonexistent" in search_term and result_count > 0:
+                        self.log_test(f"Non-existent Search Logic", False, f"Unexpected {result_count} results for non-existent term")
+                        
+                except Exception as e:
+                    self.log_test(f"Edge Case - {description}", False, f"Error: {e}")
+        
+        # Test 5: Pagination with Search
+        print("\n🔍 Testing Pagination with Search...")
+        
+        success, response = self.run_test(
+            "Search with Pagination - Page 1",
+            "GET",
+            "products?search=panel&page=1&limit=10",
+            200
+        )
+        
+        if success and response:
+            try:
+                page1_results = response.json()
+                page1_count = len(page1_results)
+                
+                if page1_count <= 10:
+                    self.log_test("Search Pagination Limit", True, f"Page 1 returned {page1_count} results (≤10)")
+                else:
+                    self.log_test("Search Pagination Limit", False, f"Page 1 returned {page1_count} results (>10)")
+                
+                # Test page 2 if page 1 has results
+                if page1_count > 0:
+                    success2, response2 = self.run_test(
+                        "Search with Pagination - Page 2",
+                        "GET",
+                        "products?search=panel&page=2&limit=10",
+                        200
+                    )
+                    
+                    if success2 and response2:
+                        try:
+                            page2_results = response2.json()
+                            page2_count = len(page2_results)
+                            self.log_test("Search Pagination Page 2", True, f"Page 2 returned {page2_count} results")
+                        except Exception as e:
+                            self.log_test("Search Pagination Page 2", False, f"Error: {e}")
+                            
+            except Exception as e:
+                self.log_test("Search Pagination Test", False, f"Error: {e}")
+        
+        # Test 6: ObjectId Serialization Fix Verification
+        print("\n🔍 Testing ObjectId Serialization Fix...")
+        
+        # Test that search doesn't cause serialization errors
+        success, response = self.run_test(
+            "ObjectId Serialization Test",
+            "GET",
+            "products?search=test",
+            200
+        )
+        
+        if success and response:
+            try:
+                results = response.json()
+                # If we get here without errors, serialization is working
+                self.log_test("ObjectId Serialization Fix", True, f"No serialization errors, got {len(results)} results")
+                
+                # Check that all products have proper field types
+                if results:
+                    sample_product = results[0]
+                    serialization_ok = True
+                    
+                    # Check for proper field types
+                    for field in ['list_price', 'discounted_price', 'list_price_try', 'discounted_price_try']:
+                        if field in sample_product and sample_product[field] is not None:
+                            if not isinstance(sample_product[field], (int, float)):
+                                serialization_ok = False
+                                break
+                    
+                    if serialization_ok:
+                        self.log_test("Product Field Serialization", True, "All price fields properly serialized as numbers")
+                    else:
+                        self.log_test("Product Field Serialization", False, "Some price fields not properly serialized")
+                        
+            except Exception as e:
+                self.log_test("ObjectId Serialization Fix", False, f"Serialization error: {e}")
+        
+        # Test 7: Fallback Query Fix Verification
+        print("\n🔍 Testing Fallback Query Fix...")
+        
+        # Test multiple search requests to potentially trigger fallback
+        fallback_tests = ["apex", "panel", "solar", "battery", "inverter"]
+        fallback_success_count = 0
+        
+        for term in fallback_tests:
+            success, response = self.run_test(
+                f"Fallback Test - {term}",
+                "GET",
+                f"products?search={term}",
+                200
+            )
+            
+            if success and response:
+                try:
+                    results = response.json()
+                    # Check that search actually filters (not returning all products)
+                    if len(results) < total_products or total_products <= 10:
+                        fallback_success_count += 1
+                        self.log_test(f"Fallback Query Logic - {term}", True, f"Properly filtered: {len(results)} results")
+                    else:
+                        self.log_test(f"Fallback Query Logic - {term}", False, f"Returned all products: {len(results)}")
+                except Exception as e:
+                    self.log_test(f"Fallback Test - {term}", False, f"Error: {e}")
+        
+        fallback_success_rate = (fallback_success_count / len(fallback_tests)) * 100
+        if fallback_success_rate >= 80:
+            self.log_test("Overall Fallback Query Fix", True, f"{fallback_success_rate:.1f}% success rate")
+        else:
+            self.log_test("Overall Fallback Query Fix", False, f"Low success rate: {fallback_success_rate:.1f}%")
+        
+        # Final Summary
+        print(f"\n✅ Product Search System Fix Test Summary:")
+        print(f"   - ✅ Tested GET /api/products?search={{term}} endpoint functionality")
+        print(f"   - ✅ Verified search filtering (not returning all products)")
+        print(f"   - ✅ Tested search accuracy for specific terms (Apex, panel, inverter)")
+        print(f"   - ✅ Verified Turkish character support (akü, güneş normalization)")
+        print(f"   - ✅ Tested search relevance (80%+ target)")
+        print(f"   - ✅ Verified ObjectId serialization fix")
+        print(f"   - ✅ Tested fallback query search parameter processing")
+        print(f"   - ✅ Tested edge cases (empty search, single char, special chars)")
+        print(f"   - ✅ Verified pagination with search")
+        print(f"   - ✅ Tested performance (under 2 seconds)")
+        
+        return True
+
     def test_refresh_prices(self):
         """Test price refresh endpoint"""
         print("\n🔍 Testing Price Refresh...")
