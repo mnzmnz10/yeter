@@ -3363,12 +3363,17 @@ function App() {
                   {/* Sağ Taraf - Ürün Ekleme/Çıkarma */}
                   <div className="space-y-6">
                     {/* Kategori Ürünleri Ekleme */}
-                    <Card className="bg-slate-50 border-slate-200">
-                      <CardHeader className="bg-slate-100/50">
+                    <Card className="bg-gradient-to-br from-amber-50 to-orange-100 border-amber-300 shadow-lg">
+                      <CardHeader className="bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-t-sm">
                         <div className="flex justify-between items-center">
                           <div>
-                            <CardTitle className="text-xl text-slate-900">➕ Ürün Ekle</CardTitle>
-                            <CardDescription className="text-slate-700">
+                            <CardTitle className="text-xl text-white flex items-center gap-2">
+                              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                ➕
+                              </div>
+                              Ürün Ekle
+                            </CardTitle>
+                            <CardDescription className="text-amber-100">
                               Pakete eklemek için ürünleri seçin
                             </CardDescription>
                           </div>
