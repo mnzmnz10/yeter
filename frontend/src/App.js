@@ -3373,16 +3373,16 @@ function App() {
                   <div className="space-y-6">
                     {/* Kategori Ürünleri Ekleme */}
                     <Card className="bg-gradient-to-br from-amber-50 to-orange-100 border-amber-300 shadow-lg">
-                      <CardHeader className="bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-t-sm">
+                      <CardHeader className="bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-t-sm py-3 px-4">
                         <div className="flex justify-between items-center">
                           <div>
-                            <CardTitle className="text-xl text-white flex items-center gap-2">
-                              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                            <CardTitle className="text-lg text-white flex items-center gap-2">
+                              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm">
                                 ➕
                               </div>
                               Ürün Ekle
                             </CardTitle>
-                            <CardDescription className="text-amber-100">
+                            <CardDescription className="text-amber-100 text-sm">
                               Pakete eklemek için ürünleri seçin
                             </CardDescription>
                           </div>
