@@ -2923,11 +2923,13 @@ function App() {
                 {packageWithProducts && (
                   <div className="space-y-4">
                     {/* İndirim Bölümü */}
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    <div className="bg-gradient-to-br from-yellow-50 to-amber-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-amber-600" />
-                          <span className="font-medium text-amber-900 text-sm">İndirim</span>
+                          <div className="w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center">
+                            <TrendingUp className="w-3 h-3" />
+                          </div>
+                          <span className="font-medium text-yellow-800 text-sm">İndirim</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Input
