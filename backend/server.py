@@ -3573,7 +3573,8 @@ async def get_package_with_products(package_id: str):
                     effective_list_price = custom_price
                 else:
                     # Use original product prices
-                    effective_price_try = Decimal(str(product.get("discounted_price_try") or product.get("list_price_try", 0)))
+                    original_list_price_try = Decimal(str(product.get("list_price_try", 0)))
+                    original_discounted_price_try = Decimal(str(product.get("discounted_price_try") or product.get("list_price_try", 0)))
                     effective_discounted_price = product.get("discounted_price")
                     effective_list_price = product.get("list_price", 0)
                 
