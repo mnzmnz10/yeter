@@ -4341,17 +4341,17 @@ async def create_product(product: ProductCreate):
         
         # Convert prices to TRY
         if product.currency == 'USD':
-            product_data["list_price_try"] = product.list_price * exchange_rates.get('USD', 1)
+            product_data["list_price_try"] = float(product.list_price * exchange_rates.get('USD', 1))
             if product.discounted_price:
-                product_data["discounted_price_try"] = product.discounted_price * exchange_rates.get('USD', 1)
+                product_data["discounted_price_try"] = float(product.discounted_price * exchange_rates.get('USD', 1))
         elif product.currency == 'EUR':
-            product_data["list_price_try"] = product.list_price * exchange_rates.get('EUR', 1)
+            product_data["list_price_try"] = float(product.list_price * exchange_rates.get('EUR', 1))
             if product.discounted_price:
-                product_data["discounted_price_try"] = product.discounted_price * exchange_rates.get('EUR', 1)
+                product_data["discounted_price_try"] = float(product.discounted_price * exchange_rates.get('EUR', 1))
         else:  # TRY
-            product_data["list_price_try"] = product.list_price
+            product_data["list_price_try"] = float(product.list_price)
             if product.discounted_price:
-                product_data["discounted_price_try"] = product.discounted_price
+                product_data["discounted_price_try"] = float(product.discounted_price)
         
         # Insert into database
         await db.products.insert_one(product_data)
