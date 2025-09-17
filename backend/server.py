@@ -3578,7 +3578,7 @@ async def get_package_with_products(package_id: str):
                     "custom_price": custom_price,  # Özel fiyat (varsa)
                     "has_custom_price": custom_price is not None,  # Özel fiyat var mı?
                     "notes": pp.get("notes"),  # Ürün notları
-                    "has_notes": bool(pp.get("notes", "").strip())  # Not var mı?
+                    "has_notes": bool(pp.get("notes") and pp.get("notes").strip())  # Not var mı?
                 }
                 products.append(product_data)
                 
