@@ -118,6 +118,11 @@ function App() {
   // Para birimi değiştirme için state'ler
   const [showCurrencyChangeDialog, setShowCurrencyChangeDialog] = useState(false);
   const [selectedUploadForCurrency, setSelectedUploadForCurrency] = useState(null);
+
+  // Görsel önizleme için state'ler
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState('');
+  const [previewImageTitle, setPreviewImageTitle] = useState('');
   const [newCurrency, setNewCurrency] = useState('USD');
   const [changingCurrency, setChangingCurrency] = useState(false);
   const [newProductForm, setNewProductForm] = useState({
