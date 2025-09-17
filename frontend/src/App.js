@@ -5921,6 +5921,75 @@ function App() {
         </div>
       )}
 
+      {/* Görsel Önizleme Modal */}
+      <Dialog open={showImagePreview} onOpenChange={setShowImagePreview}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-4">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm">
+                  🖼️
+                </div>
+                {previewImageTitle}
+              </DialogTitle>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={closeImagePreview}
+                className="h-6 w-6 p-0 hover:bg-gray-100"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <DialogDescription>
+              Görseli yakınlaştırmak için tıklayın. Yeni sekmede açmak için sağ tıklayın.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex items-center justify-center bg-gray-50 rounded-lg min-h-[400px] max-h-[70vh] overflow-hidden">
+            {previewImageUrl && (
+              <img 
+                src={previewImageUrl} 
+                alt={previewImageTitle}
+                className="max-w-full max-h-full object-contain cursor-zoom-in hover:scale-105 transition-transform duration-200"
+                onClick={() => window.open(previewImageUrl, '_blank')}
+                onError={(e) => {
+                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzlmYTJhOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkfDtnJzZWwgWcO8a2xlbmVtZWRpPC90ZXh0Pjwvc3ZnPg==';
+                  e.target.alt = 'Görsel yüklenemedi';
+                }}
+                style={{ maxHeight: '70vh' }}
+              />
+            )}
+          </div>
+          
+          <div className="flex items-center justify-between pt-2 border-t">
+            <div className="text-sm text-gray-500">
+              💡 İpucu: Görseli yeni sekmede açmak için tıklayın
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.open(previewImageUrl, '_blank')}
+                className="flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Yeni Sekmede Aç
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={closeImagePreview}
+              >
+                Kapat
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Toast Notifications */}
       <Toaster />
     </div>
