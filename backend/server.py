@@ -3597,8 +3597,8 @@ async def get_package_with_products(package_id: str):
                 }
                 products.append(product_data)
                 
-                # Calculate total using effective price
-                total_discounted_price += effective_price_try * pp["quantity"]
+                # Calculate total using discounted price for totals
+                total_discounted_price += (original_discounted_price_try if 'original_discounted_price_try' in locals() else effective_price_try) * pp["quantity"]
 
         # Get package supplies (sarf malzemeleri)
         package_supplies = await db.package_supplies.find({"package_id": package_id}).to_list(None)
