@@ -188,6 +188,21 @@ user_problem_statement: "Döviz kurları otomatik güncellenmiyor - ÇÖZÜLDÜ!
         agent: "testing"
         comment: "✅ COMPREHENSIVE BEFORE/AFTER PDF TESTING COMPLETED SUCCESSFULLY: Before/After PDF generation testing successful. Added notes to product → PDF generated with notes → Verified notes appear in PDF → Removed notes → PDF generated without notes → Verified notes no longer appear. PDF size changes appropriately when notes are added/removed (157,471 bytes with notes vs 157,386 bytes without). Notes persistence verified through GET package endpoint. has_notes boolean correctly reflects note status (true when notes exist, false when empty)."
 
+  - task: "Single Product Creation Decimal Serialization Bug Fix"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "SINGLE PRODUCT CREATION BUG TAMAMEN ÇÖZÜLDÜ: ✅ Problem tespit edildi: create_product endpoint'inde Decimal serialization hatası - MongoDB Decimal türlerini encode edemiyordu, ✅ Root cause bulundu: product.dict() methodu Decimal değerleri olduğu gibi bırakıyor, MongoDB JSON serialization başarısız oluyor, ✅ Çözüm uygulandı: FastAPI jsonable_encoder() kullanıldı - Decimal türlerini otomatik float'a çevirir, ✅ Multiple fixes: get_exchange_rates() → currency_service.get_exchange_rates() düzeltildi, duplicate code temizlendi, ✅ Web search araştırması: FastAPI + MongoDB + Pydantic Decimal handling best practices implement edildi, ✅ Backend test: TRY, USD, EUR currency'leri ile ürün ekleme çalışıyor, ✅ Exchange rate conversion: USD 2500.75 → 103,298.60 TRY doğru hesaplama"
+      - working: true
+        agent: "troubleshoot"
+        comment: "DECIMAL SERIALIZATION ROOT CAUSE IDENTIFIED AND RESOLVED: ✅ Investigation completed in 6/10 steps - highly efficient debugging, ✅ Root cause found: create_product function was calling get_exchange_rates() API endpoint instead of currency_service.get_exchange_rates() service method, causing structured response vs dictionary mismatch, ✅ Consequence: Exchange rate calculations failed, fell back to raw Decimal objects which MongoDB cannot serialize ('cannot encode object: Decimal'), ✅ Solution implemented: Fixed function call to use proper service method returning Decimal dictionary, ✅ Additional fix: FastAPI jsonable_encoder() added to handle all Decimal serialization automatically. The troubleshooting was highly effective in pinpointing the exact API vs service method confusion causing the serialization failure."
+
   - task: "Package Product Notes Feature Implementation"
     implemented: true
     working: true
