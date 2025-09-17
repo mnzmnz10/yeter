@@ -4217,29 +4217,43 @@ async def get_products(
         if category_id:
             query["category_id"] = category_id
         if search:
-            # Enhanced flexible search with Turkish character support
+            # Simple and accurate search implementation
             search_term = search.strip()
-            if len(search_term) >= 1:  # Allow single character searches
+            if len(search_term) >= 1:
                 
-                # Create multiple search patterns for better matching
+                # Turkish character mapping for better search
+                def normalize_turkish(text):
+                    """Normalize Turkish characters for search"""
+                    replacements = {
+                        'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u',
+                        'Ç': 'C', 'Ğ': 'G', 'I': 'I', 'Ö': 'O', 'Ş': 'S', 'Ü': 'U'
+                    }
+                    for tr, en in replacements.items():
+                        text = text.replace(tr, en)
+                    return text
+                
+                # Prepare search patterns
+                normalized_search = normalize_turkish(search_term)
+                
+                # Create comprehensive but precise search
                 query["$or"] = [
-                    # 1. Name contains - most common search
+                    # 1. Exact search in name (case insensitive)
                     {"name": {"$regex": search_term, "$options": "i"}},
                     
-                    # 2. Description contains  
+                    # 2. Normalized search (Turkish chars → English)
+                    {"name": {"$regex": normalized_search, "$options": "i"}},
+                    
+                    # 3. Search in description
                     {"description": {"$regex": search_term, "$options": "i"}},
                     
-                    # 3. Brand contains
+                    # 4. Search in brand
                     {"brand": {"$regex": search_term, "$options": "i"}},
                     
-                    # 4. Name starts with - for prefix matches
-                    {"name": {"$regex": f"^{search_term}", "$options": "i"}},
+                    # 5. Normalized search in description
+                    {"description": {"$regex": normalized_search, "$options": "i"}},
                     
-                    # 5. Turkish character variations
-                    {"name": {"$regex": search_term.replace("ü", "[üu]").replace("ö", "[öo]").replace("ç", "[çc]").replace("ğ", "[ğg]").replace("ş", "[şs]").replace("ı", "[ıi]"), "$options": "i"}},
-                    
-                    # 6. Reverse Turkish mapping (for non-Turkish keyboards)
-                    {"name": {"$regex": search_term.replace("u", "[üu]").replace("o", "[öo]").replace("c", "[çc]").replace("g", "[ğg]").replace("s", "[şs]").replace("i", "[ıi]"), "$options": "i"}}
+                    # 6. Normalized search in brand  
+                    {"brand": {"$regex": normalized_search, "$options": "i"}}
                 ]
         
         # FAVORI ÜRÜNLER ÖNCELİKLİ SIRALAMA: Aggregate ile güçlü sıralama
