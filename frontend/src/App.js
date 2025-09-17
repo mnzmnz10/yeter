@@ -3472,10 +3472,10 @@ function App() {
 
                 {/* Package discount, labor cost and summary - Moved to bottom */}
                 {packageWithProducts && (
-                  <div className="grid grid-cols-1 gap-4 mt-6">
+                  <div className="space-y-4 mt-6">
                     {/* İndirim Bölümü */}
-                    <div className="bg-gradient-to-br from-yellow-50 to-amber-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md w-full">
-                      <div className="flex items-center justify-between">
+                    <div className="bg-gradient-to-br from-yellow-50 to-amber-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md min-w-full">
+                      <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center">
                             <TrendingUp className="w-3 h-3" />
@@ -3517,8 +3517,8 @@ function App() {
                     </div>
 
                     {/* İşçilik Maliyeti Bölümü */}
-                    <div className="bg-gradient-to-br from-cyan-50 to-blue-100 border-2 border-cyan-300 rounded-lg p-4 shadow-md w-full">
-                      <div className="flex items-center justify-between">
+                    <div className="bg-gradient-to-br from-cyan-50 to-blue-100 border-2 border-cyan-300 rounded-lg p-4 shadow-md min-w-full">
+                      <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 bg-cyan-500 text-white rounded-full flex items-center justify-center">
                             <Wrench className="w-3 h-3" />
@@ -3557,7 +3557,7 @@ function App() {
                             </Button>
                           )}
                         </div>
-                        <div className="flex gap-2 ml-auto">
+                        <div className="flex gap-2">
                           <Button
                             variant="outline"
                             size="sm"
@@ -3591,8 +3591,8 @@ function App() {
                     </div>
 
                     {/* Package Summary */}
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-300 rounded-lg p-4 shadow-lg w-full">
-                      <div className="flex justify-between items-center mb-3">
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-300 rounded-lg p-4 shadow-lg min-w-full">
+                      <div className="flex justify-between items-center mb-3 w-full">
                         <h4 className="font-semibold text-green-800 flex items-center gap-2">
                           <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center">
                             💰
