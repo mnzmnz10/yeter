@@ -3472,10 +3472,10 @@ function App() {
 
                 {/* Package discount, labor cost and summary - Full width outside grid */}
                 {packageWithProducts && (
-                  <div className="space-y-4 mt-6 w-full">
+                  <div className="space-y-4 mt-6" style={{width: '100%', maxWidth: 'none'}}>
                     {/* İndirim Bölümü */}
-                    <div className="bg-gradient-to-br from-yellow-50 to-amber-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md">
-                      <div className="flex items-center justify-between w-full">
+                    <div className="bg-gradient-to-br from-yellow-50 to-amber-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md" style={{width: '100%'}}>
+                      <div className="flex items-center justify-between" style={{width: '100%'}}>
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center">
                             <TrendingUp className="w-3 h-3" />
@@ -3517,8 +3517,8 @@ function App() {
                     </div>
 
                     {/* İşçilik Maliyeti Bölümü */}
-                    <div className="bg-gradient-to-br from-cyan-50 to-blue-100 border-2 border-cyan-300 rounded-lg p-4 shadow-md">
-                      <div className="flex items-center justify-between w-full">
+                    <div className="bg-gradient-to-br from-cyan-50 to-blue-100 border-2 border-cyan-300 rounded-lg p-4 shadow-md" style={{width: '100%'}}>
+                      <div className="flex items-center justify-between" style={{width: '100%'}}>
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 bg-cyan-500 text-white rounded-full flex items-center justify-center">
                             <Wrench className="w-3 h-3" />
@@ -3591,8 +3591,8 @@ function App() {
                     </div>
 
                     {/* Package Summary */}
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-300 rounded-lg p-4 shadow-lg">
-                      <div className="flex justify-between items-center mb-3 w-full">
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-300 rounded-lg p-4 shadow-lg" style={{width: '100%'}}>
+                      <div className="flex justify-between items-center mb-3" style={{width: '100%'}}>
                         <h4 className="font-semibold text-green-800 flex items-center gap-2">
                           <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center">
                             💰
@@ -3663,7 +3663,7 @@ function App() {
                         <div className="mt-4 p-3 bg-white rounded border border-emerald-300">
                           <div className="text-sm text-emerald-700">
                             {packageDiscount > 0 && (
-                              <div><strong>İndirim:</strong> Liste fiyatı üzerinden %{packageDiscount} indirim uygulandı. Kâr: <strong>₺ {formatPrice(calculatePackageTotals.discountAmount)}</strong></div>
+                              <div><strong>İndirim:</strong> Liste fiyat üzerinden %{packageDiscount} indirim uygulandı. Kâr: <strong>₺ {formatPrice(calculatePackageTotals.discountAmount)}</strong></div>
                             )}
                             {packageLaborCost > 0 && (
                               <div><strong>İşçilik:</strong> Ek işçilik maliyeti eklendi. Tutar: <strong>₺ {formatPrice(calculatePackageTotals.laborCost)}</strong></div>
