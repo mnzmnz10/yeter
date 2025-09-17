@@ -1778,6 +1778,26 @@ function App() {
     }
   };
 
+  const removeProductFromPackage = async (packageProductId, productName) => {
+    if (!selectedPackageForEdit) return;
+    
+    // Kullanıcıdan onay iste
+    if (!window.confirm(`"${productName}" ürününü paketten çıkarmak istediğinizden emin misiniz?`)) {
+      return;
+    }
+    
+    try {
+      const response = await axios.delete(`${API}/packages/${selectedPackageForEdit.id}/products/${packageProductId}`);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await loadPackageWithProducts(selectedPackageForEdit.id);
+      }
+    } catch (error) {
+      console.error('Error removing product from package:', error);
+      toast.error('Ürün paketten çıkarılamadı');
+    }
+  };
+
   // Package products organization by category groups
   const getPackageProductsByGroups = () => {
     if (!packageWithProducts?.products || !categories.length) {
