@@ -9,7 +9,7 @@ from datetime import datetime
 
 def test_currency_parameter_direct():
     """Test currency parameter by creating products directly and verifying conversion"""
-    base_url = "https://doviz-auto.preview.emergentagent.com/api"
+    base_url = "https://quick-remove-item.preview.emergentagent.com/api"
     
     print("🔍 Testing Currency Parameter Functionality (Direct Product Creation)...")
     

@@ -8,7 +8,7 @@ import requests
 import json
 
 def test_pdf_category_groups():
-    base_url = "https://doviz-auto.preview.emergentagent.com/api"
+    base_url = "https://quick-remove-item.preview.emergentagent.com/api"
     
     # Test with Motokaravan package
     package_id = '58f990f8-d1af-42af-a051-a1177d6a07f0'
