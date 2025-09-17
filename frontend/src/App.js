@@ -3062,7 +3062,7 @@ function App() {
                                                 variant="outline"
                                                 className="h-7 px-2 text-xs"
                                                 onClick={() => {
-                                                  const currentPrice = product.has_custom_price ? product.custom_price : (product.discounted_price_try || product.list_price_try || 0);
+                                                  const currentPrice = product.has_custom_price ? product.custom_price : (product.list_price_try || 0);
                                                   const newPrice = prompt(
                                                     `"${product.name}" için özel fiyat girin:\n\n` +
                                                     `Mevcut fiyat: ₺${formatPrice(currentPrice)}\n` +
