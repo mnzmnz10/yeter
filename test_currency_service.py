@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 class CurrencyServiceTester:
-    def __init__(self, base_url="https://quick-remove-item.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://raspberry-forex-api.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

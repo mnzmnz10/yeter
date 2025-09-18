@@ -9,7 +9,7 @@ from io import BytesIO
 import json
 
 # Test configuration
-BASE_URL = "https://quick-remove-item.preview.emergentagent.com/api"
+BASE_URL = "https://raspberry-forex-api.preview.emergentagent.com/api"
 
 def create_test_company():
     """Create a test company"""

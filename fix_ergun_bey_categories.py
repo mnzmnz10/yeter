@@ -9,7 +9,7 @@ import json
 import sys
 
 class ErgunBeyPackageFixer:
-    def __init__(self, base_url="https://quick-remove-item.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://raspberry-forex-api.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.session = requests.Session()
         self.session.headers.update({'Content-Type': 'application/json'})
