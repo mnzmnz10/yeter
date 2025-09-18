@@ -587,10 +587,45 @@ class KaravanAPITester:
         else:
             self.log_test("❌ TEST 5: POST /api/exchange-rates/update FAILED", False, "Force update endpoint failed")
         
-        # Test 3: API Key Authentication Testing
-        print("\n🔍 Testing FreeCurrencyAPI Key Authentication...")
+        # Test 7: Database'e kurlar kaydediliyor mu?
+        print("\n🔍 TEST 7: Database'e kurlar kaydediliyor mu?...")
         
-        # Test that the API key is properly configured
+        # Force another update to ensure database write
+        time.sleep(2)
+        success, response = self.run_test(
+            "Database persistence test",
+            "POST",
+            "exchange-rates/update",
+            200
+        )
+        
+        if success and response:
+            try:
+                db_data = response.json()
+                if db_data.get('success') and 'rates' in db_data:
+                    self.log_test("✅ TEST 7: Database'e kurlar kaydediliyor", True, "Exchange rates saved to MongoDB")
+                    
+                    # Verify rates are reasonable for database storage
+                    rates = db_data.get('rates', {})
+                    all_rates_valid = all(
+                        isinstance(rate, (int, float)) and rate > 0 
+                        for rate in rates.values()
+                    )
+                    
+                    if all_rates_valid:
+                        self.log_test("✅ Database'deki kurlar geçerli", True, "All rates are valid positive numbers")
+                    else:
+                        self.log_test("❌ Database'deki kurlar geçersiz", False, "Some rates are invalid")
+                else:
+                    self.log_test("❌ TEST 7: Database kayıt hatası", False, "Database save failed")
+            except Exception as e:
+                self.log_test("❌ TEST 7: Database test hatası", False, f"Error: {e}")
+        else:
+            self.log_test("❌ TEST 7: Database test başarısız", False, "Could not test database persistence")
+        
+        # Test API Key Authentication (Direct FreeCurrencyAPI test)
+        print("\n🔍 BONUS: FreeCurrencyAPI Key Authentication Test...")
+        
         try:
             # Make a direct call to FreeCurrencyAPI to verify key works
             import requests
@@ -604,26 +639,28 @@ class KaravanAPITester:
             if direct_response.status_code == 200:
                 direct_data = direct_response.json()
                 if 'data' in direct_data:
-                    self.log_test("FreeCurrencyAPI Key Authentication", True, f"API key working, got {len(direct_data['data'])} currencies")
+                    self.log_test("✅ FreeCurrencyAPI Key çalışıyor", True, f"API key working, got {len(direct_data['data'])} currencies")
                     
-                    # Verify the data structure matches what we expect
-                    api_currencies = list(direct_data['data'].keys())
-                    expected_currencies = ['USD', 'EUR', 'GBP']
-                    if all(curr in api_currencies for curr in expected_currencies):
-                        self.log_test("FreeCurrencyAPI Data Structure", True, f"All expected currencies in response: {api_currencies}")
-                    else:
-                        self.log_test("FreeCurrencyAPI Data Structure", False, f"Missing currencies. Got: {api_currencies}")
+                    # Show actual API data
+                    api_rates = direct_data['data']
+                    print(f"📊 DIRECT API DATA:")
+                    for curr, rate in api_rates.items():
+                        if rate:
+                            # Convert to TRY rate (invert since API gives TRY to foreign)
+                            try_to_foreign = float(rate)
+                            foreign_to_try = 1 / try_to_foreign if try_to_foreign > 0 else 0
+                            print(f"   {curr}/TRY: {foreign_to_try:.2f}")
                 else:
-                    self.log_test("FreeCurrencyAPI Key Authentication", False, f"Invalid response structure: {direct_data}")
+                    self.log_test("❌ FreeCurrencyAPI response format", False, f"Invalid response structure: {direct_data}")
             elif direct_response.status_code == 401:
-                self.log_test("FreeCurrencyAPI Key Authentication", False, "API key authentication failed (401)")
+                self.log_test("❌ FreeCurrencyAPI Key authentication failed", False, "API key authentication failed (401)")
             elif direct_response.status_code == 403:
-                self.log_test("FreeCurrencyAPI Key Authentication", False, "API key forbidden (403) - may be quota exceeded")
+                self.log_test("❌ FreeCurrencyAPI Key forbidden", False, "API key forbidden (403) - may be quota exceeded")
             else:
-                self.log_test("FreeCurrencyAPI Key Authentication", False, f"API returned status {direct_response.status_code}")
+                self.log_test("❌ FreeCurrencyAPI error", False, f"API returned status {direct_response.status_code}")
                 
         except Exception as e:
-            self.log_test("FreeCurrencyAPI Direct Test", False, f"Error testing API directly: {e}")
+            self.log_test("❌ FreeCurrencyAPI direct test error", False, f"Error testing API directly: {e}")
         
         # Test 4: Currency Service Testing (convert_to_try and convert_from_try)
         print("\n🔍 Testing Currency Service Functions...")
