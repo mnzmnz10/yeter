@@ -16092,5 +16092,28 @@ if __name__ == "__main__":
         print(f"   Passed: {tester.tests_passed}")
         print(f"   Failed: {tester.tests_run - tester.tests_passed}")
         print(f"   Success Rate: {(tester.tests_passed/tester.tests_run*100):.1f}%" if tester.tests_run > 0 else "   Success Rate: 0%")
+    elif len(sys.argv) > 1 and sys.argv[1] == "--raspberry-pi-forex":
+        # Run only Raspberry Pi exchange rate fix test
+        print("🚀 RASPBERRY PI DÖVİZ API FIX TEST")
+        print(f"🌐 Base URL: {tester.base_url}")
+        print("=" * 80)
+        
+        tester.test_raspberry_pi_exchange_rates_fix()
+        
+        print(f"\n📊 RASPBERRY PI DÖVİZ API FIX TEST SUMMARY:")
+        print(f"   Total Tests: {tester.tests_run}")
+        print(f"   Passed: {tester.tests_passed}")
+        print(f"   Failed: {tester.tests_run - tester.tests_passed}")
+        success_rate = (tester.tests_passed/tester.tests_run*100) if tester.tests_run > 0 else 0
+        print(f"   Success Rate: {success_rate:.1f}%")
+        
+        if success_rate >= 90:
+            print("🎉 MÜKEMMEL - Raspberry Pi döviz API'si tamamen çalışıyor!")
+        elif success_rate >= 75:
+            print("✅ İYİ - Döviz API'si çalışıyor, küçük sorunlar var")
+        elif success_rate >= 50:
+            print("⚠️ ORTA - Döviz API'sinde dikkat edilmesi gereken sorunlar var")
+        else:
+            print("❌ KÖTÜ - Döviz API'sinde ciddi sorunlar var")
     else:
         tester.run_all_tests()
