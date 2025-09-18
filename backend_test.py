@@ -524,14 +524,14 @@ class KaravanAPITester:
         else:
             self.log_test("❌ TEST 1: GET /api/exchange-rates FAILED", False, "Endpoint did not respond with 200")
         
-        # Test 2: POST /api/exchange-rates/update endpoint (Force Update)
-        print("\n🔍 Testing POST /api/exchange-rates/update endpoint...")
+        # Test 5: POST /api/exchange-rates/update force update çalışıyor mu?
+        print("\n🔍 TEST 5: POST /api/exchange-rates/update force update...")
         
         # Wait a moment to ensure timestamp difference
         time.sleep(3)
         
         success, response = self.run_test(
-            "Force Update Exchange Rates via FreeCurrencyAPI",
+            "✅ TEST 5: POST /api/exchange-rates/update",
             "POST",
             "exchange-rates/update",
             200
