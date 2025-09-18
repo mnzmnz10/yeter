@@ -443,6 +443,13 @@ class KaravanAPITester:
         if success and response:
             try:
                 data = response.json()
+                
+                # Test 3: API response success: true dönüyor mu?
+                if data.get('success'):
+                    self.log_test("✅ TEST 3: API response success: true", True, "Response contains success: true")
+                else:
+                    self.log_test("❌ TEST 3: API response success: true", False, f"Response success field: {data.get('success')}")
+                
                 if data.get('success') and 'rates' in data:
                     rates = data['rates']
                     initial_rates = rates.copy()
@@ -453,55 +460,69 @@ class KaravanAPITester:
                     missing_currencies = [curr for curr in required_currencies if curr not in rates]
                     
                     if not missing_currencies:
-                        self.log_test("FreeCurrencyAPI Response Format", True, f"All required currencies present: {list(rates.keys())}")
+                        self.log_test("✅ Tüm gerekli para birimleri mevcut", True, f"Currencies: {list(rates.keys())}")
                         
                         # Test TRY rate (should always be 1.0 as base currency)
                         try_rate = rates.get('TRY', 0)
                         if try_rate == 1.0:
-                            self.log_test("TRY Base Currency Validation", True, f"TRY rate is correctly 1.0 (base currency)")
+                            self.log_test("✅ TRY base currency doğru", True, f"TRY rate: {try_rate}")
                         else:
-                            self.log_test("TRY Base Currency Validation", False, f"TRY rate should be 1.0, got: {try_rate}")
+                            self.log_test("❌ TRY base currency yanlış", False, f"TRY rate should be 1.0, got: {try_rate}")
                         
-                        # Test realistic rate ranges (as mentioned in requirements: USD 27-45 TRY)
+                        # Test 2: FreeCurrencyAPI'den güncel kurlar alınıyor mu? (USD: ~41, EUR: ~48, GBP: ~56)
                         usd_rate = rates.get('USD', 0)
                         eur_rate = rates.get('EUR', 0)
                         gbp_rate = rates.get('GBP', 0)
                         
-                        # USD/TRY should be around 27-45 (as mentioned in requirements)
-                        if 27 <= usd_rate <= 45:
-                            self.log_test("USD Exchange Rate Range", True, f"USD/TRY: {usd_rate} (within expected 27-45 range)")
-                        else:
-                            self.log_test("USD Exchange Rate Range", False, f"USD/TRY: {usd_rate} (outside expected 27-45 range)")
+                        print(f"\n📊 GÜNCEL KURLAR:")
+                        print(f"   USD/TRY: {usd_rate}")
+                        print(f"   EUR/TRY: {eur_rate}")
+                        print(f"   GBP/TRY: {gbp_rate}")
+                        print(f"   TRY/TRY: {try_rate}")
                         
-                        # EUR/TRY should be higher than USD (typically 30-50)
-                        if 30 <= eur_rate <= 50:
-                            self.log_test("EUR Exchange Rate Range", True, f"EUR/TRY: {eur_rate} (realistic range)")
+                        # USD/TRY should be around ~41 (as mentioned in requirements)
+                        if 35 <= usd_rate <= 50:
+                            self.log_test("✅ TEST 2a: USD kuru makul aralıkta", True, f"USD/TRY: {usd_rate} (beklenen ~41 civarı)")
                         else:
-                            self.log_test("EUR Exchange Rate Range", False, f"EUR/TRY: {eur_rate} (outside expected 30-50 range)")
+                            self.log_test("❌ TEST 2a: USD kuru aralık dışı", False, f"USD/TRY: {usd_rate} (beklenen 35-50 arası)")
                         
-                        # GBP/TRY should be higher than EUR
-                        if gbp_rate > eur_rate and gbp_rate > 0:
-                            self.log_test("GBP Exchange Rate Logic", True, f"GBP/TRY: {gbp_rate} (higher than EUR as expected)")
+                        # EUR/TRY should be around ~48 (as mentioned in requirements)
+                        if 40 <= eur_rate <= 55:
+                            self.log_test("✅ TEST 2b: EUR kuru makul aralıkta", True, f"EUR/TRY: {eur_rate} (beklenen ~48 civarı)")
                         else:
-                            self.log_test("GBP Exchange Rate Logic", False, f"GBP/TRY: {gbp_rate} (should be higher than EUR: {eur_rate})")
+                            self.log_test("❌ TEST 2b: EUR kuru aralık dışı", False, f"EUR/TRY: {eur_rate} (beklenen 40-55 arası)")
                         
-                        # Test updated_at timestamp format
+                        # GBP/TRY should be around ~56 (as mentioned in requirements)
+                        if 50 <= gbp_rate <= 65:
+                            self.log_test("✅ TEST 2c: GBP kuru makul aralıkta", True, f"GBP/TRY: {gbp_rate} (beklenen ~56 civarı)")
+                        else:
+                            self.log_test("❌ TEST 2c: GBP kuru aralık dışı", False, f"GBP/TRY: {gbp_rate} (beklenen 50-65 arası)")
+                        
+                        # Test 4: updated_at field güncel timestamp içeriyor mu?
                         if initial_updated_at:
                             try:
                                 from datetime import datetime
-                                datetime.fromisoformat(initial_updated_at.replace('Z', '+00:00'))
-                                self.log_test("Exchange Rates Timestamp Format", True, f"Valid ISO timestamp: {initial_updated_at}")
-                            except:
-                                self.log_test("Exchange Rates Timestamp Format", False, f"Invalid timestamp format: {initial_updated_at}")
+                                parsed_time = datetime.fromisoformat(initial_updated_at.replace('Z', '+00:00'))
+                                current_time = datetime.now(parsed_time.tzinfo)
+                                time_diff = abs((current_time - parsed_time).total_seconds())
+                                
+                                if time_diff < 3600:  # Less than 1 hour old
+                                    self.log_test("✅ TEST 4: updated_at güncel timestamp", True, f"Timestamp: {initial_updated_at} ({time_diff:.0f} saniye önce)")
+                                else:
+                                    self.log_test("⚠️ TEST 4: updated_at eski timestamp", True, f"Timestamp: {initial_updated_at} ({time_diff:.0f} saniye önce)")
+                            except Exception as e:
+                                self.log_test("❌ TEST 4: updated_at format hatası", False, f"Invalid timestamp format: {initial_updated_at}, Error: {e}")
                         else:
-                            self.log_test("Exchange Rates Timestamp", False, "No updated_at timestamp provided")
+                            self.log_test("❌ TEST 4: updated_at eksik", False, "No updated_at timestamp provided")
                             
                     else:
-                        self.log_test("FreeCurrencyAPI Response Format", False, f"Missing currencies: {missing_currencies}")
+                        self.log_test("❌ Eksik para birimleri", False, f"Missing currencies: {missing_currencies}")
                 else:
-                    self.log_test("FreeCurrencyAPI Response Format", False, "Invalid response format - missing success or rates")
+                    self.log_test("❌ API response format hatası", False, "Invalid response format - missing success or rates")
             except Exception as e:
-                self.log_test("FreeCurrencyAPI Response Parsing", False, f"Error parsing response: {e}")
+                self.log_test("❌ API response parsing hatası", False, f"Error parsing response: {e}")
+        else:
+            self.log_test("❌ TEST 1: GET /api/exchange-rates FAILED", False, "Endpoint did not respond with 200")
         
         # Test 2: POST /api/exchange-rates/update endpoint (Force Update)
         print("\n🔍 Testing POST /api/exchange-rates/update endpoint...")
