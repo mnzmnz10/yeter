@@ -415,15 +415,23 @@ class KaravanAPITester:
         )
         return success
 
-    def test_freecurrency_api_comprehensive(self):
-        """Comprehensive test for FreeCurrencyAPI integration as requested"""
-        print("\n🔍 Testing FreeCurrencyAPI Integration System...")
-        print("🔑 Using API Key: fca_live_23BGCN0W9HdvzVPE5T9cUfvWphyGDWoOTgeA5v8P")
+    def test_raspberry_pi_exchange_rates_fix(self):
+        """RASPBERRY PI DÖVİZ API FIX TEST - Specific test for the review request"""
+        print("\n🔍 RASPBERRY PI DÖVİZ API FIX TEST...")
+        print("🔑 API Key: fca_live_23BGCN0W9HdvzVPE5T9cUfvWphyGDWoOTgeA5v8P")
+        print("📋 Testing Requirements:")
+        print("   1. GET /api/exchange-rates endpoint çalışıyor mu?")
+        print("   2. FreeCurrencyAPI'den güncel kurlar alınıyor mu? (USD: ~41, EUR: ~48, GBP: ~56)")
+        print("   3. API response success: true dönüyor mu?")
+        print("   4. updated_at field güncel timestamp içeriyor mu?")
+        print("   5. POST /api/exchange-rates/update force update çalışıyor mu?")
+        print("   6. Fallback değerler değil, gerçek API'den veri geliyor mu?")
+        print("   7. Database'e kurlar kaydediliyor mu?")
         
         # Test 1: GET /api/exchange-rates endpoint
-        print("\n🔍 Testing GET /api/exchange-rates endpoint...")
+        print("\n🔍 TEST 1: GET /api/exchange-rates endpoint...")
         success, response = self.run_test(
-            "Get Exchange Rates from FreeCurrencyAPI",
+            "GET /api/exchange-rates endpoint çalışıyor mu?",
             "GET",
             "exchange-rates",
             200
